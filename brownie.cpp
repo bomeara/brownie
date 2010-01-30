@@ -7068,6 +7068,8 @@ void BROWNIE::HandlePagelDiscrete ( NexusToken& token)
 				
 				assert(char1>=0);
 				assert(char2>=0);
+				int originaldiscretechosenchar=discretechosenchar;
+				discretechosenchar=discretecharacters->GetNChar(); //due to 0 offset, this will be number of the new char 
 				int char1numstates=discretecharacters->GetObsNumStates(char1); //0 offset in discretematrix
 				int char2numstates=discretecharacters->GetObsNumStates(char2);
 				int stateConversionMatrix[char1numstates][char2numstates];
