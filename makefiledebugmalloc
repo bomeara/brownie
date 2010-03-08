@@ -54,6 +54,7 @@ Brownie : \
 		allelesblock.o\
 		assumptionsblock.o\
 		charactersblock.o\
+		charactersblock2.o\
 		datablock.o\
 		discretedatum.o\
 		discretematrix.o\
@@ -103,6 +104,7 @@ Brownie : \
 		allelesblock.o\
 		assumptionsblock.o\
 		charactersblock.o\
+		charactersblock2.o\
 		datablock.o\
 		discretedatum.o\
 		discretematrix.o\
@@ -202,6 +204,11 @@ assumptionsblock.o : ./ncl-2.0/src/assumptionsblock.cpp
 # Item # 4 -- charactersblock --
 charactersblock.o : ./ncl-2.0/src/charactersblock.cpp
 	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/charactersblock.cpp -c $(INCLUDE) -o charactersblock.o
+
+
+# Item # 4b -- charactersblock2 --
+charactersblock2.o : ./ncl-2.0/src/charactersblock2.cpp
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/charactersblock2.cpp -c $(INCLUDE) -o charactersblock2.o
 
 
 # Item # 5 -- datablock --
@@ -341,26 +348,26 @@ quartet.o: ./TreeLib/quartet.cpp
 
 
 # FINAL ITEM -- BROWNIE
-Brownie : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
-	$(CC) brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
+Brownie : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
+	$(CC) brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
 	@echo ""
 	@chmod a+x brownie
 	@echo "brownie has now been compiled. yippee."
 
-macintel : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
-	$(CC) -arch i386 brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
+macintel : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
+	$(CC) -arch i386 brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
 	@echo ""
 	@chmod a+x brownie
 	@echo "brownie has now been compiled. yippee."
 
-macppc : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
-	$(CC) -arch ppc brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
+macppc : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
+	$(CC) -arch ppc brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
 	@echo ""
 	@chmod a+x brownie
 	@echo "brownie has now been compiled. yippee."
 
-macppc64 : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
-	$(CC) -arch ppc64 brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
+macppc64 : brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o
+	$(CC) -arch ppc64 brownie.o cdfvectorholder.o optimizationfn.o allelesblock.o assumptionsblock.o charactersblock.o charactersblock2.o datablock.o discretedatum.o discretematrix.o distancedatum.o distancesblock.o nexus.o nexusblock.o nexustoken.o nxsdate.o nxsstring.o setreader.o taxablock.o treesblock.o xnexus.o gport.o gtree.o ntree.o stree.o containingtree.o Parse.o tokeniser.o treedrawer.o TreeLib.o treeorder.o treereader.o treewriter.o lcaquery.o quartet.o $(LNK_OPTIONS) -o brownie
 	@echo ""
 	@chmod a+x brownie
 	@echo "brownie has now been compiled. yippee."
