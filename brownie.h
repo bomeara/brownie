@@ -299,6 +299,7 @@ public:
         virtual bool CheckConvertSamplesToSpeciesVector(bool fix);
 		virtual bool CombineSpeciesWithTooFewSamples(bool fix);
 		virtual bool CheckConvertSamplesToSpeciesVectorSpNum(int actualmaxspeciesnum);
+		virtual bool CheckConvertSamplesToSpeciesTooManySpecies();
 		virtual double DoAllAssignments(double bestscore, int maxspecies, ContainingTree *SpeciesTree );
      //   virtual double GetGTPScore(ContainingTree *SpeciesTreePtr); //took out as no longer use external GTP
         virtual double GetGTPScoreNew(ContainingTree *SpeciesTreePtr);

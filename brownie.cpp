@@ -1264,7 +1264,7 @@ void BROWNIE::HandleHeuristicSearch( NexusToken& token )
             //message+="\nAssignFixed: Assignment of gene samples to species is not optimized during a search";
             //message+="\nSppNumFixed: The total number of species is not optimized during the search (if set to No, then AssignFixed is also set to No)";
             message+="\nMaxNumSpp: The maximum number of species to split the samples into (only relevant if SppNumFixed==No)";
-			message+="\nMinSamp: The minimum  number of samples per species";
+			message+="\nMinSamp: The minimum  number of samples per species (NOT the number of species)";
             message+="\nMoveFreq: Sets the relative proportion of times to try\n\t1) Species tree branch swaps\n\t2) Moving samples from one species to another\n\t3) Increasing the number of species\n\t4) Decreasing the number of species\n\t5) Attempt to reroot the species tree\n  If these don't sum to one, the program will automatically correct this.";
             //message+="\nRecordSearch: Output each step to a file: assignments go to a .txt file, and trees go to a .tre file";
             //message+="\nSearchFile: If RecordSearch==Yes, the prefix to use for the output files.";
@@ -1288,6 +1288,11 @@ void BROWNIE::HandleHeuristicSearch( NexusToken& token )
             nxsstring numbernexus;
             numbernexus = GetNumber(token);
             maxnumspecies=atoi( numbernexus.c_str() ); //convert to int
+            message="There must be no more than ";
+			message+=maxnumspecies;
+			message+=" species total.";
+			PrintMessage();
+
         }
 		else if(token.Abbreviation("MINSamp")) {
             nxsstring numbernexus;
@@ -2192,6 +2197,20 @@ bool BROWNIE::CheckConvertSamplesToSpeciesVectorSpNum(int actualmaxspeciesnum)
 	return goodshape;
 }
 
+bool BROWNIE::CheckConvertSamplesToSpeciesTooManySpecies()
+{
+    int observedmaxspecies=0;
+    bool goodshape=true;
+    for (int i=0;i<convertsamplestospecies.size();i++) {
+        observedmaxspecies=GSL_MAX(observedmaxspecies,convertsamplestospecies[i]);
+    }
+	if (observedmaxspecies>maxnumspecies) {
+		goodshape=false;
+	}
+	return goodshape;
+}
+
+
 bool BROWNIE::MoveSamples(vector<int> Originalconvertsamplestospecies)
 {
     bool morereassignments=true;
@@ -2551,139 +2570,151 @@ void BROWNIE::DoHeuristicSearch()
         //}
         //cout<<endl;
         bool assignmentbasedontriplettree=true;
+        bool validassignment=false;
         if (convertsamplestospecies.size()==0) {
-            if (assignmentbasedontriplettree) { //use the triplet tree to get assignments
-				if (gsl_ran_flat(r,0,1)<tripletdistthreshold) {
-				//New method, based on splitting on longest internal branches in starting nj tree. Basically, split on internal branches with longer than average lengths
-					int nsamples=taxa->GetNumTaxonLabels();
-					int numnontrivialclades=nsamples-2;
-					convertsamplestospecies.assign(nsamples,1);
-					if (debugmode) {
-						cout<<"assembling initial convertsamplestospeciesvector, using NJ tree distances"<<endl;
-						for (int k=0;k<convertsamplestospecies.size();k++) {
-							cout<<convertsamplestospecies[k]<<" ";
-						}
-						cout<<endl;
-					}
-					int currentspecies=2;
-					for (int currentpos=CladeVectorNJBrlen.size()-1;currentpos>=nsamples-1;currentpos--) { //start at the root, work up (based on other order on way down) 
-						if (CladeVectorNJBrlen[currentpos]>meaninternalbrlen && (CladeVector[currentpos]).size()>=minsamplesperspecies) {
-							for(int j=0;j<(CladeVector[currentpos]).size();j++) {
-								convertsamplestospecies[(CladeVector[currentpos][j])]=currentspecies;
-							}
-							currentspecies++;
-							if (debugmode) {
-								for (int taxon=0; taxon<nsamples; taxon++) {
-									cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
-								}
-								cout<<endl;
-							}
-							
-						}
-					}
-					bool goodshape=CheckConvertSamplesToSpeciesVector(true);
-					goodshape=CombineSpeciesWithTooFewSamples(true);
-					if (debugmode) {
-						for (int taxon=0; taxon<nsamples; taxon++) {
-							cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
-						}
-						cout<<endl;
-					}
-					
-					/* //Old method for getting starting assignments: tended to split good clades too often, not pay attention to relative support
+        	double splitwhenappropriateprob=1.0; //See where this is used below (to do initial assignment). This can be dropped if the initial assignments have too many species
+			while (!validassignment) {
+				convertsamplestospecies=intialconvertsamplestospeciesvector;
+				if (assignmentbasedontriplettree) { //use the triplet tree to get assignments
+					if (gsl_ran_flat(r,0,1)<tripletdistthreshold) {
+					//New method, based on splitting on longest internal branches in starting nj tree. Basically, split on internal branches with longer than average lengths
 						int nsamples=taxa->GetNumTaxonLabels();
-					int numnontrivialclades=nsamples-2;
-					convertsamplestospecies.assign(nsamples,1);
-					int currentpos=nsamples-1;
-					int currentspecies=2;
-					while (currentpos<CladeVector.size()) {
-						currentpos+=1+gsl_ran_binomial(r,.5,4);
-						if (currentpos<CladeVector.size()) {
-							for(int j=0;j<(CladeVector[currentpos]).size();j++) {
-								convertsamplestospecies[(CladeVector[currentpos][j])]=currentspecies;
+						int numnontrivialclades=nsamples-2;
+						convertsamplestospecies.assign(nsamples,1);
+						if (debugmode) {
+							cout<<"assembling initial convertsamplestospeciesvector, using NJ tree distances"<<endl;
+							for (int k=0;k<convertsamplestospecies.size();k++) {
+								cout<<convertsamplestospecies[k]<<" ";
+							}
+							cout<<endl;
+						}
+						int currentspecies=2;
+						for (int currentpos=CladeVectorNJBrlen.size()-1;currentpos>=nsamples-1;currentpos--) { //start at the root, work up (based on other order on way down) 
+							if (CladeVectorNJBrlen[currentpos]>meaninternalbrlen && (CladeVector[currentpos]).size()>=minsamplesperspecies && gsl_ran_bernoulli(r,splitwhenappropriateprob)==1) {
+								for(int j=0;j<(CladeVector[currentpos]).size();j++) {
+									convertsamplestospecies[(CladeVector[currentpos][j])]=currentspecies;
+								}
+								currentspecies++;
+								if (debugmode) {
+									for (int taxon=0; taxon<nsamples; taxon++) {
+										cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
+									}
+									cout<<endl;
+								}
+								
 							}
 						}
-						currentspecies++;
-					}
-					bool goodshape=CheckConvertSamplesToSpeciesVector(true);
-					goodshape=CombineSpeciesWithTooFewSamples(true);
-					*/ //Old method for getting starting assignments
-				}
-				else { //Use triplet support distances
-					int nsamples=taxa->GetNumTaxonLabels();
-					int numnontrivialclades=nsamples-2;
-					convertsamplestospecies.assign(nsamples,1);
-					if (debugmode) {
-						cout<<"assembling initial convertsamplestospeciesvector, using triplet support distances"<<endl;
-						for (int k=0;k<convertsamplestospecies.size();k++) {
-							cout<<convertsamplestospecies[k]<<" ";
+						bool goodshape=CheckConvertSamplesToSpeciesVector(true);
+						goodshape=CombineSpeciesWithTooFewSamples(true);
+						if (debugmode) {
+							for (int taxon=0; taxon<nsamples; taxon++) {
+								cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
+							}
+							cout<<endl;
 						}
-						cout<<endl;
-					}
-					int currentspecies=2;
-					for (int currentpos=CladeVectorTripletSupport.size()-1;currentpos>=nsamples-1;currentpos--) { //start at the root, work up (based on other order on way down) 
-						double supportvalue=CladeVectorTripletSupport[currentpos];
-						if ((supportvalue>gsl_ran_flat(r,0.6,1)) && (CladeVector[currentpos]).size()>=minsamplesperspecies) { //only split on branches with 60% support or more
-							for(int j=0;j<(CladeVector[currentpos]).size();j++) {
-								convertsamplestospecies[(CladeVector[currentpos][j])]=currentspecies;
+						goodshape=CheckConvertSamplesToSpeciesTooManySpecies();
+						if (!goodshape) {
+							splitwhenappropriateprob=splitwhenappropriateprob*0.9; //we had too many splits, so drop the chance of splitting
+						}
+						validassignment=goodshape;
+						/* //Old method for getting starting assignments: tended to split good clades too often, not pay attention to relative support
+							int nsamples=taxa->GetNumTaxonLabels();
+						int numnontrivialclades=nsamples-2;
+						convertsamplestospecies.assign(nsamples,1);
+						int currentpos=nsamples-1;
+						int currentspecies=2;
+						while (currentpos<CladeVector.size()) {
+							currentpos+=1+gsl_ran_binomial(r,.5,4);
+							if (currentpos<CladeVector.size()) {
+								for(int j=0;j<(CladeVector[currentpos]).size();j++) {
+									convertsamplestospecies[(CladeVector[currentpos][j])]=currentspecies;
+								}
 							}
 							currentspecies++;
-							if (debugmode) {
-								for (int taxon=0; taxon<nsamples; taxon++) {
-									cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
-								}
-								cout<<endl;
+						}
+						bool goodshape=CheckConvertSamplesToSpeciesVector(true);
+						goodshape=CombineSpeciesWithTooFewSamples(true);
+						*/ //Old method for getting starting assignments
+					}
+					else { //Use triplet support distances
+						int nsamples=taxa->GetNumTaxonLabels();
+						int numnontrivialclades=nsamples-2;
+						convertsamplestospecies.assign(nsamples,1);
+						if (debugmode) {
+							cout<<"assembling initial convertsamplestospeciesvector, using triplet support distances"<<endl;
+							for (int k=0;k<convertsamplestospecies.size();k++) {
+								cout<<convertsamplestospecies[k]<<" ";
 							}
-							
+							cout<<endl;
 						}
-					}
-					bool goodshape=CheckConvertSamplesToSpeciesVector(true);
-					goodshape=CombineSpeciesWithTooFewSamples(true);
-					if (debugmode) {
-						for (int taxon=0; taxon<nsamples; taxon++) {
-							cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
+						int currentspecies=2;
+						for (int currentpos=CladeVectorTripletSupport.size()-1;currentpos>=nsamples-1;currentpos--) { //start at the root, work up (based on other order on way down) 
+							double supportvalue=CladeVectorTripletSupport[currentpos];
+							if ((supportvalue>gsl_ran_flat(r,0.6,1)) && (CladeVector[currentpos]).size()>=minsamplesperspecies) { //only split on branches with 60% support or more
+								for(int j=0;j<(CladeVector[currentpos]).size();j++) {
+									convertsamplestospecies[(CladeVector[currentpos][j])]=currentspecies;
+								}
+								currentspecies++;
+								if (debugmode) {
+									for (int taxon=0; taxon<nsamples; taxon++) {
+										cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
+									}
+									cout<<endl;
+								}
+								
+							}
 						}
-						cout<<endl;
-					}
-				}
-            }
-            else {
-                //message="You didn't do an intial assignment of taxa to species, so we'll do a random assignment";
-                //PrintMessage();
-                int ntax=taxa->GetNumTaxonLabels();
-                //cout<<"ntax is "<<ntax<<endl;
-                int samplesperspecies=GSL_MAX(minsamplesperspecies,1+gsl_ran_binomial(r,0.5,7)); // can change this; set now for on average 4.5 samples per species
-                convertsamplestospecies.clear();
-                vector <int> tempconvertsamplestospecies;
-                int speciesid=1;
-                int assignmentcount=0;
-                for (int i=0;i<ntax;i++) {
-                    tempconvertsamplestospecies.push_back(speciesid);
-                    assignmentcount++;
-                    if (assignmentcount==samplesperspecies) {
-                        assignmentcount=0;
-                        speciesid++;
-                        samplesperspecies=GSL_MAX(minsamplesperspecies,1+gsl_ran_binomial(r,0.5,7)); //currently set for an average of 4.5 samples per species
-                                                                       //cout<<"speciesid is "<<speciesid<<endl;
-                    }
-                }
-				if (assignmentcount<minsamplesperspecies && assignmentcount>0) { //Means the last species has too few samples in it, so we'll merge it with a random earlier species
-					for (int i=0;i<tempconvertsamplestospecies.size();i++) {
-						if(tempconvertsamplestospecies[i]==speciesid) {
-							tempconvertsamplestospecies[i]=1+gsl_ran_binomial(r,0.5,speciesid-2);
+						bool goodshape=CheckConvertSamplesToSpeciesVector(true);
+						goodshape=CombineSpeciesWithTooFewSamples(true);
+						if (debugmode) {
+							for (int taxon=0; taxon<nsamples; taxon++) {
+								cout<<convertsamplestospecies[taxon]<<" "<<taxa->GetTaxonLabel(taxon)<<endl;
+							}
+							cout<<endl;
 						}
+						goodshape=CheckConvertSamplesToSpeciesTooManySpecies();
+						validassignment=goodshape;
 					}
 				}
-                gsl_permutation * c = gsl_permutation_alloc (tempconvertsamplestospecies.size());
-                gsl_permutation_init (c);
-                gsl_ran_shuffle (r, c->data, tempconvertsamplestospecies.size(), sizeof(size_t));
-                for (int i=0; i<tempconvertsamplestospecies.size(); i++) {
-                    convertsamplestospecies.push_back(tempconvertsamplestospecies[gsl_permutation_get (c,i)]);
-                    //cout<<tempconvertsamplestospecies[gsl_permutation_get (c,i)]<<endl;
-                }
-                gsl_permutation_free(c);
-            }
-        }
+				else {
+					//message="You didn't do an intial assignment of taxa to species, so we'll do a random assignment";
+					//PrintMessage();
+					int ntax=taxa->GetNumTaxonLabels();
+					//cout<<"ntax is "<<ntax<<endl;
+					int samplesperspecies=GSL_MAX(minsamplesperspecies,1+gsl_ran_binomial(r,0.5,7)); // can change this; set now for on average 4.5 samples per species
+					convertsamplestospecies.clear();
+					vector <int> tempconvertsamplestospecies;
+					int speciesid=1;
+					int assignmentcount=0;
+					for (int i=0;i<ntax;i++) {
+						tempconvertsamplestospecies.push_back(speciesid);
+						assignmentcount++;
+						if (assignmentcount==samplesperspecies) {
+							assignmentcount=0;
+							speciesid++;
+							samplesperspecies=GSL_MAX(minsamplesperspecies,1+gsl_ran_binomial(r,0.5,7)); //currently set for an average of 4.5 samples per species
+																		   //cout<<"speciesid is "<<speciesid<<endl;
+						}
+					}
+					if (assignmentcount<minsamplesperspecies && assignmentcount>0) { //Means the last species has too few samples in it, so we'll merge it with a random earlier species
+						for (int i=0;i<tempconvertsamplestospecies.size();i++) {
+							if(tempconvertsamplestospecies[i]==speciesid) {
+								tempconvertsamplestospecies[i]=1+gsl_ran_binomial(r,0.5,speciesid-2);
+							}
+						}
+					}
+					gsl_permutation * c = gsl_permutation_alloc (tempconvertsamplestospecies.size());
+					gsl_permutation_init (c);
+					gsl_ran_shuffle (r, c->data, tempconvertsamplestospecies.size(), sizeof(size_t));
+					for (int i=0; i<tempconvertsamplestospecies.size(); i++) {
+						convertsamplestospecies.push_back(tempconvertsamplestospecies[gsl_permutation_get (c,i)]);
+						//cout<<tempconvertsamplestospecies[gsl_permutation_get (c,i)]<<endl;
+					}
+					gsl_permutation_free(c);
+					validassignment=CheckConvertSamplesToSpeciesTooManySpecies();;
+				}
+			}
+		}
         int CurrentSppNum=0;
         for (int vectorpos=0;vectorpos<convertsamplestospecies.size();vectorpos++) {
             if (convertsamplestospecies[vectorpos]>CurrentSppNum) {
@@ -3910,9 +3941,14 @@ while (improvement && (rearrlimit<0 || movecount<rearrlimit)) {
             message+="\t";
             message+=movecount;
             message+="\t";
-            message+=CurrentTree.GetNumLeaves();
-            message+="->";
-            message+=NextTree.GetNumLeaves();
+            if (chosenmove==3 || chosenmove==4) {
+				message+=CurrentTree.GetNumLeaves();
+				message+="->";
+				message+=NextTree.GetNumLeaves();
+            }
+            else {
+            	message+=NextTree.GetNumLeaves();
+            }
             message+="\t";
             message+=chosenmovestring;
             message+="\t";
