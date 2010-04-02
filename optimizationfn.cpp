@@ -244,6 +244,7 @@ double OptimizationFn::GetLikelihoodWithGivenTipVariance(const gsl_vector * vari
 	//cout<<"rate = "<<rate<<" ancstate ="<<ancestralstate<<" likelihood = "<<likelihood<<endl;
 	gsl_matrix_free(VCV);
 	gsl_vector_free(tipvariance);
+	gsl_vector_free(tipresiduals);
 	gsl_vector_free(observedtips);
 	gsl_matrix_free(RateTimesVCV);
 	gsl_matrix_free(VCVfinal);

@@ -2,7 +2,7 @@
 #ifndef __BROWNIE_H
 #define __BROWNIE_H
 
-#define COMMAND_MAXLEN  10000// used to be 255
+#define COMMAND_MAXLEN  1000000// used to be 255
 #define PI 3.141592653589793238462643383279502884197169399375
 #define maxModelCategoryStates         10
 #define BROWNIE_EPSILON 0.00001

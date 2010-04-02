@@ -12383,7 +12383,6 @@ void BROWNIE::Read( NexusToken& token )
 			PrintCitations();
             message = "\nPlease remember to send bug reports to omeara.brian@gmail.com.\n";
             PrintMessage();
-
             break;
         }
         else

@@ -11,7 +11,7 @@
 #
 
 CC = /usr/bin/g++
-CC_OPTIONS = -fexceptions -g
+CC_OPTIONS = -fexceptions -g -O0
 #added these as link options
 #LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L./gtp.0.15_Modified/nexus_parser/ -lnp -L./gtp.0.15_Modified/my_structures/ -lmy_structures 
 LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L/usr/lib/ -lMallocDebug.a
