@@ -26,6 +26,7 @@
 #include "stree.h"
 #include "containingtree.h"
 #include "quartet.h"
+#include "version.h"
 #include <gsl/gsl_sf_gamma.h>
 #include "TreeLib.h"
 #include "gtree.h"
@@ -12459,7 +12460,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 	Add( characters2 );
     Add( this );
     cout<<endl<<endl<<endl;
-    cout<<"                                 Brownie V2.1.1"<<endl;
+    cout<<"                               Brownie V2.1.1 (r"<<$SVN_VERSION<<")"<<endl;
 	cout<<"                          Character evolution models,"<<endl;
 	cout<<"                             species delimitation,"<<endl; 
 	cout<<"                               and tree search"<<endl<<endl;

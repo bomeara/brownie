@@ -1,0 +1,1 @@
+const string $SVN_VERSION ("78M");

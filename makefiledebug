@@ -9,12 +9,12 @@
 #
 # Macros
 #
-
 CC = /usr/bin/g++
 CC_OPTIONS = -fexceptions -g
 #added these as link options
 #LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L./gtp.0.15_Modified/nexus_parser/ -lnp -L./gtp.0.15_Modified/my_structures/ -lmy_structures 
 LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm 
+
 
 
 #
@@ -143,6 +143,10 @@ Brownie : \
 
 # Item # 1 -- brownie --
 brownie.o : brownie.cpp cdfvectorholder.o
+	printf 'const string ' > version.h
+	printf '$$SVN_VERSION ("' >> version.h
+	svnversion -n . >> version.h
+	printf '");' >> version.h
 	$(CC) $(CC_OPTIONS) brownie.cpp -c $(INCLUDE) -o brownie.o 
 
 cdfvectorholder.o : cdfvectorholder.cpp

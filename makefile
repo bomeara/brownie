@@ -6,6 +6,7 @@
 #
 ###################################################
 
+#note that version.h is only updated when makefiledebug is run (to make sure that the regular makefile works when the source is not in subversion)
 #
 # Macros
 #
