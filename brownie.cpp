@@ -1284,7 +1284,7 @@ void BROWNIE::HandleHeuristicSearch( NexusToken& token )
             numbernexus = GetNumber(token);
             nreps=atoi( numbernexus.c_str() ); //convert to int
         }
-        else if(token.Abbreviation("MAxnumspp")) {
+        else if(token.Abbreviation("MAXNumspp")) {
             nxsstring numbernexus;
             numbernexus = GetNumber(token);
             maxnumspecies=atoi( numbernexus.c_str() ); //convert to int
@@ -1541,10 +1541,15 @@ void BROWNIE::HandleHeuristicSearch( NexusToken& token )
             }
         }
 
-        else if(token.Abbreviation("MInumspp")) {
+        else if(token.Abbreviation("MINNumspp") || token.Abbreviation("MINUMSP") ) { //to deal with typos
             nxsstring numbernexus;
             numbernexus = GetNumber(token);
             minnumspecies=atoi( numbernexus.c_str() ); //convert to int
+            message="There must be at least ";
+			message+=minnumspecies;
+			message+=" species total.";
+			PrintMessage();
+
         }
         else if(token.Abbreviation("FIlename")) {
             treefilename=GetFileName(token);
@@ -2210,6 +2215,18 @@ bool BROWNIE::CheckConvertSamplesToSpeciesTooManySpecies()
 	return goodshape;
 }
 
+bool BROWNIE::CheckConvertSamplesToSpeciesTooFewSpecies()
+{
+    int observedmaxspecies=0;
+    bool goodshape=true;
+    for (int i=0;i<convertsamplestospecies.size();i++) {
+        observedmaxspecies=GSL_MAX(observedmaxspecies,convertsamplestospecies[i]);
+    }
+	if (observedmaxspecies<minnumspecies) {
+		goodshape=false;
+	}
+	return goodshape;
+}
 
 bool BROWNIE::MoveSamples(vector<int> Originalconvertsamplestospecies)
 {
@@ -2616,6 +2633,9 @@ void BROWNIE::DoHeuristicSearch()
 						if (!goodshape) {
 							splitwhenappropriateprob=splitwhenappropriateprob*0.9; //we had too many splits, so drop the chance of splitting
 						}
+						if (goodshape) {
+							goodshape=CheckConvertSamplesToSpeciesTooFewSpecies();
+						}
 						validassignment=goodshape;
 						/* //Old method for getting starting assignments: tended to split good clades too often, not pay attention to relative support
 							int nsamples=taxa->GetNumTaxonLabels();
@@ -2673,6 +2693,9 @@ void BROWNIE::DoHeuristicSearch()
 							cout<<endl;
 						}
 						goodshape=CheckConvertSamplesToSpeciesTooManySpecies();
+						if (goodshape) {
+							goodshape=CheckConvertSamplesToSpeciesTooFewSpecies();
+						}
 						validassignment=goodshape;
 					}
 				}
@@ -2711,7 +2734,12 @@ void BROWNIE::DoHeuristicSearch()
 						//cout<<tempconvertsamplestospecies[gsl_permutation_get (c,i)]<<endl;
 					}
 					gsl_permutation_free(c);
-					validassignment=CheckConvertSamplesToSpeciesTooManySpecies();;
+					bool goodshape=CheckConvertSamplesToSpeciesTooManySpecies();
+					if (goodshape) {
+							goodshape=CheckConvertSamplesToSpeciesTooFewSpecies();
+					}
+
+					validassignment=goodshape;
 				}
 			}
 		}
