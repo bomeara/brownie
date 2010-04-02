@@ -1,1 +1,1 @@
-const string $SVN_VERSION ("78M");
+const string $SVN_VERSION ("79M");
