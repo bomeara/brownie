@@ -4373,7 +4373,11 @@ void BROWNIE::GetTaxonTaxonTripletDistances() {
 	TripletCounts.clear(); //Clear the triplet counts map
 	TripleCounts.clear(); //Clears the triples counts map (number of time each set of three taxa co-occur on a tree)
     int nsamples=taxa->GetNumTaxonLabels();
-    //	cout<<"nsamples = "<<nsamples<<endl;
+    //cout<<"nsamples = "<<nsamples<<endl;
+    if (nsamples==0) {
+             errormsg = "ERROR: There are no samples recorded. This can happen if the taxa block is not formatted correctly.";
+            throw XNexus( errormsg);
+    }
     TaxonDistance=gsl_matrix_calloc(nsamples,nsamples); //on diagonal is number of triplets containing the taxon, other elements are as above.
                                                         //	gsl_matrix *TaxonTripletsNotOnSameSide=gsl_matrix_calloc(,);
                                                         //	gsl_matrix *TaxonTripletsTotal=gsl_matrix_calloc(intrees.GetNumTrees(),intrees.GetNumTrees()); //at end, do element by element division, watch for division by zero
