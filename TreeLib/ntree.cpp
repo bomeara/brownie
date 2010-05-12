@@ -1,7 +1,8 @@
 #include "ntree.h"
 
 #ifdef __GNUC__
-#include <algo.h>
+#include <algorithm>
+#include <iterator>
 #endif
 
 

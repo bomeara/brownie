@@ -7,12 +7,15 @@
  *
  */
 #include <strstream>
-#include <fstream.h>
-#include <iomanip.h>
+#include <fstream>
+#include <iomanip>
 #include <unistd.h>
 #include <stdio.h>
 #include <set>
 #include <math.h>
+#include <climits>
+#include <cstring>
+#include <memory>
 
 #include "nexusdefs.h"
 #include "xnexus.h"
@@ -358,7 +361,7 @@ gsl_vector * OptimizationFn::OptimizeRateWithGivenTipVariance()
 		}
 		brownie.message+="\n   LnL = ";
 		//brownie.message+=s->fval;
-		char outputstring[60];
+		char outputstring[107];
 		sprintf(outputstring,"%60.45f",-1*(s->fval));
 		brownie.message+=outputstring;
 		brownie.message+="\n   Rate = ";
@@ -911,7 +914,7 @@ gsl_vector * OptimizationFn::GeneralOptimization(int ChosenModel)
 			brownie.message+=" **Max iterations hit; see WARNING below**";
 		}
 		brownie.message+="\n   LnL = ";
-		char outputstring[60];
+		char outputstring[107];
 		sprintf(outputstring,"%60.45f",-1*(s->fval));
 		brownie.message+=outputstring;
 		// brownie.message+="\n   Rate = ";
@@ -1194,7 +1197,7 @@ gsl_vector * OptimizationFnMultiModel::GeneralOptimization(int ChosenModel)
 				brownie.message+=" **Max iterations hit; see WARNING below**";
 			}
 			brownie.message+="\n   LnL = ";
-			char outputstring[60];
+			char outputstring[107];
 			sprintf(outputstring,"%60.45f",-1*(s->fval));
 			brownie.message+=outputstring;
 			if (ChosenModel==5) {
@@ -1568,7 +1571,7 @@ gsl_vector * OptimizationFnMultiModel::OptimizeRateWithGivenTipVarianceOneRatePe
 		}
 		brownie.message+="\n   LnL = ";
 		//brownie.message+=s->fval;
-		char outputstring[60];
+		char outputstring[107];
 		sprintf(outputstring,"%60.45f",-1*(s->fval));
 		brownie.message+=outputstring;
 		brownie.message+="\n   RootVal = ";
@@ -2107,7 +2110,7 @@ double OptimizationFnMultiModel::GetLikelihoodOUSM_FixedAttractionRate(const gsl
 		gsl_vector_sub(tipresiduals,tipexpectations);
 		likelihood=(brownie.GetLScore(VCVfinal,tipresiduals,1)); //-lnL actually
 		if(detailedoutput) {
-			char outputstring[30];
+			char outputstring[60];
 			sprintf(outputstring,"%30.28f",likelihood);
 			cout<<outputstring<<"\t";
 			cout<<gsl_vector_get(fixedparams,0)<<"\t";
@@ -2777,7 +2780,7 @@ gsl_vector * LindyFn::GeneralOptimization(int ChosenModel)
 			brownie.message+=" **Max iterations hit; see WARNING below**";
 		}
 		brownie.message+="\n   LnL = ";
-		char outputstring[60];
+		char outputstring[107];
 		sprintf(outputstring,"%60.45f",-1.0*(s->fval));
 		brownie.message+=outputstring;
 		// brownie.message+="\n   Rate = ";

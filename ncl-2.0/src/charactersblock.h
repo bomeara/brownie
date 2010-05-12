@@ -1,6 +1,11 @@
 #ifndef __CHARACTERSBLOCK_H
 #define __CHARACTERSBLOCK_H
 
+#include "assumptionsblock.h"
+class AssumptionsBlock;
+#include "discretedatum.h"
+class DiscreteDatum;
+class DiscreteMatrix;
 
 /**
  * This file has been modified by

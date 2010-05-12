@@ -1,9 +1,12 @@
 #include <strstream>
-#include <fstream.h>
-#include <iomanip.h>
+#include <fstream>
+#include <iomanip>
 #include <unistd.h>
 #include <stdio.h>
 #include <set>
+#include <climits>
+#include <cstring>
+#include <memory>
 
 #include "nexusdefs.h"
 #include "xnexus.h"

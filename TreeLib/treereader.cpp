@@ -24,9 +24,12 @@
 #include "treereader.h"
 
 #if __MWERKS__
-	#include <string.h>
-	#include <stdlib.h>
+	#include <cstdlib>
 #endif
+#include <cstdlib>
+#include <climits>
+#include <cstring>
+#include <memory>
 
 //------------------------------------------------------------------------------
 TreeReader::TreeReader (Tokeniser &p) : parser (p)

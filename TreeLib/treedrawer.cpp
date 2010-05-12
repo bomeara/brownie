@@ -22,7 +22,7 @@
 // $Id: treedrawer.cpp,v 1.1.1.1 2006/05/21 15:38:02 bcomeara Exp $
 
 #include <math.h>
-#include <stdio.h>
+#include <cstdlib>
 
 #include "treedrawer.h"
 

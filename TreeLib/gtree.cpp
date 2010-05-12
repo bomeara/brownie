@@ -23,7 +23,7 @@
 
 
 #include "gtree.h"
-#include <stdio.h>
+#include <cstdlib>
 #include <math.h>
 
 

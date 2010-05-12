@@ -1,6 +1,9 @@
 #include "nexusdefs.h"
 #include "xnexus.h"
 #include "nexustoken.h"
+#include <climits>
+#include <cstring>
+#include <memory>
 
 using namespace std;
 

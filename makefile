@@ -12,10 +12,10 @@
 #
 
 CC = /usr/bin/g++
-CC_OPTIONS = -fexceptions -O2
+CC_OPTIONS = -m32 -fexceptions -O0 -Wno-deprecated -fpermissive -g
 #added these as link options
 #LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L./gtp.0.15_Modified/nexus_parser/ -lnp -L./gtp.0.15_Modified/my_structures/ -lmy_structures 
-LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm 
+LNK_OPTIONS = -m32 -t -L/usr/local/lib/ -lgsl -lgslcblas -lm
 
 
 #
@@ -148,7 +148,7 @@ brownie.o : brownie.cpp cdfvectorholder.o
 
 #don't optimize cdf vector holder for speed (which takes a loooooooooong time compiling, probably doesn't improve speed); instead optimize it for size
 cdfvectorholder.o : cdfvectorholder.cpp
-	$(CC) -fexceptions cdfvectorholder.cpp -c $(INCLUDE) -o cdfvectorholder.o 
+	$(CC) $(CC_OPTIONS) -fexceptions cdfvectorholder.cpp -c $(INCLUDE) -o cdfvectorholder.o 
 
 #gtp.o: 
 #	cd gtp.0.15_Modified; make clean; make; mv gtp.o ../gtp.o

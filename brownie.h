@@ -166,6 +166,8 @@ public:
 	vector<ContainingTree> BestBranchlengthTreeForThisNextTree; //For optimizing branch lengths
     double bestscore;
 	double bestscorelocal;
+
+// START CUSTOM STRUCTURES
         //We use a struct so we can pass one set of params (a VCV matrix and two vectors) to a multimin function
     struct MatrixVectorVector {
         gsl_matrix *Matrix1;
@@ -188,7 +190,12 @@ public:
         gsl_vector *Vector1;
         gsl_vector *Vector2;
     };
+// END CUSTOM STRUCTURES
 
+
+// START FUNCTIONS:
+// -----------------
+// Notes:	I think all functions which take in NexusToken as an argument are for use by the command-line interactor
 public:
         map<string, double> SimulateBrownian(double trend,double rate,double rootstate);
 	double browniesafe_gsl_sf_exp(double x);
@@ -209,8 +216,8 @@ public:
     nxsstring GetFileName( NexusToken& token );
     nxsstring GetNumber( NexusToken& token );
     nxsstring GetNumberOnly( NexusToken& token );
-    nxsstring& BROWNIE::blanks_to_underscores( nxsstring& s );
-    nxsstring& BROWNIE::underscores_to_blanks( nxsstring& s );
+    nxsstring& blanks_to_underscores( nxsstring& s );
+    nxsstring& underscores_to_blanks( nxsstring& s );
     void FactoryDefaults();
     void HandleEndblock( NexusToken& token );
     void HandleBlocks( NexusToken& token );

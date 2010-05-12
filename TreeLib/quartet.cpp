@@ -32,9 +32,9 @@
 #include "nodeiterator.h"
 #include "lcaquery.h"
 
-#include <iomanip.h>
+#include <iomanip>
 #ifdef __GNUC__
-	#include <algo.h>
+	#include <algorithm>
 #endif
 
 

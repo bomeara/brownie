@@ -1,9 +1,12 @@
 #include <strstream>
-#include <fstream.h>
-#include <iomanip.h>
+#include <fstream>
+#include <iomanip>
 #include <unistd.h>
 #include <stdio.h>
 #include <set>
+#include <climits>
+#include <cstring>
+#include <memory>
 
 #include "nexusdefs.h"
 #include "xnexus.h"
@@ -1272,7 +1275,7 @@ void BROWNIE::HandleHeuristicSearch( NexusToken& token )
            // message+="\nSteepest: Whether to look at all rearrangements and then take the best one or just take the first better one.";
 			message+="\nSubsample: How extensively to try taxon reassignments on leaf splits. \n\tA value of 1 means try all of the possible reassignments, \n\ta value of 2 means try the square root of all the possible assignments,\n\t3 means the cube root, etc. A higher number means a faster but less effective search.\n\tThe program won't let you try fewer than 10 assignments on average.";
 			message+="\nMS: Use Hudson's program MS to simulate gene trees to estimate probabilities. MAKE SURE MS IS INSTALLED SOMEWHERE ACCESSIBLE TO BROWNIE.";
-			message+="\nCOAL: Use Degnan's program COAL to optimize the likelihood of the species delimitation and tree rather than the semiparametric penalty function. MAKE SURE COAL IS INSTALLED SOMEWHERE ACCESSIBLE TO BROWNIE.";
+			message+="\nCOAL: Use Degnan's program COAL to optimize the likelihood of the species delimitation and tree rather than the semiparametric penalty function. MAKE SURE MS IS INSTALLED SOMEWHERE ACCESSIBLE TO BROWNIE.";
 			message+="\nAIC_mode: When using COAL, use the 0: likelihood as the penalty term, 1: AIC value (k=number of species), 2: AICc with n=number of genes, 3: AICc with n=number of samples, 4: AICc with n=(number of genes) * (number of samples)";
 			message+="\nGridWidth, GridSize, MaxRecursions all affect grid search";
 			message+="\nBranch_export: if set to 0, returns a single estimate of the best branch lengths on the species tree. If set to 1, returns a table of equally-good branch lengths. If set to 2, returns a table of the best and neighboring branch lengths, suitable for doing a contour plot of score versus branch lengths";
@@ -7464,7 +7467,7 @@ Char1:				Char2
 			double K=1.0*numberoffreeparameters;
 			double aicc=(2.0*likelihood)+2.0*K+2.0*K*(K+1.0)/(1.0*ntax-K-1.0); //AICc, n=1;
 			double aic=(2.0*likelihood)+2.0*K;
-			char outputstring[14];
+			char outputstring[21];
 			message+="\n  model = ";
 			if (pagelchosenmodel==1) {
 				message+="IndRev (no correlation between traits, equal forward-reverse rates of trait evolution within a character)";
@@ -8021,7 +8024,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							tmessage+="\t";
 							tablef<<tmessage;
 						}
-						char outputstring[14];
+						char outputstring[21];
 						message+="\n  -lnL = ";
 						sprintf(outputstring,"%14.6f",likelihood);
 						message+=outputstring;
@@ -8185,7 +8188,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							message+=n;
 							message+=") = ";
 							message+=gsl_vector_get(optimaldiscretecharstatefreq,n);*/
-							char outputstring[14];
+							char outputstring[21];
 							sprintf(outputstring,"%E",gsl_vector_get(optimaldiscretecharstatefreq,n));
 							tmessage+=outputstring;						
 						//tmessage+=gsl_vector_get(optimaldiscretecharstatefreq,n);
@@ -8200,7 +8203,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 									message+=j;
 									message+=" = ";
 									message+=gsl_matrix_get(optimaldiscretecharQmatrix,i,j);*/
-									char outputstring[14];
+									char outputstring[21];
 									sprintf(outputstring,"%E",gsl_matrix_get(optimaldiscretecharQmatrix,i,j));
 									tmessage+=outputstring;														
 								//tmessage+=gsl_matrix_get(optimaldiscretecharQmatrix,i,j);
@@ -10272,7 +10275,7 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
         double aiccdif=model1aicc-model2aicc;
         double absaiccdif=fabs(aiccdif);
         double plrtchi=1-gsl_cdf_chisq_P(2*(likelihoodsingleparametermodel-likelihoodmultiparametermodel), ((2*listedtaxsets)-(listedtaxsets+1))); //TEST THIS
-        char outputstring[14];
+        char outputstring[21];
         // if (debugmode) {
         //     cout<<"One param aic="<<model1aic<<" 2 param aic="<<model2aic<<endl;
         //    cout<<"One param aicc="<<model1aicc<<" 2 param aicc="<<model2aicc<<endl;
@@ -10676,7 +10679,7 @@ if (charloop==false && treeloop==true) {
         message+="\tSingle rate parameter model rate = ";
         message+=gsl_vector_get(weightedratevector,0)/weighttotal;
         message+="\n\n        Single rate parameter           Multiple rate parameters\nAIC =     ";
-        char outputstring[14];
+        char outputstring[21];
         sprintf(outputstring,"%14.6f",weightedAIC1/weighttotal);
         message+=outputstring;
         message+="                    ";
@@ -15497,7 +15500,7 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 								t.SetInternalLabels(true);
 								t.Update();
                            // outtreef<<"gethasedgelengths = "<<t.GetHasEdgeLengths()<<endl;
-								char outputstring[14];
+								char outputstring[21];
 								sprintf(outputstring,"%14.6f",likelihood);
                             //outtreef<<endl<<"gethasedgelengths = "<<t.GetHasEdgeLengths();
 								

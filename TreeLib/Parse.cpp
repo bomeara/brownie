@@ -23,6 +23,9 @@
  
 #include <ctype.h>
 #include "Parse.h"
+#include <climits>
+#include <cstring>
+#include <memory>
 
 // Return the next token in the string
 tokentype Parser::NextToken ()

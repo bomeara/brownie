@@ -35,6 +35,11 @@
 #include <vector>
 //BCO added iostream just to give more feedback on errors
 #include <iostream>
+#include <cstdlib>
+#include <climits>
+#include <cstring>
+#include <memory>
+#include <cassert>
 
 // Convert a string to a NEXUS format string
 std::string NEXUSString (const std::string s)

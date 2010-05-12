@@ -21,6 +21,9 @@ using namespace std;
 #include <assert.h>
 #include <math.h>
 #include "nxsstring.h"
+#include <climits>
+#include <cstring>
+#include <memory>
 
 nxsstring& nxsstring::operator+=( const double d )
 {
