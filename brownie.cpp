@@ -12421,6 +12421,9 @@ void BROWNIE::Read( NexusToken& token )
         else if (token.Abbreviation("MRCA") ) {
             HandleMRCA( token );
         }
+        else if (token.Abbreviation("GREP") ) {
+            HandleGrepCount( token );
+        }
         else if (token.Abbreviation("EXport") ) {
             HandleExport(token);
         }
@@ -12743,6 +12746,300 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
             MrcaMap[mrca_name]=taxonnumbers;
         }
     }
+    
+    void BROWNIE::HandleGrepCount( NexusToken& token )
+    {
+        bool finishexecuting=true;
+        bool returnmatches=false;
+      	citationarray[3]=true;
+     	nxsstring observedtreefile;
+     	nxsstring simtreefile;
+     	nxsstring assignmentfile;
+     	multimap<nxsstring, nxsstring> speciestosamples;
+     	multimap<nxsstring, nxsstring> samplestospecies; 
+     	map<nxsstring, int> specieslist;
+     	map<nxsstring, nxsstring> sampleslist;
+     	vector<nxsstring> speciesvector;
+     	vector<nxsstring> samplesvector;
+
+     	nxsstring speciesnamenxs;
+     	nxsstring samplenamenxs;
+     	for(;;)
+    		{
+			token.GetNextToken();
+			if( token.Abbreviation("?") ) {
+				message="Usage: GREP  observedtrees=file_of_observedtrees_trees.txt simulatedtrees=file_of_simulated_trees.txt assignments=file_of_assignments.txt returnmatches=no\n\n";
+				message+="Multiple gene trees may be consistent with a given species tree (i.e, if the species tree is ((A,B),C), gene trees ((((A1,A2,),A3),B1),C1) and ((((A3,A2,),A1),B1),C1) both match. This function takes one or more observed gene trees (in a file), an assignment (tab-delimited text, with the species name followed by a tab and then the gene sample name (i.e, SpeciesA<tab>A1), and makes a string to use with grep that will tell you how many trees in the gene trees file (set of newick trees, one line per tree) are consistent with each observed gene tree, given the assignment of samples to species. Note that passing Brownie's output to 'grep Match' will return only the relevant results.";
+				PrintMessage();
+				finishexecuting=false;
+			}
+			else if (token.Abbreviation("Returnmatches") ) {
+				nxsstring yesnomatches=GetFileName(token);
+				if (yesnomatches[0] == 'n') {
+					returnmatches=false;
+				}
+				else {
+					returnmatches=true;
+				}
+			}		
+			else if( token.Abbreviation("Simulatedtrees") ) {
+				simtreefile = GetFileName(token);
+			}
+			else if( token.Abbreviation("Observedtrees") ) {
+				observedtreefile = GetFileName(token);
+			}
+			else if( token.Abbreviation("Assignments") ) {
+				assignmentfile = GetFileName(token);
+			}        
+			else if( token.Equals(";") ) {
+				if (finishexecuting) {
+					Profile<Tree> inObservedTrees;
+					 if( FileExists( observedtreefile.c_str() ) )
+					 {
+						 ifstream inf( observedtreefile.c_str(), ios::binary | ios::in );
+						 ifstream observedtreefile_stream;
+						 observedtreefile_stream.open(observedtreefile.c_str(),ios::in);
+						 if (!inObservedTrees.ReadTrees(observedtreefile_stream))
+						 {
+							 errormsg="No species trees read from file\n";
+							throw XNexus( errormsg);
+						 }
+						 observedtreefile_stream.close();
+					}
+					else {
+						errormsg="File ";
+						errormsg+=observedtreefile;
+						errormsg+=" does not exist, at least where Brownie is looking for it";
+						throw XNexus(errormsg);
+					}
+					
+					 if( FileExists( assignmentfile.c_str() ) )
+					 {
+						 //ifstream inf( assignmentfile.c_str(), ios::binary | ios::in );
+						 //ifstream assignmentfile_stream;
+						 //assignmentfile_stream.open(assignmentfile.c_str(),ios::in);
+						 int count=0;
+						 FILE *assignmentfile_open = fopen(assignmentfile.c_str(), "r");
+						 char speciesname [100];
+						 char samplename [100];
+						 message="Assignments\n\tNo.\tSpecies\tSample\n";
+						 while (fscanf(assignmentfile_open, "%s\t%s", speciesname, samplename) == 2) {
+						  speciesnamenxs="";
+						  speciesnamenxs+=speciesname;
+						  samplenamenxs="";
+						  samplenamenxs+=samplename;
+						  count=count+1;
+						  message+="\t";
+						  message+=count;
+						  message+="\t";
+						  message+=speciesnamenxs;
+						  message+="\t";
+						  message+=samplenamenxs;
+						  message+="\n";
+						  speciestosamples.insert(pair<nxsstring, nxsstring>(speciesnamenxs,samplenamenxs));
+						  samplestospecies.insert(pair<nxsstring, nxsstring>(samplenamenxs, speciesnamenxs));
+						  ++specieslist[speciesnamenxs]; //keeps track of number of samples per species and keys are unique set of species labels
+						  sampleslist[samplenamenxs]=speciesnamenxs;
+						  samplesvector.push_back(samplenamenxs);
+						}
+						fclose(assignmentfile_open);
+						PrintMessage();
+						
+						map<nxsstring, int>::const_iterator itr;
+
+						message="Samples per species:";
+						for (itr = specieslist.begin(); itr != specieslist.end(); ++itr){
+							 speciesvector.push_back(itr->first);
+							 message+="\n\t";
+							 message+=itr->first;
+							 message+="\t";
+							 message+=itr->second;
+						}
+						PrintMessage();
+						
+						//assignmentfile_stream.close();
+					}
+					else {
+						errormsg="File ";
+						errormsg+=assignmentfile;
+						errormsg+=" does not exist, at least where Brownie is looking for it";
+						throw XNexus(errormsg);
+					}				
+					
+					
+					
+//						ContainingTree CurrentTree;
+//						CurrentTree.SetRoot((intrees.GetIthTree(inputchosentree)).CopyOfSubtree((intrees.GetIthTree(inputchosentree)).GetRoot()));
+//						CurrentTree.Update();
+//						CurrentTree.GetNodeDepths();
+//						int numspecies=CurrentTree.GetNumLeaves();		
+//						int ntax=taxa->GetNumTaxonLabels();
+						vector <int> samplesperspecies;
+						vector <nxsstring> labelswithinspecies;
+						int numsamples=speciestosamples.size();
+						int numspecies=specieslist.size();
+
+						double numberofpermutations=1;
+						int previoustotal=0;
+						for (int currentspecies=0; currentspecies<numspecies; currentspecies++) {
+							int samplecountthisspecies=0;
+							nxsstring labelregex="\\(";
+							for (int currentsample=0; currentsample<numsamples; currentsample++) {
+								if (sampleslist[ samplesvector[currentsample] ]==speciesvector[currentspecies]) {
+									samplecountthisspecies++;
+									if (samplecountthisspecies>1) {
+									   labelregex+="\\|";
+									}
+									labelregex+=samplesvector[currentsample];
+								}
+							}
+							labelregex+="\\):[0-9]*.[0-9]*"; //ms exports brlen, too
+							labelswithinspecies.push_back(labelregex);
+							previoustotal+=samplecountthisspecies;
+							numberofpermutations*=gsl_sf_fact(samplecountthisspecies);
+						}
+				
+					
+					
+						//rather than looking for exact match, get probabilities of given topology with all possible permutations of labels of samples from a given species onto ms taxon numbers, then divide by number of such permutations
+						
+						//loop over all the gene trees
+						message="\nGrep match results\n\tTree\tNumber of matches";
+						PrintMessage();
+						for (int chosentreenum=0; chosentreenum<inObservedTrees.GetNumTrees(); chosentreenum++) { //loop over all the observed gene trees
+							nxsstring grepstring="";
+							nxsstring grepstringreturnmatch="";
+							int numberintraspecificcherries=0;
+							Tree CurrentGeneTreeTreeFmt=inObservedTrees.GetIthTree(chosentreenum);
+							NodeIterator <Node> n (CurrentGeneTreeTreeFmt.GetRoot());
+							//traverse once to count intraspecific sister cherries
+							cur = n.begin();
+							while (cur) {
+								if (cur->IsLeaf()) {
+									NodePtr sister=cur->GetSibling();
+									if (sister!=NULL) {
+										if (sister->IsLeaf()) {
+											//cout<<cur->GetLabel()<<" with "<<sister->GetLabel()<<endl;
+											
+											if (sampleslist[cur->GetLabel()] == sampleslist[sister->GetLabel()]) { //they have the same species (though node labels are changed, we do the one that's a child before its sib)
+											//if (convertsamplestospecies[taxa->FindTaxon(cur->GetLabel())]==convertsamplestospecies[taxa->FindTaxon(sister->GetLabel())]) { //they have the same species (though node labels are changed, we do the one that's a child before its sib)
+												numberintraspecificcherries++;
+											}
+										}
+									}
+								}
+								cur = n.next();
+							}
+							
+							//now get the grep lines
+							cur = n.begin();
+							while (cur) {
+								if (cur->IsLeaf()) {
+									nxsstring specieslabel=sampleslist[cur->GetLabel()];
+									nxsstring greplabel="ERROR";
+									for (int currentspecies=0; currentspecies<numspecies; currentspecies++) {
+										if (speciesvector[currentspecies]==specieslabel) {
+											greplabel=labelswithinspecies[currentspecies];
+										}
+									}
+									cur->SetLabel(greplabel); //gets regex for tip labels
+								}
+								else {
+									nxsstring combinedstring="";
+									nxsstring leftchild=(cur->GetChild())->GetLabel();
+									nxsstring rightchild=((cur->GetChild())->GetSibling())->GetLabel();
+									nxsstring additionalregex="(\\(";
+									additionalregex+=leftchild;
+									additionalregex+=",";
+									additionalregex+=rightchild;
+									additionalregex+="\\|";
+									additionalregex+=rightchild;
+									additionalregex+=",";
+									additionalregex+=leftchild;
+									additionalregex+="\\))";
+									if (cur->GetAnc()!=NULL) { // not root
+										additionalregex+=":*[0-9]*.[0-9]*";
+									}
+									else { //originally, did this at each node, with the idea that from MS, you first filter out the lines that don't match a cherry, then filter from that filtered set, etc., thinking it would be faster than just using the regex at the root. Actually, just using the regex at the root was faster, so I do that.
+										grepstring+=" | grep -c \"";
+										grepstringreturnmatch+=" | grep \"";
+										grepstring+=additionalregex;
+										grepstringreturnmatch+=additionalregex;
+										grepstring+="\"";
+										grepstringreturnmatch+="\"";
+									}
+									cur->SetLabel(additionalregex);
+								}
+								cur = n.next();
+							}
+							/*ofstream newickf;
+							newickf.open("tmp_newick.nwk");
+							CurrentGeneTreeTreeFmt.Write(newickf);
+							newickf.close();
+							nxsstring finalsystemcall="cat tmp_newick.nwk";*/
+							nxsstring finalsystemcall="cat ";
+							finalsystemcall+=simtreefile;
+							finalsystemcall+=grepstring;
+							nxsstring msinputfile="tmp_mscount.txt";
+							finalsystemcall+=" > ";
+							finalsystemcall+=msinputfile;
+							//system("rm mscount.txt");
+							int returncode=system(finalsystemcall.c_str());
+							if (debugmode) {
+								cout<<"grep line is "<<endl<<grepstring<<endl;
+								cout<<"return code is "<<returncode<<" (divided by 256, is "<<returncode/256<<")"<<endl;
+							}
+							ifstream msin;
+							msin.open( msinputfile.c_str(), ios::binary | ios::in );
+							if (msin) {
+								char inputitem [COMMAND_MAXLEN];
+								msin>>inputitem;
+								double numbermatches=atoi(inputitem);
+								message="Match\t";
+								message+=chosentreenum+1;
+								message+="\t";
+								message+=numbermatches;
+								PrintMessage();
+								msin.close();
+								if (returnmatches) {
+									nxsstring finalsystemcallmatch="cat ";
+									finalsystemcallmatch+=simtreefile;
+									finalsystemcallmatch+=grepstringreturnmatch;
+									finalsystemcallmatch+=" > matching_observed_tree_";
+									finalsystemcallmatch+=chosentreenum+1;
+									finalsystemcallmatch+=".tre";
+									int returncodematch=system(finalsystemcallmatch.c_str());
+									message="\t\tSaved matches to matching_observed_tree_";
+									message+=chosentreenum+1;
+									message+=".tre";
+									PrintMessage();
+								}
+							}
+							else {
+								message="\nWarning: got return code of ";
+								message+=returncode;
+								message+="\n\nfor grep string of \n\n";
+								message+=grepstring;
+								message+="\n\n";
+							
+							}
+							if (!debugmode) {
+								system("rm tmp_mscount.txt");
+							}
+						}
+				
+					
+					
+
+				}
+				break;
+				
+			
+			
+				}
+			}
+    }
+
 
 
     void BROWNIE::HandleExport( NexusToken& token)

@@ -269,6 +269,7 @@ public:
     void OutputComment( nxsstring& token );
     void HandleGarland( NexusToken& token );
     void HandleMRCA ( NexusToken& token );
+    void HandleGrepCount(NexusToken& token);
 	virtual nxsstring PipeLeafGTP ();
 	virtual nxsstring PipeLeafSpeciesTree ();
 	virtual nxsstring PipeGTP (Tree intree);
