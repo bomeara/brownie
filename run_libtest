@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ ! -f "libBrownie.a" ] 
+then
+	make -f makefilestatic
+fi
+
+echo -n "Compiling test file ... "
+
+g++ -I"." -I"c:\\Boost_Science_Package\\include" -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -L"." -c test.cpp -lgsl -lBrownie
+
+echo "done"
+
+
+
