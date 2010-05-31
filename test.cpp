@@ -1,5 +1,3 @@
-
-
 #include <strstream>
 #include <fstream>
 #include <iomanip>
@@ -79,7 +77,7 @@
 // function declarations
 
 
-template <> class Profile<Tree>;
+//template <> class Profile<Tree>;
 
 using namespace std;
 

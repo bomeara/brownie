@@ -1,4 +1,3 @@
-
 #ifndef __BROWNIE_H
 #define __BROWNIE_H
 
@@ -15,6 +14,7 @@
 #include "containingtree.h"
 #include "charactersblock2.h"
 
+typedef typename Profile<Tree> profileTree;
 
 
 class BROWNIE : public NexusBlock, public Nexus
@@ -24,6 +24,7 @@ class BROWNIE : public NexusBlock, public Nexus
     friend class ContainingTree;
 	friend class CDFvectorholder;
 public:
+	
         bool inf_open;
     bool logf_open;
     bool echof_open;
@@ -140,6 +141,7 @@ public:
 	nxsstring globalchosentaxset;
     map<nxsstring, IntSet> MrcaMap;
     Profile<Tree> intrees;
+    //profileTree intrees;
     int tipvariancetype;
     int progressbartotal;
     int progressbarcount;
