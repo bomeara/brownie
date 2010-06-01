@@ -88,8 +88,11 @@ int main()
 		cout<<"TreeLib NOT defined."<<endl;	
 	#endif
 	
+	// tyring using some important stuff
 	Tree none;
 	Profile<Tree> shit;
+	TaxaBlock *taxa = new TaxaBlock();
+	
 	gsl_rng *r;
 	gsl_rng_env_setup();
 	double v;

@@ -144,11 +144,11 @@ Brownie : \
 
 # Item # 1 -- brownie --
 brownie.o : brownie.cpp cdfvectorholder.o
-	$(CC) $(CC_OPTIONS) brownie.cpp -c $(INCLUDE) -o brownie.o 
+	$(CC) $(CC_OPTIONS) brownie.cpp -c $(INCLUDE) $(LNK_OPTIONS)  -o brownie.o 
 
 #don't optimize cdf vector holder for speed (which takes a loooooooooong time compiling, probably doesn't improve speed); instead optimize it for size
 cdfvectorholder.o : cdfvectorholder.cpp
-	$(CC) $(CC_OPTIONS) -fexceptions cdfvectorholder.cpp -c $(INCLUDE) -o cdfvectorholder.o 
+	$(CC) $(CC_OPTIONS) -fexceptions cdfvectorholder.cpp -c $(INCLUDE) $(LNK_OPTIONS)  -o cdfvectorholder.o 
 
 #gtp.o: 
 #	cd gtp.0.15_Modified; make clean; make; mv gtp.o ../gtp.o
@@ -191,162 +191,162 @@ cdfvectorholder.o : cdfvectorholder.cpp
 	
 # Item #1b -- optimizationfn --
 optimizationfn.o : optimizationfn.cpp
-	$(CC) $(CC_OPTIONS) optimizationfn.cpp -c $(INCLUDE) -o optimizationfn.o
+	$(CC) $(CC_OPTIONS) optimizationfn.cpp -c $(INCLUDE) $(LNK_OPTIONS)  -o optimizationfn.o
 
 # Item # 2 -- allelesblock --
 allelesblock.o : ./ncl-2.0/src/allelesblock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/allelesblock.cpp -c $(INCLUDE) -o allelesblock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/allelesblock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o allelesblock.o
 
 
 # Item # 3 -- assumptionsblock --
 assumptionsblock.o : ./ncl-2.0/src/assumptionsblock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/assumptionsblock.cpp -c $(INCLUDE) -o assumptionsblock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/assumptionsblock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o assumptionsblock.o
 
 
 # Item # 4 -- charactersblock --
 charactersblock.o : ./ncl-2.0/src/charactersblock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/charactersblock.cpp -c $(INCLUDE) -o charactersblock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/charactersblock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o charactersblock.o
 
 
 # Item # 4b -- charactersbloc2k --
 charactersblock2.o : ./ncl-2.0/src/charactersblock2.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/charactersblock2.cpp -c $(INCLUDE) -o charactersblock2.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/charactersblock2.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o charactersblock2.o
 
 
 # Item # 5 -- datablock --
 datablock.o : ./ncl-2.0/src/datablock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/datablock.cpp -c $(INCLUDE) -o datablock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/datablock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o datablock.o
 
 
 # Item # 6 -- discretedatum --
 discretedatum.o : ./ncl-2.0/src/discretedatum.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/discretedatum.cpp -c $(INCLUDE) -o discretedatum.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/discretedatum.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o discretedatum.o
 
 
 # Item # 7 -- discretematrix --
 discretematrix.o : ./ncl-2.0/src/discretematrix.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/discretematrix.cpp -c $(INCLUDE) -o discretematrix.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/discretematrix.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o discretematrix.o
 
 
 # Item # 8 -- distancedatum --
 distancedatum.o : ./ncl-2.0/src/distancedatum.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/distancedatum.cpp -c $(INCLUDE) -o distancedatum.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/distancedatum.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o distancedatum.o
 
 
 # Item # 9 -- distancesblock --
 distancesblock.o : ./ncl-2.0/src/distancesblock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/distancesblock.cpp -c $(INCLUDE) -o distancesblock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/distancesblock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o distancesblock.o
 
 
 # Item # 10 -- nexus --
 nexus.o : ./ncl-2.0/src/nexus.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nexus.cpp -c $(INCLUDE) -o nexus.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nexus.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o nexus.o
 
 
 # Item # 11 -- nexusblock --
 nexusblock.o : ./ncl-2.0/src/nexusblock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nexusblock.cpp -c $(INCLUDE) -o nexusblock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nexusblock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o nexusblock.o
 
 
 # Item # 12 -- nexustoken --
 nexustoken.o : ./ncl-2.0/src/nexustoken.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nexustoken.cpp -c $(INCLUDE) -o nexustoken.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nexustoken.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o nexustoken.o
 
 
 # Item # 13 -- nxsdate --
 nxsdate.o : ./ncl-2.0/src/nxsdate.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nxsdate.cpp -c $(INCLUDE) -o nxsdate.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nxsdate.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o nxsdate.o
 
 
 # Item # 14 -- nxsstring --
 nxsstring.o : ./ncl-2.0/src/nxsstring.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nxsstring.cpp -c $(INCLUDE) -o nxsstring.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/nxsstring.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o nxsstring.o
 
 
 # Item # 15 -- setreader --
 setreader.o : ./ncl-2.0/src/setreader.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/setreader.cpp -c $(INCLUDE) -o setreader.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/setreader.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o setreader.o
 
 
 # Item # 16 -- taxablock --
 taxablock.o : ./ncl-2.0/src/taxablock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/taxablock.cpp -c $(INCLUDE) -o taxablock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/taxablock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o taxablock.o
 
 
 # Item # 17 -- treesblock --
 treesblock.o : ./ncl-2.0/src/treesblock.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/treesblock.cpp -c $(INCLUDE) -o treesblock.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/treesblock.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o treesblock.o
 
 
 # Item # 18 -- xnexus --
 xnexus.o : ./ncl-2.0/src/xnexus.cpp
-	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/xnexus.cpp -c $(INCLUDE) -o xnexus.o
+	$(CC) $(CC_OPTIONS) ./ncl-2.0/src/xnexus.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o xnexus.o
 
 
 # Item # 19 -- gport --
 gport.o : ./TreeLib/gport/gport.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/gport/gport.cpp -c $(INCLUDE) -o gport.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/gport/gport.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o gport.o
 
 
 # Item # 20 -- gtree --
 gtree.o : ./TreeLib/gtree.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/gtree.cpp -c $(INCLUDE) -o gtree.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/gtree.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o gtree.o
 
 
 # Item # 21 -- ntree --
 ntree.o : ./TreeLib/ntree.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/ntree.cpp -c $(INCLUDE) -o ntree.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/ntree.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o ntree.o
 
 # Item # 21b -- stree --
 stree.o : ./TreeLib/stree.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/stree.cpp -c $(INCLUDE) -o stree.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/stree.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o stree.o
 
 # Item # 21c -- containingtree --
 containingtree.o : ./TreeLib/containingtree.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/containingtree.cpp -c $(INCLUDE) -o containingtree.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/containingtree.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o containingtree.o
 
 # Item # 22 -- Parse --
 Parse.o : ./TreeLib/Parse.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/Parse.cpp -c $(INCLUDE) -o Parse.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/Parse.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o Parse.o
 
 
 # Item # 23 -- tokeniser --
 tokeniser.o : ./TreeLib/tokeniser.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/tokeniser.cpp -c $(INCLUDE) -o tokeniser.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/tokeniser.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o tokeniser.o
 
 
 # Item # 24 -- treedrawer --
 treedrawer.o : ./TreeLib/treedrawer.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/treedrawer.cpp -c $(INCLUDE) -o treedrawer.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/treedrawer.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o treedrawer.o
 
 
 # Item # 25 -- TreeLib --
 TreeLib.o : ./TreeLib/TreeLib.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/TreeLib.cpp -c $(INCLUDE) -o TreeLib.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/TreeLib.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o TreeLib.o
 
 
 # Item # 26 -- treeorder --
 treeorder.o : ./TreeLib/treeorder.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/treeorder.cpp -c $(INCLUDE) -o treeorder.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/treeorder.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o treeorder.o
 
 
 # Item # 27 -- treereader --
 treereader.o : ./TreeLib/treereader.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/treereader.cpp -c $(INCLUDE) -o treereader.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/treereader.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o treereader.o
 
 
 # Item # 28 -- treewriter --
 treewriter.o : ./TreeLib/treewriter.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/treewriter.cpp -c $(INCLUDE) -o treewriter.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/treewriter.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o treewriter.o
 
 
 # Item # 29 -- lcaquery --
 lcaquery.o:  ./TreeLib/lcaquery.cpp
-	$(CC) $(CC_OPTIONS) ./TreeLib/lcaquery.cpp -c $(INCLUDE) -o lcaquery.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/lcaquery.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o lcaquery.o
 
 # Item # 30 -- quartet --
 quartet.o: ./TreeLib/quartet.cpp 
-	$(CC) $(CC_OPTIONS) ./TreeLib/quartet.cpp -c $(INCLUDE) -o quartet.o
+	$(CC) $(CC_OPTIONS) ./TreeLib/quartet.cpp -c $(INCLUDE) $(LNK_OPTIONS) -o quartet.o
 
 
 # FINAL ITEM -- BROWNIE

@@ -1,16 +1,25 @@
 #!/bin/bash
 
+rm *.a
+
 if [ ! -f "libBrownie.a" ] 
 then
 	make -f makefilestatic
 fi
-
+echo ""
+echo ""
+echo ""
 echo -n "Compiling test file ... "
+echo ""
+echo ""
 rm *.o
 rm *.exe
-g++ test.cpp -static  -m32 -I"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I"c:\\Boost_Science_Package\\include" -L"." -L"c:\\Boost_Science_Package\\lib" -o test.exe -lgsl  -lgslcblas -lBrownie 
+g++ -g test.cpp -I"." -L"C:/Boost_Science_Package/lib" -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I"c:\\Boost_Science_Package\\include" -lBrownie -lgsl -lgslcblas -lm  -o test.exe
 
 echo "done"
+echo ""
+echo ""
+ls -alt | head -10
 
 
-
+./test.exe

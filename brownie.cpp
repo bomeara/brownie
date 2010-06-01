@@ -228,6 +228,12 @@ void BROWNIE::ExitingBlock( nxsstring /*blockName*/ )
  */
 void BROWNIE::FactoryDefaults()
 {
+	// From MAIN - setup random number gen
+	const gsl_rng_type * T;
+    gsl_rng_env_setup();
+    T = gsl_rng_mt19937;
+    r = gsl_rng_alloc (T);
+	
     inf_open = false;
     logf_open = false;
     echof_open=false;
@@ -235,9 +241,19 @@ void BROWNIE::FactoryDefaults()
 	quit_onerr = false;
     message = "";
     next_command[0] = '\0';
-    gslseedtoprint=time(NULL);
+    
+    gslseedtoprint=time(NULL); 
     gslseed=gslseedtoprint;
     gsl_rng_set(r,gslseed);
+    
+    // DEBUG INFO:
+    double v;
+	printf("LIB: Generator type: %s\n", gsl_rng_name(r));
+	printf("LIB: Seed = %lu\n", gslseed);
+	v= gsl_rng_get(r);
+	printf("LIB: First value = %.0f\n",v);
+	
+    
     trees = NULL;
     taxa = NULL;
     assumptions = NULL;
@@ -251,11 +267,13 @@ void BROWNIE::FactoryDefaults()
 	freerateletterstring="";
 	negbounceparam=-1;
 	nonnegvariables=true;
+
 	gsl_vector *userstatefreqvector=gsl_vector_calloc(1);
 	gsl_matrix *optimaldiscretecharQmatrix=gsl_matrix_calloc(1,1);
 	gsl_vector *optimaldiscretecharstatefreq=gsl_vector_calloc(1);
 	gsl_matrix *currentdiscretecharQmatrix=gsl_matrix_calloc(1,1);
 	gsl_vector *currentdiscretecharstatefreq=gsl_vector_calloc(1);	
+		
 	discretechosenmodel=1;
 	bestdiscretelikelihood=GSL_POSINF;
 	optimizationalgorithm=1;
@@ -322,6 +340,7 @@ void BROWNIE::FactoryDefaults()
 	triplettoohigh=false;
 	gtptoohigh=false;
 	infinitescore=false;
+	
 	tripletdistthreshold=0.2; //Sets how often to use NJ tree distances for starting assignments (higher number=more often) and how often to use triplet support
     pthreshold=1;
 	chosensubsampling=2.0;
@@ -347,6 +366,7 @@ void BROWNIE::FactoryDefaults()
     //timeslicemodels[maxModelCategoryStates]=0; //Since we use BMC and BMS code, the size of this vector is the maximum number of model categories
 	CDFvectorholder bob;
 	CDFvector=bob.Initialize();
+	/**/
 }
 /**
 * @method FileExists [bool:protected]
@@ -18131,7 +18151,7 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
 }
 
 
-
+/*
 int main(int argc, char *argv[])
 {
     //Code on random number generation ripped from GSL documentation
@@ -18160,3 +18180,4 @@ int main(int argc, char *argv[])
 }
 
 
+*/
