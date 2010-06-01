@@ -71,25 +71,45 @@
 #include <iostream>
 
 
+
 // globals and structures
 
-
 // function declarations
-
-
-//template <> class Profile<Tree>;
 
 using namespace std;
 
 int main()
 {
+	#ifndef PROFILE_H
+		cout<<"Profile NOT defined."<<endl;
+	#endif
 	
-    const gsl_rng_type * tt;
-    gsl_rng_env_setup();
-    tt = gsl_rng_mt19937;
-    r = gsl_rng_alloc(tt);
-    
+	#ifndef TREELIB_H
+		cout<<"TreeLib NOT defined."<<endl;	
+	#endif
+	
+	Tree none;
+	Profile<Tree> shit;
+	gsl_rng *r;
+	gsl_rng_env_setup();
+	double v;
+	r = gsl_rng_alloc(gsl_rng_default);
+
+	
+	printf("Generator type: %s\n", gsl_rng_name(r));
+	printf("Seed = %lu\n", gsl_rng_default_seed);
+	v= gsl_rng_get(r);
+	
+		
+	nxsstring nx = "a";
+	bool inputfilegiven=false;
+	BROWNIE brownie;
+	
+	printf("First value = %.0f\n",v);
 	cout<<"Testing BROWNIE library"<<endl;
 	
 	return 0;
 }
+
+
+
