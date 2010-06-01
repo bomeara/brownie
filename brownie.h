@@ -14,7 +14,6 @@
 #include "containingtree.h"
 #include "charactersblock2.h"
 
-typedef typename Profile<Tree> profileTree;
 
 
 class BROWNIE : public NexusBlock, public Nexus
