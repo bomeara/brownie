@@ -103,7 +103,7 @@ int main()
 	printf("Seed = %lu\n", gsl_rng_default_seed);
 	v= gsl_rng_get(r);
 	
-		
+	
 	nxsstring nx = "a";
 	bool inputfilegiven=false;
 	BROWNIE brownie;
@@ -111,6 +111,8 @@ int main()
 	printf("First value = %.0f\n",v);
 	cout<<"Testing BROWNIE library"<<endl;
 	
+	gsl_rng_free(r);
+
 	return 0;
 }
 

@@ -228,12 +228,15 @@ void BROWNIE::ExitingBlock( nxsstring /*blockName*/ )
  */
 void BROWNIE::FactoryDefaults()
 {
+	
+#ifdef STATIC_LIB
 	// From MAIN - setup random number gen
 	const gsl_rng_type * T;
     gsl_rng_env_setup();
     T = gsl_rng_mt19937;
     r = gsl_rng_alloc (T);
-	
+#endif
+
     inf_open = false;
     logf_open = false;
     echof_open=false;
@@ -18151,7 +18154,8 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
 }
 
 
-/*
+#ifndef STATIC_LIB
+
 int main(int argc, char *argv[])
 {
     //Code on random number generation ripped from GSL documentation
@@ -18179,5 +18183,4 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-
-*/
+#endif
