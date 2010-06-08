@@ -15,7 +15,8 @@ cp *.h ./RBrownie/src/brownie_src
 cp makefilestatic* ./RBrownie/src/brownie_src
 
 echo "Removing svn directories..."
-rm -rdf `find ./RBrownie/src/brownie_src -path "./*svn"`
+rm -rdf `find ./RBrownie/src/brownie_src/TreeLib -path "./*svn"`
+rm -rdf `find ./RBrownie/src/brownie_src/ncl-2.0 -path "./*svn"`
 echo "done"
 
 echo "Building R package..."
