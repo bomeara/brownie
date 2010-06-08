@@ -1,0 +1,32 @@
+#! /bin/sh
+
+R_HOME=`R RHOME`
+RCPP_LIB=`${R_HOME}/bin/Rscript --vanilla -e 'Rcpp:::LdFlags()'`
+#RCPP_LIB="C:\Users\conrad\Documents\R\win-library\2.10\Rcpp\lib"
+RCPP_FLAGS=`${R_HOME}/bin/Rscript --vanilla -e 'Rcpp:::CxxFlags()'`
+GNU_LIB="${BSP_HOME}\lib"
+GNU_FLAGS="${BSP_HOME}\include"
+CXX=`${R_HOME}/bin/R CMD config CXX`
+
+# convert all to unix paths
+R_HOME=$(echo $R_HOME | sed 's#\\#\\\\#g')
+RCPP_FLAGS=$(echo $RCPP_FLAGS | sed 's#\\#\/#g')
+RCPP_LIB=$(echo $RCPP_LIB | sed 's#\\#\/#g')
+RCPP_LIB=$(echo ${RCPP_LIB%/*})
+GNU_LIB=$(echo $GNU_LIB | sed 's#\\#\\\\#g')
+GNU_FLAGS=$(echo $GNU_FLAGS | sed 's#\\#\\\\#g')
+
+echo "-----DEBUGGING-----"
+echo "Using [${CXX}] as the compiler"
+echo "RHOME = ${R_HOME}"
+echo "RCPP_FLAGS = ${RCPP_FLAGS}"
+echo "RCPP_LIB = ${RCPP_LIB}"
+echo "GNU_FLAGS = ${GNU_FLAGS}"
+echo "GNU_LIB = ${GNU_LIB}"
+echo "-------------------"
+
+# replace all in Makevars.win
+sed -e "s#@RHOME@#${R_HOME}#g" -e "s#@RCPP_LIB@#${RCPP_LIB}#g" -e "s#@RCPP_FLAGS@#${RCPP_FLAGS}#g" -e "s#@GNU_FLAGS@#${GNU_FLAGS}#g" -e "s#@GNU_LIB@#${GNU_LIB}#g" src/Makevars.in.win > src/Makevars.win
+
+cd src/brownie_src
+make CXX="${CXX}" GNU_LIB="${GNU_LIB}" GNU_FLAGS="${GNU_FLAGS}" -f makefilestatic.win

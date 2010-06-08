@@ -1,0 +1,14 @@
+Package: RBrownie
+Type: Package
+Title: Continuous and discrete ancestral character reconstruction and rate tests
+Version: 0.0.4
+Date: 2010-05-24
+Author: J. Conrad Stack <stack@psu.edu>, Brian O'Meara, Luke Harmon
+Maintainer: J. Conrad Stack <stack@psu.edu>
+Description: This R package implements the BROWNIE phylogenetics module 
+URL: http://code.google.com/p/brownie/, http://www.conradstack.info
+License: GPL-2
+LazyLoad: yes
+Depends: Rcpp (>= 0.8), phylobase
+LinkingTo: Rcpp
+Packaged: 2010-05-25 02:01:02 UTC; administrator

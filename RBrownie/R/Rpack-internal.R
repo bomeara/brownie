@@ -1,0 +1,2 @@
+.required <-
+c("Rcpp", "RCpp")

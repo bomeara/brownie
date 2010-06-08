@@ -1,0 +1,2 @@
+PKG_LIBS = -s -L"." -L"@RCPP_LIB@" -lRcpp -L brownie_src -lBrownie -L"@RHOME@\bin" -lR -L"@GNU_LIB@" -lgsl -lgslcblas -lm --no-export-all-symbols --add-stdcall-alias
+PKG_CXXFLAGS = -L"." -lBrownie @RCPP_FLAGS@ -I"." -I"brownie_src" -I"brownie_src/ncl-2.0/src" -I"brownie_src/TreeLib" -I"brownie_src/TreeLib/gport" -I"@GNU_FLAGS@"  -L"@GNU_LIB@" -lgsl -lgslcblas -lm -DBUILDING_DLL=1

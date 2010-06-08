@@ -1,0 +1,6 @@
+#! /bin/sh
+
+echo "Removing files...."
+cd ./src/brownie_src/
+rm *.o
+rm *.a

@@ -1,0 +1,2 @@
+PKG_CXXFLAGS=@CPPFLAGS@  -fno-bounds-check
+PKG_LIBS=@LDFLAGS@

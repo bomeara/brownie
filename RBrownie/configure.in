@@ -1,0 +1,68 @@
+AC_PREREQ(2.50) dnl require version 2.5+ of autoconf
+
+AC_INIT([RBrownie], 0.0.3) dnl package name, version
+
+AC_LANG(C++)
+AC_REQUIRE_CPP
+AC_PROG_RANLIB
+
+dnl some stuff from R extensions book
+: ${R_HOME=`R RHOME`}
+if test -z "${R_HOME}"; then
+    echo "Could not determine R home directory"
+    exit 1
+fi
+CXX=`"${R_HOME}/bin/R" CMD config CXX`  			dnl c++ compiler command
+CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`  	dnl c++ compiler flags
+
+RCPP_LIB=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::LdFlags()'`
+RCPP_FLAGS=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::CxxFlags()'`
+
+NCL_LIB="-L./ncl-2.0/src -lncl"
+NCL_FLAGS="-I./ncl-2.0/src"
+
+
+dnl check math library, cblas, and gsl
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
+
+dnl or use this line to check for version:
+dnl     AX_PATH_GSL(GSL_VERSION,
+dnl                [action-if-found],
+dnl                AC_MSG_ERROR(could not find required version of GSL))
+
+
+dnl configure include/load flags and copy sample source to inst/doc
+AC_SUBST([CPPFLAGS],["-I. ${CPPFLAGS} ${RCPP_FLAGS} ${NCL_FLAGS}"])
+AC_SUBST([LDFLAGS],["-s -lR ${LIBS} ${RCPP_LIB} ${NCL_LIB}"])
+
+dnl DEBUGGING BLOCK
+echo "STD libs=$LIBS"
+echo "RCPP_LIB= $RCPP_LIB"
+echo "RCPP_FLAGS= $RCPP_FLAGS"
+echo "C++ compiler = $CXX"
+echo "C++ compiler flags = $CPPFLAGS"
+dnl DEBUGGING BLOCK
+
+
+AC_SUBST(CPPFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(CXX)
+AC_SUBST(CXXFLAGS)
+AC_OUTPUT(src/Makevars src/ncl-2.0/src/Makefile src/TreeLib/Makefile)
+
+
+cd src/ncl-2.0/src
+make
+cd ../../..
+
+cd src/TreeLib
+make
+cd ../..
+
+
+
+
+
