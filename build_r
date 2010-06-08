@@ -14,7 +14,7 @@ cp *.cpp ./RBrownie/src/brownie_src
 cp *.h ./RBrownie/src/brownie_src
 
 echo "Removing svn directories..."
-rm -rdf `find ./RBrownie -path "./*svn"`
+rm -rdf `find ./RBrownie/src/brownie_src -path "./*svn"`
 echo "done"
 
 echo "Building R package..."
