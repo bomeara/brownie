@@ -17,4 +17,8 @@ echo "Removing svn directories..."
 rm -rdf `find ./RBrownie -path "./*svn"`
 echo "done"
 
+echo "Building R package..."
+R CMD build RBrownie/ --binary
+echo "done"
+
 
