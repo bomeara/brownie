@@ -18,14 +18,6 @@ echo "Removing svn directories..."
 rm -rdf `find ./RBrownie/src/brownie_src -path "./*svn"`
 echo "done"
 
-
-echo -ne "Running autoconfig..."
-cd ./RBrownie/
-autoconf
-cd ..
-echo "done"
-
-
 echo "Building R package..."
 R CMD build RBrownie/ --binary
 echo "done"
