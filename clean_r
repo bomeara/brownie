@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo -ne "removing all files..."
+rm -rdf ./RBrownie/src/brownie_src/*
+echo "done"
+
+

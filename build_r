@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo -ne "Copying TreeLib..."
+mkdir ./RBrownie/src/brownie_src/TreeLib
+cp -R ./TreeLib/* ./RBrownie/src/brownie_src/TreeLib
+echo "done"
+
+echo -ne "Copying NCL..."
+mkdir ./RBrownie/src/brownie_src/ncl-2.0
+cp -R ./ncl-2.0/* ./RBrownie/src/brownie_src/ncl-2.0
+echo "done"
+
+cp *.cpp ./RBrownie/src/brownie_src
+cp *.h ./RBrownie/src/brownie_src
+
+echo "Removing svn directories..."
+rm -rdf `find ./RBrownie -path "./*svn"`
+echo "done"
+
+
