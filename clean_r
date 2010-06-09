@@ -1,7 +1,11 @@
 #!/bin/bash
 
 echo -ne "removing all files..."
-rm -rdf ./RBrownie/src/brownie_src/*
+cd ./RBrownie/src/brownie_src
+rm -rdf TreeLib
+rm -rdf ncl-2.0
+ls * | grep -v .svn | xargs rm -rdf
+cd ../../..
 echo "done"
 
 
