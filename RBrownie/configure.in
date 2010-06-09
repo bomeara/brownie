@@ -51,16 +51,16 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXX)
 AC_SUBST(CXXFLAGS)
-AC_OUTPUT(src/Makevars src/ncl-2.0/src/Makefile src/TreeLib/Makefile)
+AC_OUTPUT(src/Makevars src/brownie_src/ncl-2.0/src/Makefile src/brownie_src/TreeLib/Makefile)
 
 
-cd src/ncl-2.0/src
+cd src/brownie_src/ncl-2.0/src
+make
+cd ../../../..
+
+cd src/brownie_src/TreeLib
 make
 cd ../../..
-
-cd src/TreeLib
-make
-cd ../..
 
 
 
