@@ -1,11 +1,3 @@
-#!/bin/bash
-
-rm *.a
-
-if [ ! -f "libBrownie.a" ] 
-then
-	make -f makefilestatic
-fi
 echo ""
 echo ""
 echo ""
@@ -14,7 +6,7 @@ echo ""
 echo ""
 rm *.o
 rm *.exe
-g++ -g test.cpp -I"." -L"C:/Boost_Science_Package/lib" -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I"c:\\Boost_Science_Package\\include" -lBrownie -lgsl -lgslcblas -lm  -o test.exe
+g++ -g test.cpp -I"." -L/usr/lib -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I/usr/includes -lBrownie -lgsl -lgslcblas -lm  -o test.exe
 
 echo "done"
 echo ""

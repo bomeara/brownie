@@ -11,11 +11,12 @@
 # Macros
 #
 
-CC = g++
+CC = $(CXX)
 CC_OPTIONS = -m32 -fexceptions -O0 -Wno-deprecated -fpermissive -g -DSTATIC_LIB
 #added these as link options
 #LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L./gtp.0.15_Modified/nexus_parser/ -lnp -L./gtp.0.15_Modified/my_structures/ -lmy_structures 
-LNK_OPTIONS = -static -m32 -t -L/usr/local/lib/ -L"C:\\Boost_Science_Package\\lib" -lgsl -lgslcblas -lm
+#LNK_OPTIONS = -static -m32 -t -L/usr/local/lib/ -L"C:\\Boost_Science_Package\\lib" -lgsl -lgslcblas -lm
+LNK_OPTIONS = -static -m32 -t -L/usr/local/lib/ -L/usr/lib -lgsl -lgslcblas -lm
 
 
 #
@@ -23,7 +24,8 @@ LNK_OPTIONS = -static -m32 -t -L/usr/local/lib/ -L"C:\\Boost_Science_Package\\li
 #
 
 #INCLUDE = -I./ncl-2.0/src/ -I./TreeLib/ -I. -I./TreeLib/gport/ -I./gtp.0.15_Modified/  -I./gtp.0.15_Modified/nexus_parser/ -I./gtp.0.15_Modified/my_structures/
-INCLUDE = -I./ncl-2.0/src/ -I./TreeLib/ -I. -I./TreeLib/gport/ -I"C:\\Boost_Science_Package\\include"
+#INCLUDE = -I./ncl-2.0/src/ -I./TreeLib/ -I. -I./TreeLib/gport/ -I"C:\\Boost_Science_Package\\include"
+INCLUDE = -I./ncl-2.0/src/ -I./TreeLib/ -I. -I./TreeLib/gport/ -I/usr/includes
 
 #INCLUDE1= -I./gtp.0.15_Modified/nexus_parser/ 
 #INCLUDE2= -I./gtp.0.15_Modified/my_structures/
