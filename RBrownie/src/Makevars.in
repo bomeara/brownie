@@ -1,2 +1,2 @@
-PKG_CXXFLAGS=@CPPFLAGS@  -fno-bounds-check
+PKG_CXXFLAGS=@CPPFLAGS@ -I./brownie_src/TreeLib -I./brownie_src/ncl-2.0/src -I./brownie_src/TreeLib/gport  -fno-bounds-check
 PKG_LIBS=@LDFLAGS@

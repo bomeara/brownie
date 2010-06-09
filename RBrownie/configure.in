@@ -35,8 +35,8 @@ dnl                AC_MSG_ERROR(could not find required version of GSL))
 
 
 dnl configure include/load flags and copy sample source to inst/doc
-AC_SUBST([CPPFLAGS],["-I. ${CPPFLAGS} ${RCPP_FLAGS} ${NCL_FLAGS}"])
-AC_SUBST([LDFLAGS],["-s -lR ${LIBS} ${RCPP_LIB} ${NCL_LIB}"])
+AC_SUBST([CPPFLAGS],["-I. -I./brownie_src ${CXXFLAGS} ${RCPP_FLAGS}"])
+AC_SUBST([LDFLAGS],["-s -L. -L./brownie_src -lBrownie -lR ${LIBS} ${RCPP_LIB} "])
 
 dnl DEBUGGING BLOCK
 echo "STD libs=$LIBS"
@@ -51,16 +51,10 @@ AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(CXX)
 AC_SUBST(CXXFLAGS)
-AC_OUTPUT(src/Makevars src/brownie_src/ncl-2.0/src/Makefile src/brownie_src/TreeLib/Makefile)
+AC_OUTPUT(src/Makevars)
 
-
-cd ./src/brownie_src/ncl-2.0/src
-make
-cd ../../../..
-
-cd ./src/brownie_src/TreeLib
-make
-cd ../../..
+cd src/brownie_src
+make CXX="${CXX}" -f makefilestatic
 
 
 
