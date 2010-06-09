@@ -1,9 +1,36 @@
+#!/bin/bash
+
+
+echo ""
+echo -n "Removing old test file..."
+if [ -f test.exe ]
+	then
+		rm test.exe
+fi
+echo "done"
+
+echo -n "Building static library if needed..."
+
+if [ ! -f libBrownie.a ]
+	then
+		./build_static.win >/dev/null 2>static_build_output.txt
+fi
+
+if [ ! -f libBrownie.a ]; then
+	echo "error building the static library"
+	exit
+else
+	echo "done"	
+fi
+
+
 echo ""
 echo ""
 echo ""
 echo -n "Compiling test file ... "
 echo ""
 echo ""
+
 rm *.o
 rm *.exe
 g++ -g test.cpp -I"." -L/usr/lib -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I/usr/includes -lBrownie -lgsl -lgslcblas -lm  -o test.exe
