@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# build static library - this will be replaced in the future by configure.win
+
+CXX=g++
+GNU_LIB="c:/Boost_Science_Package/lib"
+GNU_FLAGS="c:/Boost_Science_Package/include"
+
+make CXX="${CXX}" GNU_LIB="${GNU_LIB}" GNU_FLAGS="${GNU_FLAGS}" -f makefilestatic.win

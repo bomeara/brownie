@@ -1,0 +1,43 @@
+#!/bin/bash
+
+echo ""
+echo -n "Removing old test file..."
+if [ -f test.exe ]
+	then
+		rm test.exe
+fi
+echo "done"
+
+echo -n "Building static library if needed..."
+
+if [ ! -f libBrownie.a ]
+	then
+		./build_static.win >nul 2>static_build_output.txt
+fi
+
+if [ ! -f libBrownie.a ]; then
+	echo "error building the static library"
+	exit
+else
+	echo "done"	
+fi
+
+GNU_LIB="c:\\Boost_Science_Package\\lib"
+GNU_FLAGS="c:\\Boost_Science_Package\\include"
+
+echo ""
+echo ""
+echo ""
+echo -n "Compiling test file ... "
+echo ""
+echo ""
+rm *.o
+rm *.exe
+g++ -g test.cpp -I"." -L${GNU_LIB} -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I${GNU_FLAGS} -lBrownie -lgsl -lgslcblas -lm  -o test.exe
+echo "done"
+echo ""
+echo ""
+ls -alt | head -10
+
+
+./test.exe
