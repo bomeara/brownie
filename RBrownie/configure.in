@@ -1,6 +1,6 @@
 AC_PREREQ(2.50) dnl require version 2.5+ of autoconf
 
-AC_INIT([RBrownie], 0.0.3) dnl package name, version
+AC_INIT([RBrownie], 0.0.4) dnl package name, version
 
 AC_LANG(C++)
 AC_REQUIRE_CPP
@@ -18,8 +18,8 @@ CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`  	dnl c++ compiler flags
 RCPP_LIB=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::LdFlags()'`
 RCPP_FLAGS=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::CxxFlags()'`
 
-NCL_LIB="-L./ncl-2.0/src -lncl"
-NCL_FLAGS="-I./ncl-2.0/src"
+NCL_LIB="-L./brownie_src/ncl-2.0/src -lncl"
+NCL_FLAGS="-I./brownie_src/ncl-2.0/src"
 
 
 dnl check math library, cblas, and gsl
@@ -54,11 +54,11 @@ AC_SUBST(CXXFLAGS)
 AC_OUTPUT(src/Makevars src/brownie_src/ncl-2.0/src/Makefile src/brownie_src/TreeLib/Makefile)
 
 
-cd src/brownie_src/ncl-2.0/src
+cd ./src/brownie_src/ncl-2.0/src
 make
 cd ../../../..
 
-cd src/brownie_src/TreeLib
+cd ./src/brownie_src/TreeLib
 make
 cd ../../..
 
