@@ -378,6 +378,7 @@ public:
     void PrintMessage( bool linefeed = true );
     virtual void Report( ostream& out );
 	//void Run();
+	void Init();
     void RunCmdLine(bool inputfilegiven, nxsstring fn);
     void SkippingBlock( nxsstring blockName );
     void SkippingCommand( nxsstring commandName );

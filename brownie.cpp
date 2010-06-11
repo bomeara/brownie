@@ -546,6 +546,7 @@ void BROWNIE::HandleEndblock( NexusToken& token )
  */
 void BROWNIE::HandleExecuteCmdLine(nxsstring fn)
 {
+	printf("LIB: execute cmd\n");
     if( FileExists( fn.c_str() ) )
     {
         cerr << endl;
@@ -11482,7 +11483,8 @@ void BROWNIE::HandleLog( NexusToken& token )
  */
 void BROWNIE::HandleNextCommand()
 {
-std::istrstream cmdin( next_command );
+	printf("LIB: handing this command\n");
+	std::istrstream cmdin( next_command );
     //std::istringstream cmdin( next_command );
     //cerr << "next_command is: " << next_command <<endl;
     //istream cmdin( next_command );
@@ -11545,6 +11547,7 @@ void BROWNIE::NexusError( nxsstring& msg, streampos /* pos */, long line, long c
  */
 void BROWNIE::PreprocessNextCommand()
 {
+	printf("LIB: preprocessing command: %s\n",next_command);
     // If user failed to add the terminating semicolon,
     // we'll do it now. We will also remove the line feed
     // at the end and add the command "end;" to the end
@@ -12531,14 +12534,17 @@ void BROWNIE::Report( ostream& /* out */ )
     PrintMessage();
 }
 
+
 /**
-* @method RunCmdLine [void:public]
- *
- * Runs the command line interpreter, allowing BROWNIE to interact with user.
- */
-void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
+ * @method Init [void:public]
+ * @author: Conrad Stack
+ * 
+ * Originally to divide up RunCmdLine so that BROWNIE components can be initialized
+ * without launching the command line
+*/
+void BROWNIE::Init()
 {
-    taxa = new TaxaBlock();
+	taxa = new TaxaBlock();
     trees = new TreesBlock(*taxa);
     assumptions = new AssumptionsBlock( *taxa );
     characters = new CharactersBlock( *taxa, *assumptions );
@@ -12549,6 +12555,30 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
     Add( characters );
 	Add( characters2 );
     Add( this );
+}
+
+
+/**
+* @method RunCmdLine [void:public]
+ *
+ * Runs the command line interpreter, allowing BROWNIE to interact with user.
+ */
+void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
+{
+//     taxa = new TaxaBlock();
+//     trees = new TreesBlock(*taxa);
+//     assumptions = new AssumptionsBlock( *taxa );
+//     characters = new CharactersBlock( *taxa, *assumptions );
+// 	characters2 = new CharactersBlock2 (*taxa, *assumptions );
+//     Add( taxa );
+//     Add( trees );
+//     Add( assumptions );
+//     Add( characters );
+// 	Add( characters2 );
+//     Add( this );
+	
+	Init();    
+
     cout<<endl<<endl<<endl;
     cout<<"                               Brownie V2.1.1 (r"<<$SVN_VERSION<<")"<<endl;
 	cout<<"                          Character evolution models,"<<endl;
