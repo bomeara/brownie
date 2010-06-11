@@ -106,7 +106,20 @@ int main()
 	
 	nxsstring nx = "a";
 	bool inputfilegiven=false;
+	printf("Initializing BROWNIE object...\n");
 	BROWNIE brownie;
+	brownie.Init();
+	printf("done\n");
+	
+	printf("Executing text file...");
+	cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
+	strcpy(brownie.next_command,"execute parrot.nex\n");
+	brownie.PreprocessNextCommand();
+	printf("\n .. conditioned command is: %s\n",brownie.next_command);
+   	 brownie.HandleNextCommand();
+		
+	cout << " ... postload status: "<< brownie.intrees.GetNumTrees();
+	printf(" ...done\n");
 	
 	printf("First value = %.0f\n",v);
 	cout<<"Testing BROWNIE library"<<endl;

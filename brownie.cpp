@@ -546,7 +546,8 @@ void BROWNIE::HandleEndblock( NexusToken& token )
  */
 void BROWNIE::HandleExecuteCmdLine(nxsstring fn)
 {
-	printf("LIB: execute cmd\n");
+    printf("LIB: execute cmd '%s'\n",next_command);
+
     if( FileExists( fn.c_str() ) )
     {
         cerr << endl;
@@ -11483,7 +11484,7 @@ void BROWNIE::HandleLog( NexusToken& token )
  */
 void BROWNIE::HandleNextCommand()
 {
-	printf("LIB: handing this command\n");
+ 	printf("LIB: handle cmd '%s'\n",next_command);
 	std::istrstream cmdin( next_command );
     //std::istringstream cmdin( next_command );
     //cerr << "next_command is: " << next_command <<endl;
