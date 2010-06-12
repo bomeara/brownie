@@ -111,16 +111,28 @@ int main()
 	brownie.Init();
 	printf("done\n");
 	
+	// load in text file
 	printf("Executing text file...");
 	cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
 	strcpy(brownie.next_command,"execute parrot.nex\n");
 	brownie.PreprocessNextCommand();
 	printf("\n .. conditioned command is: %s\n",brownie.next_command);
-   	 brownie.HandleNextCommand();
-		
+   	brownie.HandleNextCommand();
 	cout << " ... postload status: "<< brownie.intrees.GetNumTrees();
 	printf(" ...done\n");
 	
+	// creating log file:
+	cout<<"Setting log file..."<<endl;
+	strcpy(brownie.next_command,"log file=parrotlog.txt; echo file=parrotcommand.txt\n");
+	brownie.PreprocessNextCommand();
+   	brownie.HandleNextCommand();
+	
+   	
+   	cout<<"Running censored rate test..."<<endl;
+	strcpy(brownie.next_command,"ratetest taxset=intrajoint reps=1000 charloop=yes  treeloop=no file=intrajointratetest.txt\n");
+	brownie.PreprocessNextCommand();
+   	brownie.HandleNextCommand();
+   	
 	printf("First value = %.0f\n",v);
 	cout<<"Testing BROWNIE library"<<endl;
 	
