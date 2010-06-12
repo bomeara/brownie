@@ -127,11 +127,26 @@ int main()
 	brownie.PreprocessNextCommand();
    	brownie.HandleNextCommand();
 	
-   	
+   	// Censored rate test
    	cout<<"Running censored rate test..."<<endl;
 	strcpy(brownie.next_command,"ratetest taxset=intrajoint reps=1000 charloop=yes  treeloop=no file=intrajointratetest.txt\n");
 	brownie.PreprocessNextCommand();
    	brownie.HandleNextCommand();
+   	
+	// set model type
+	cout<<"Setting log file..."<<endl;
+	strcpy(brownie.next_command,"model type=BM1\n");
+	brownie.PreprocessNextCommand();
+   	brownie.HandleNextCommand();   	
+   	
+   	
+	// non-censored rate test (still not working on windows)
+	//cout<<"Uncensored rate test..."<<endl;
+	//strcpy(brownie.next_command,"cont taxset=all treeloop=yes charloop=y file=parrotlog_feedingmodetest.txt\n");
+	//brownie.PreprocessNextCommand();
+   	//brownie.HandleNextCommand();   	
+   	
+   	   	
    	
 	printf("First value = %.0f\n",v);
 	cout<<"Testing BROWNIE library"<<endl;

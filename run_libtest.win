@@ -7,6 +7,7 @@ if [ -f test.exe ]
 		rm test.exe
 		rm parrotlog*
 		rm parrotcommand*
+		rm intrajointratetest*
 fi
 echo "done"
 
