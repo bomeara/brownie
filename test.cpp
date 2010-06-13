@@ -141,10 +141,10 @@ int main()
    	
    	
 	// non-censored rate test (still not working on windows)
-	//cout<<"Uncensored rate test..."<<endl;
-	//strcpy(brownie.next_command,"cont taxset=all treeloop=yes charloop=y file=parrotlog_feedingmodetest.txt\n");
-	//brownie.PreprocessNextCommand();
-   	//brownie.HandleNextCommand();   	
+	cout<<"Uncensored rate test..."<<endl;
+	strcpy(brownie.next_command,"cont taxset=all treeloop=yes charloop=y file=parrotlog_feedingmodetest.txt\n");
+	brownie.PreprocessNextCommand();
+   	brownie.HandleNextCommand();   	
    	
    	   	
    	

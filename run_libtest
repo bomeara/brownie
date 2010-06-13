@@ -6,6 +6,9 @@ echo -n "Removing old test file..."
 if [ -f test.exe ]
 	then
 		rm test.exe
+		rm parrotlog*
+		rm parrotcommand*
+		rm intrajointratetest*
 fi
 echo "done"
 

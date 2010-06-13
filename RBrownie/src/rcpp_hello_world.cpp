@@ -96,7 +96,18 @@ SEXP rcpp_hello_world()
 	nxsstring nx = "a";
 	bool inputfilegiven=false;
 	BROWNIE brownie;
-	
+	brownie.Init();
+
+	// load in text file
+	printf("Executing text file...");
+	cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
+	strcpy(brownie.next_command,"execute parrot.nex\n");
+	brownie.PreprocessNextCommand();
+	printf("\n .. conditioned command is: %s\n",brownie.next_command);
+   	brownie.HandleNextCommand();
+	cout << " ... postload status: "<< brownie.intrees.GetNumTrees();
+	printf(" ...done\n");
+
 	// TEST: Use some Rcpp classes
 	CharacterVector x(2) ;
 	x[0] = "seed"; 
