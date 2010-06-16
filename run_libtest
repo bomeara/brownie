@@ -12,6 +12,11 @@ if [ -f test.exe ]
 fi
 echo "done"
 
+TESTFILE=test.cpp
+if [ $# -ge 1 ]; then
+	TESTFILE=$1
+fi
+
 echo -n "Building static library if needed..."
 
 if [ ! -f libBrownie.a ]
@@ -36,7 +41,7 @@ echo ""
 
 rm *.o
 rm *.exe
-g++ -g test.cpp -I"." -L/usr/lib -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I/usr/includes -lBrownie -lgsl -lgslcblas -lm  -o test.exe
+g++ -g ${TESTFILE} -I"." -L/usr/lib -L"." -I"./ncl-2.0/src" -I"./TreeLib" -I"./TreeLib/gport" -I/usr/includes -lBrownie -lgsl -lgslcblas -lm  -o test.exe
 
 echo "done"
 echo ""

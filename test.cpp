@@ -113,12 +113,11 @@ int main()
 	
 	// load in text file
 	printf("Executing text file...");
-	cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
+	//cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
 	strcpy(brownie.next_command,"execute parrot.nex\n");
 	brownie.PreprocessNextCommand();
 	printf("\n .. conditioned command is: %s\n",brownie.next_command);
    	brownie.HandleNextCommand();
-	cout << " ... postload status: "<< brownie.intrees.GetNumTrees();
 	printf(" ...done\n");
 	
 	// creating log file:
@@ -141,10 +140,10 @@ int main()
    	
    	
 	// non-censored rate test (still not working on windows)
-	cout<<"Uncensored rate test..."<<endl;
-	strcpy(brownie.next_command,"cont taxset=all treeloop=yes charloop=y file=parrotlog_feedingmodetest.txt\n");
-	brownie.PreprocessNextCommand();
-   	brownie.HandleNextCommand();   	
+// 	cout<<"Uncensored rate test..."<<endl;
+// 	strcpy(brownie.next_command,"cont taxset=all treeloop=yes charloop=y file=parrotlog_feedingmodetest.txt\n");
+// 	brownie.PreprocessNextCommand();
+//    	brownie.HandleNextCommand();   	
    	
    	   	
    	
