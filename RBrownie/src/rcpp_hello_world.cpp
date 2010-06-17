@@ -8,69 +8,10 @@
 #include <climits>
 #include <cstring>
 #include <memory>
-
-#include "nexusdefs.h"
-#include "xnexus.h"
-#include "nexustoken.h"
-#include "nexus.h"
-#include "taxablock.h"
-#include "assumptionsblock.h"
-#include "treesblock.h"
-#include "discretedatum.h"
-#include "discretematrix.h"
-#include "charactersblock.h"
-#include "charactersblock2.h"
-#include "gport.h"
-#include "profile.h"
-#include "nodeiterator.h"
-#include "setreader.h"
-#include "treeorder.h"
-#include "treedrawer.h"
-#include "ntree.h"
-#include "stree.h"
-#include "containingtree.h"
-#include "quartet.h"
-#include "version.h"
-#include <gsl/gsl_sf_gamma.h>
-#include "TreeLib.h"
-#include "gtree.h"
-#include "treereader.h"
-#include "treewriter.h"
-#include <time.h>
-#include <map>
-#include <limits>
-#include "brownie.h"
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_block.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_randist.h>
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_cdf.h>
-#include <gsl/gsl_min.h>
-#include <gsl/gsl_multimin.h>
-#include <gsl/gsl_permutation.h>
-#include <gsl/gsl_combination.h>
-#include <gsl/gsl_statistics.h>
-#include <gsl/gsl_statistics_double.h>
-#include <gsl/gsl_statistics_int.h>
-#include <gsl/gsl_sort.h>
-#include <gsl/gsl_sort_vector.h>
-#include <gsl/gsl_sf_gamma.h>
-#include <gsl/gsl_eigen.h>
-#include <gsl/gsl_complex_math.h>
-#include <gsl/gsl_complex.h>
-#include <gsl/gsl_version.h>
-#include <gsl/gsl_sf_exp.h>
-#include <gsl/gsl_errno.h>
-#include "optimizationfn.h"
-#include "cdfvectorholder.h"
 #include <sstream>
 #include <iostream>
-
+#include "dl.h"
+#include "dlInterface.h"
 
 
 SEXP rcpp_hello_world()
@@ -101,10 +42,8 @@ SEXP rcpp_hello_world()
 	// load in text file
 	printf("Executing text file...");
 	cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
-	strcpy(brownie.next_command,"execute parrot.nex\n");
-	brownie.PreprocessNextCommand();
-	printf("\n .. conditioned command is: %s\n",brownie.next_command);
-   	brownie.HandleNextCommand();
+	std::string exstr = "execute parrot.nex\n";
+	dlPipe(brownie,exstr);
 	cout << " ... postload status: "<< brownie.intrees.GetNumTrees();
 	printf(" ...done\n");
 
@@ -127,4 +66,32 @@ SEXP rcpp_hello_world()
 	
 }
 
-
+/* Method which executes a brownie file and returns a list
+ * which can be construed into an Robject of class brownie
+ *
+ * @author Conrad Stack
+ */
+SEXP readBrownie(SEXP fnamevect)
+{
+	using namespace Rcpp;
+	
+	// Setup brownie object
+	BROWNIE brownie;
+	brownie.Init();
+	
+	// Execute the filename
+	CharacterVector fname(fnamevect);
+	std::string newstr = EXECUTE + fname[0];
+	cout << "RCPP: " << newstr << endl;
+	dlPipe(brownie, newstr);
+	
+	// Retrieve variables (might need to use CharacterVector or StringVector)
+	int ntrees = brownie.intrees.GetNumTrees();
+	List treelist(ntrees);
+	for (int j=0; j<ntrees; j++)
+	{
+		treelist[j] = (*brownie.trees).GetTranslatedTreeDescription(j);
+	}
+	
+	return treelist;
+}
