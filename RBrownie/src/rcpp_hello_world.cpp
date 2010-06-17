@@ -93,5 +93,9 @@ SEXP readBrownie(SEXP fnamevect)
 		treelist[j] = (*brownie.trees).GetTranslatedTreeDescription(j);
 	}
 	
+	std::ofstream myfile;
+	myfile.open("example.txt");
+	brownie.intrees.WriteTrees(myfile);
+	
 	return treelist;
 }
