@@ -37,7 +37,7 @@ get.nodenames<-function(newick.txt)
 # 
 # Assume that branch lengths are present (otherwise, why use SIMMAP?)
 #
-read.simmap <- function(file="",text=NULL, version=1.0, ...)
+read.simmap <- function(file="",text=NULL, version=1.1, ...)
 {
 	if(is.null(text))
 		stop("Need to have text for now")
@@ -74,7 +74,8 @@ read.simmap <- function(file="",text=NULL, version=1.0, ...)
 		br.total = 0
 		# get the internal part
 		within = paste(junk[seq( sub.branches[ii,1]+1 , sub.branches[ii,2]-1 )],collapse="")
-		within.sub = strsplit(within,";")[[1]]
+		splitchar = ifelse(version==1.0,";",":")
+		within.sub = strsplit(within,splitchar)[[1]]
 		for(jj in within.sub)
 		{
 			slptmp = strsplit(jj,",")[[1]]
@@ -151,6 +152,38 @@ read.simmap <- function(file="",text=NULL, version=1.0, ...)
 }
 
 
+
+testtree = read.simmap(text="(((((32:{0,0.058907691963},(31:{0,0.022424212177:1,0.016767967599},(34:{1,0.036771632295},(30:{1,0.033928324112},33:{0,0.029725747655:1,0.004202576457}):{1,0.002843308183}):{1,0.002420547480}):{1,0.000275233450:0,0.019440278711}):{0,0.008552585573},29:{0,0.067460277504}):{0,0.040135207374},8:{0,0.091158418718:1,0.000880105051:0,0.015556961136}):{0,0.019704981181},(10:{0,0.112116752589},(2:{0,0.000772585273},3:{0,0.000772585273}):{0,0.014969340499:1,0.029030780722:0,0.067344046095}):{0,0.015183713480}):{0,0.023742583944},((1:{1,0.066050466671},4:{1,0.066050466671}):{1,0.039823924285},(9:{1,0.086482781129},(((5:{1,0.017325369522},6:{1,0.017325369522}):{1,0.006182126280},7:{1,0.023507495803}):{1,0.034790702136},(((26:{1,0.019800202825},14:{1,0.019800202825}):{1,0.016420404516},22:{1,0.036220607341}):{1,0.009769629593},(((23:{1,0.014983924906},(24:{1,0.004248281035},(18:{1,0.001668719645},21:{1,0.001668719645}):{1,0.002579561389}):{1,0.010735643875}):{1,0.009021350133},12:{1,0.024005275044}):{1,0.015472368742},(((((20:{1,0.019149815099},(15:{1,0.015578674920},11:{1,0.015578674920}):{1,0.003571140182}):{1,0.006407372276},25:{1,0.025557187375}):{1,0.001278231913},(13:{1,0.017974442632},16:{1,0.017974442632}):{1,0.008860976659}):{1,0.004074632240},(17:{1,0.027243985323},(28:{1,0.022983956116},19:{1,0.022983956116}):{1,0.004260029207}):{1,0.003666066205}):{1,0.005572724711},27:{1,0.036482776240}):{1,0.002994867546}):{1,0.006512593148}):{1,0.012307961005}):{1,0.028184583180}):{1,0.019391609822}):{1,0.019245403638:0,0.025923255434});")
+
+
+# Method to read the first comment in a line in the format '[&...]'
+# This is for reading tree weights chiefly
+#
+get.nexus.comments<-function(finput,text=NULL)
+{
+	if(!is.null(text)){
+		# TODO: check text for newlines and split on them if they exist.
+		rawtext=text
+	} else {
+		if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+		
+		rawtext = scan(finput,what=character(0),sep="\n")		
+	}
+	
+	# TODO: return named pair {treename, comment}
+	comments = character(0)
+	for(ii in seq(length(rawtext)))
+	{
+		junk =  gsub("^.*?\\[(.*?)\\].*$","\\1",rawtext[ii])
+		if(length( grep("^&(.*)$",junk) ) != 0)
+			comments = append(comments,junk)
+	}
+	
+	return(comments)	
+}
+
+get.nexus.comments("example.txt")->lala
 
 
 
