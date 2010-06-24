@@ -9,6 +9,6 @@ Description: This R package implements the BROWNIE phylogenetics module
 URL: http://code.google.com/p/brownie/, http://www.conradstack.info
 License: GPL-2
 LazyLoad: yes
-Depends: Rcpp (>= 0.8), phylobase
+Depends: Rcpp (>= 0.8), phylobase (>= 0.5)
 LinkingTo: Rcpp
 Packaged: 2010-05-25 02:01:02 UTC; administrator

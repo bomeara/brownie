@@ -186,4 +186,27 @@ get.nexus.comments<-function(finput,text=NULL)
 get.nexus.comments("example.txt")->lala
 
 
+# search for brownie block in nexus file name
+#
+read.brownie.cmd<-function(filename)
+{
+	junk = scan(filename,what="character",sep="\n",strip.white=T)
+	junk = tolower(junk)
+	start.ind = agrep("begin brownie",junk,ignore.case=T)
+	if(length(start.ind) == 0)
+		return ("")
+	
+	end.ind = agrep("end;",junk,ignore.case=T)
+	end.ind = end.ind[which(end.ind > start.ind)]
+
+	return (junk[(start.ind+1):(end.ind-1)])
+}
+
+read.brownie<-function(fname)
+{	
+	brownie.part = read.brownie.cmd(fname)
+	phy.part = readNexus(fname)
+	return(list(treedat=phy.part,brau=brownie.part))
+}
+
 
