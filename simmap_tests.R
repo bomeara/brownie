@@ -197,7 +197,8 @@ expand.singles <- function(tree)
 
 
 # sister function of expand.singles -> converts internal nodes with
-# zero-length branches into singletons (in phylo4 format)
+# zero-length branches into singletons (in phylo4 format).  Will only work if
+# the zero-len branch is connected to a tip
 #
 collapse.to.singles <- function(tree,by.name=NULL)
 {
@@ -207,58 +208,60 @@ collapse.to.singles <- function(tree,by.name=NULL)
 	if(!is(tree,"phylo4"))
 		stop("tree argument needs to be of class phylo4")
 
-	if(any(edgeLength(tree) == 0))
+	# don't use the root node
+	if(any(edgeLength(tree, seq(1,(nNodes(tree)+nTips(tree)))[nodeType(tree)!='root']) == 0))
 	{
-		
-		tree = tree.bk
+		# Remove zero-length branches and their tips
 		zinds = which(edgeLength(tree)==0)
 		torem = edges(tree)[zinds,]
 		torem = torem[edges(tree)[zinds,1]!=0,][,2] # don't include root
 		zinds = zinds[edges(tree)[zinds,1]!=0] 		# don't include root
-		 
-		# remove excess tips
-		rm.count = length(torem)
-		tip.count = length(tipLabels(tree))
-		total.count = length(labels(tree))
+		torem = torem[nodeType(tree)[torem]=="tip"]
 		
-		tree@edge <- edges(tree)[-zinds,]  # TODO: add 'edges<-' to phylobase
-		tree@edge.length = tree@edge.length[-zinds]
-		tree@label = tree@label[-torem]
-		
-		## begin reindexing nodes
-		# tips
-		t.oldseq = seq(1, (tip.count))[-torem]
-		t.newseq = seq(1,(tip.count-rm.count))
-		t.replace.inds = which(tree@edge[,2] %in% t.oldseq)
-		stopifnot(length(t.replace.inds) == length(t.oldseq))  # it should be a 1-1 relationship for tips
-		tree@edge[,2] = replace(tree@edge[,2],t.replace.inds ,t.newseq)
-		
-		# internal
-		n.oldseq = seq(tip.count+1,total.count)
-		n.newseq = seq(tip.count+1-rm.count, total.count-rm.count)
-		for(kk in seq(length(n.oldseq)))
+		if(length(torem)!=0)
 		{
-			replaceinds = which(tree@edge[,1] == n.oldseq[kk])
-			if(length(replaceinds)!=0)
-				tree@edge[replaceinds,1] = rep(n.newseq[kk],length(replaceinds))
-				
-			replaceinds = which(tree@edge[,2] == n.oldseq[kk])
-			if(length(replaceinds)!=0)
-				tree@edge[replaceinds,2] = rep(n.newseq[kk],length(replaceinds))
+			# remove excess tips
+			rm.count = length(torem)
+			tip.count = length(tipLabels(tree))
+			total.count = length(labels(tree))
+			
+			tree@edge <- edges(tree)[-zinds,]  # TODO: add 'edges<-' to phylobase
+			tree@edge.length = tree@edge.length[-zinds]
+			tree@label = tree@label[-torem]
+			
+			## begin reindexing nodes
+			# tips
+			t.oldseq = seq(1, (tip.count))[-torem]
+			t.newseq = seq(1,(tip.count-rm.count))
+			t.replace.inds = which(tree@edge[,2] %in% t.oldseq)
+			stopifnot(length(t.replace.inds) == length(t.oldseq))  # it should be a 1-1 relationship for tips
+			tree@edge[,2] = replace(tree@edge[,2],t.replace.inds ,t.newseq)
+			
+			# internal
+			n.oldseq = seq(tip.count+1,total.count)
+			n.newseq = seq(tip.count+1-rm.count, total.count-rm.count)
+			for(kk in seq(length(n.oldseq)))
+			{
+				replaceinds = which(tree@edge[,1] == n.oldseq[kk])
+				if(length(replaceinds)!=0)
+					tree@edge[replaceinds,1] = rep(n.newseq[kk],length(replaceinds))
+					
+				replaceinds = which(tree@edge[,2] == n.oldseq[kk])
+				if(length(replaceinds)!=0)
+					tree@edge[replaceinds,2] = rep(n.newseq[kk],length(replaceinds))
+			}
+			
+			
+			## rename
+			names(tree@label) <- as.character(seq(1,length(labels(tree))))
+			names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
 		}
-		
-		
-		## rename
-		names(tree@label) <- as.character(seq(1,length(labels(tree))))
-		names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
-		
-		return(tree)
-		
 	} else {
 		warning("No zero-length branches found to be removed")
-		return(tree)
 	}
+	return(tree)
 }
+
 
 
 
