@@ -62,6 +62,5 @@
 #include "optimizationfn.h"
 #include "cdfvectorholder.h"
 
-const std::string EXECUTE = "execute ";
 
 #endif

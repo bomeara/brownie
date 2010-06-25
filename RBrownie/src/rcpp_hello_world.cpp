@@ -10,7 +10,6 @@
 #include <memory>
 #include <sstream>
 #include <iostream>
-#include "dl.h"
 #include "dlInterface.h"
 
 
@@ -34,17 +33,17 @@ SEXP rcpp_hello_world()
 	v= gsl_rng_get(r);
 	printf("First value = %.0f\n",v);
 
-	nxsstring nx = "a";
-	bool inputfilegiven=false;
-	BROWNIE brownie;
-	brownie.Init();
+	// create interface to brownie object
+	dlInterface dli;
 
 	// load in text file
 	printf("Executing text file...");
-	cout << "preload status: "<< brownie.intrees.GetNumTrees()<<endl;
+	cout << "preload status: "<< dli.getNumLoadedTrees() << endl;
+	
 	std::string exstr = "execute parrot.nex\n";
-	dlPipe(brownie,exstr);
-	cout << " ... postload status: "<< brownie.intrees.GetNumTrees();
+	dli.pipe(exstr);
+	
+	cout << " ... postload status: "<< dli.getNumLoadedTrees();
 	printf(" ...done\n");
 
 	// TEST: Use some Rcpp classes
@@ -75,27 +74,29 @@ SEXP readBrownie(SEXP fnamevect)
 {
 	using namespace Rcpp;
 	
-	// Setup brownie object
-	BROWNIE brownie;
-	brownie.Init();
+	// Setup interface object
+	dlInterface dli;
+	
 	
 	// Execute the filename
 	CharacterVector fname(fnamevect);
-	std::string newstr = EXECUTE + fname[0];
+	std::string newstr = "" + fname[0];  // convery string_proxy to std::string
 	cout << "RCPP: " << newstr << endl;
-	dlPipe(brownie, newstr);
+	dli.execute(newstr);
+	
 	
 	// Retrieve variables (might need to use CharacterVector or StringVector)
-	int ntrees = brownie.intrees.GetNumTrees();
+	int ntrees = dli.getNumLoadedTrees();
 	List treelist(ntrees);
 	for (int j=0; j<ntrees; j++)
 	{
-		treelist[j] = (*brownie.trees).GetTranslatedTreeDescription(j);
+		cout << "Tree " << j<<":"<<endl;
+		treelist[j] = dli.getTree(j);
 	}
 	
-	std::ofstream myfile;
-	myfile.open("example.txt");
-	brownie.intrees.WriteTrees(myfile);
+// 	std::ofstream myfile;
+// 	myfile.open("example.txt");
+// 	brownie.intrees.WriteTrees(myfile);
 	
 	return treelist;
 }

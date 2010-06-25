@@ -159,11 +159,12 @@ testtree = read.simmap(text="(((((32:{0,0.058907691963},(31:{0,0.022424212177:1,
 
 # expand singleton nodes into bifurcating nodes with one junk node
 # this function is mainly for plotting and saving files
+# TODO: convert all explicit calls to @'slot' to their abstract counterpart (e.g. tree@edge.length goes to edgeLength(tree)
 #
 expand.singles <- function(tree)
 {
 	# note: tips should be indexed 1...N, where N is the number of tips
-	if(!is(tree,"plylo4"))
+	if(!is(tree,"phylo4"))
 		stop("tree needs to be of class phylo4")
 	
 	tmptable=table(tree@edge[,1])
@@ -194,17 +195,69 @@ expand.singles <- function(tree)
 	return(tree)
 }
 
+
 # sister function of expand.singles -> converts internal nodes with
 # zero-length branches into singletons (in phylo4 format)
 #
-collapse.zeros <- function(tree)
+collapse.to.singles <- function(tree,by.name=NULL)
 {
 	if(is(tree,"phylo"))
 		tree = as(tree,"phylo4")
 	
 	if(!is(tree,"phylo4"))
 		stop("tree argument needs to be of class phylo4")
-	
+
+	if(any(edgeLength(tree) == 0))
+	{
+		
+		tree = tree.bk
+		zinds = which(edgeLength(tree)==0)
+		torem = edges(tree)[zinds,]
+		torem = torem[edges(tree)[zinds,1]!=0,][,2] # don't include root
+		zinds = zinds[edges(tree)[zinds,1]!=0] 		# don't include root
+		 
+		# remove excess tips
+		rm.count = length(torem)
+		tip.count = length(tipLabels(tree))
+		total.count = length(labels(tree))
+		
+		tree@edge <- edges(tree)[-zinds,]  # TODO: add 'edges<-' to phylobase
+		tree@edge.length = tree@edge.length[-zinds]
+		tree@label = tree@label[-torem]
+		
+		## begin reindexing nodes
+		# tips
+		t.oldseq = seq(1, (tip.count))[-torem]
+		t.newseq = seq(1,(tip.count-rm.count))
+		t.replace.inds = which(tree@edge[,2] %in% t.oldseq)
+		stopifnot(length(t.replace.inds) == length(t.oldseq))  # it should be a 1-1 relationship for tips
+		tree@edge[,2] = replace(tree@edge[,2],t.replace.inds ,t.newseq)
+		
+		# internal
+		n.oldseq = seq(tip.count+1,total.count)
+		n.newseq = seq(tip.count+1-rm.count, total.count-rm.count)
+		for(kk in seq(length(n.oldseq)))
+		{
+			replaceinds = which(tree@edge[,1] == n.oldseq[kk])
+			if(length(replaceinds)!=0)
+				tree@edge[replaceinds,1] = rep(n.newseq[kk],length(replaceinds))
+				
+			replaceinds = which(tree@edge[,2] == n.oldseq[kk])
+			if(length(replaceinds)!=0)
+				tree@edge[replaceinds,2] = rep(n.newseq[kk],length(replaceinds))
+		}
+		
+		
+		## rename
+		names(tree@label) <- as.character(seq(1,length(labels(tree))))
+		names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
+		
+		return(tree)
+		
+	} else {
+		warning("No zero-length branches found to be removed")
+		return(tree)
+	}
 }
 
 

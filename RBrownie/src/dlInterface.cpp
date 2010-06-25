@@ -11,20 +11,59 @@
 #include <sstream>
 #include <iostream>
 
-
-/* Method which sends a command to the brownie object
- * @author Conrad Stack
- * TODO: handle errors (by capturing cerr?)
+/* Default constructor
+ *
+ *
  */
-void dlPipe(BROWNIE & brau, std::string browniecmd)
+dlInterface::dlInterface()
+{
+	//Initialize brownie object
+	brownie.Init();
+	
+}
+
+/* Default destructor
+ */
+dlInterface::~dlInterface()
+{
+	
+}
+
+
+/* Method which sends a command to the brownie object and processes it
+ * @author Conrad Stack
+ * 
+ */
+void dlInterface::pipe(std::string browniecmd)
 {
 	
 	printf("Piping commands to brownie object");
-	strcpy(brau.next_command, browniecmd.c_str());
-	brau.PreprocessNextCommand();
-	printf("\n .. conditioned command is: %s\n", brau.next_command);
-   	brau.HandleNextCommand();
+	strcpy(brownie.next_command, browniecmd.c_str());
+	brownie.PreprocessNextCommand();
+	printf("\n .. conditioned command is: %s\n", brownie.next_command);
+   	brownie.HandleNextCommand();
    	
 }
 
+/* Execute provided nexus file 
+ *
+ */
+void dlInterface::execute(std::string browniefile)
+{
+	// TODO: check if file exists
+	std::string newstr = EXECUTE + browniefile;
+	pipe(newstr);
+	
+}
+
+int dlInterface::getNumLoadedTrees()
+{
+	return brownie.intrees.GetNumTrees();
+}
+
+std::string dlInterface::getTree(int i)
+{
+	std::string retstr = (std::string)(*brownie.trees).GetTranslatedTreeDescription(i);
+	return retstr;
+}
 
