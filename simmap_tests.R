@@ -120,7 +120,7 @@ read.simmap <- function(file="",text=NULL, version=1.1, ...)
 		# this information shouldn't change:
 		edgeind = which(edge.ind == kk)
 		trind = which(nnames[kk] == all.labels)
-		esplice = which(tr$edge[,2] == trind) # this is the edge that we want to split
+		esplice = which(tr$edge[,2] == trind) # except this, this will change
 		anc = tr$edge[esplice,1]
 		dec = tr$edge[esplice,2]
 	
@@ -148,13 +148,17 @@ read.simmap <- function(file="",text=NULL, version=1.1, ...)
 			scount = scount + 1
 		}
 	}
+	
+	write.nexus(tr,file="written.tree")
 	return(as(tr,"phylo4"))
 }
 
-
-
 testtree = read.simmap(text="(((((32:{0,0.058907691963},(31:{0,0.022424212177:1,0.016767967599},(34:{1,0.036771632295},(30:{1,0.033928324112},33:{0,0.029725747655:1,0.004202576457}):{1,0.002843308183}):{1,0.002420547480}):{1,0.000275233450:0,0.019440278711}):{0,0.008552585573},29:{0,0.067460277504}):{0,0.040135207374},8:{0,0.091158418718:1,0.000880105051:0,0.015556961136}):{0,0.019704981181},(10:{0,0.112116752589},(2:{0,0.000772585273},3:{0,0.000772585273}):{0,0.014969340499:1,0.029030780722:0,0.067344046095}):{0,0.015183713480}):{0,0.023742583944},((1:{1,0.066050466671},4:{1,0.066050466671}):{1,0.039823924285},(9:{1,0.086482781129},(((5:{1,0.017325369522},6:{1,0.017325369522}):{1,0.006182126280},7:{1,0.023507495803}):{1,0.034790702136},(((26:{1,0.019800202825},14:{1,0.019800202825}):{1,0.016420404516},22:{1,0.036220607341}):{1,0.009769629593},(((23:{1,0.014983924906},(24:{1,0.004248281035},(18:{1,0.001668719645},21:{1,0.001668719645}):{1,0.002579561389}):{1,0.010735643875}):{1,0.009021350133},12:{1,0.024005275044}):{1,0.015472368742},(((((20:{1,0.019149815099},(15:{1,0.015578674920},11:{1,0.015578674920}):{1,0.003571140182}):{1,0.006407372276},25:{1,0.025557187375}):{1,0.001278231913},(13:{1,0.017974442632},16:{1,0.017974442632}):{1,0.008860976659}):{1,0.004074632240},(17:{1,0.027243985323},(28:{1,0.022983956116},19:{1,0.022983956116}):{1,0.004260029207}):{1,0.003666066205}):{1,0.005572724711},27:{1,0.036482776240}):{1,0.002994867546}):{1,0.006512593148}):{1,0.012307961005}):{1,0.028184583180}):{1,0.019391609822}):{1,0.019245403638:0,0.025923255434});")
 
+
+#-----------------------
+# Read from nexus file |
+#-----------------------
 
 # Method to read the first comment in a line in the format '[&...]'
 # This is for reading tree weights chiefly
@@ -168,7 +172,7 @@ get.nexus.comments<-function(finput,text=NULL)
 		if(!file.exists(finput))
 			stop("Assuming finput is a file and could not find it")
 		
-		rawtext = scan(finput,what=character(0),sep="\n")		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
 	}
 	
 	# TODO: return named pair {treename, comment}
@@ -182,31 +186,98 @@ get.nexus.comments<-function(finput,text=NULL)
 	
 	return(comments)	
 }
+#get.nexus.comments("example.txt")->lala  # test call
 
-get.nexus.comments("example.txt")->lala
 
-
-# search for brownie block in nexus file name
-#
-read.brownie.cmd<-function(filename)
+# Internal function - get all content within a nexus block
+.get.nexus.block.inds <- function(filename,blockname,text=NULL)
 {
-	junk = scan(filename,what="character",sep="\n",strip.white=T)
-	junk = tolower(junk)
-	start.ind = agrep("begin brownie",junk,ignore.case=T)
-	if(length(start.ind) == 0)
-		return ("")
+	# choose character vector
+	if(!is.null(text))
+	{
+		filetext = text
+	} else {
+		filetext = scan(filename,what="character",sep="\n",strip.white=T)
+	}
+	filetext = tolower(filetext)
 	
-	end.ind = agrep("end;",junk,ignore.case=T)
-	end.ind = end.ind[which(end.ind > start.ind)]
+	start.ind = agrep(paste("begin",tolower(blockname)),filetext,ignore.case=T)
+	if(length(start.ind) == 0)
+		return (integer(0))
+	
+	end.ind = grep("end;",filetext,ignore.case=T)
+	end.ind = end.ind[head(which(end.ind > start.ind),1)]
 
-	return (junk[(start.ind+1):(end.ind-1)])
+	return( c((start.ind),(end.ind)) )
 }
+
+
+# internal function to parse / check assumptions block
+.process.assumptions <- function(obj,block.txt)
+{
+	if(!is(obj,"brownie"))
+		stop("Processed object needs to be of class brownie")
+	
+	return (obj)
+}
+
+# internal function to parse / check brownie block
+.process.brownie <- function(obj,block.txt)
+{
+	return(obj)
+}
+
+
+# read nexus assumptions block
+read.nexus.block<-function(finput,txt=NULL,block)
+{	
+	if(!is.null(txt)){
+		# Using the text argument is not recommended
+		rawtext=txt
+	} else {
+		
+		if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+	}
+	
+	inds = .get.nexus.block.inds(blockname=block,text=rawtext)
+	if(length(inds)==0)
+	{
+		warning(paste("This file has",block, "no block"))
+		return (character(0))
+	}
+	
+	# TODO: split up newlines if they exist
+	return (rawtext[(inds[1]+1):(inds[2]-1)])
+}
+
+
+
+
+
+
+#-----------------------
+# Read / Write brownie |
+#-----------------------
+
 
 read.brownie<-function(fname)
 {	
-	brownie.part = read.brownie.cmd(fname)
-	phy.part = readNexus(fname)
-	return(list(treedat=phy.part,brau=brownie.part))
+	if(!file.exists(fname))
+		stop(paste("File",fname,"cannot be found in",getwd()))
+	
+	filetxt = scan(fname,what=character(0),strip.white=T,sep="\n")
+	brownie.part = read.nexus.block(txt=filetxt,block="BROWNIE")
+	assumptions.part = read.nexus.block(txt=filetxt,block="ASSUMPTIONS")
+	
+	phy.part = readNexus(fname)  # convert nexus strings to simmap tree
+	
+	brau.new = new("brownie",phy.part,commands=brownie.part)
+	brau.new = .process.assumptions(assumptions.part)  # TODO: overload constructor to do this processing.
+	
+	return(brau.new)
 }
 
 
