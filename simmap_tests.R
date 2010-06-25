@@ -37,13 +37,17 @@ get.nodenames<-function(newick.txt)
 # 
 # Assume that branch lengths are present (otherwise, why use SIMMAP?)
 #
-read.simmap <- function(file="",text=NULL, version=1.1, ...)
+read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 {
 	if(is.null(text))
 		stop("Need to have text for now")
 
 	# clear whitespace	
 	text = gsub("\\s","",text)
+	
+	# add semicolon to end
+	if(substring(text,nchar(text))!=";")
+		text = paste(text,";",sep="")
 	
 	if(TRUE)
 	{
@@ -74,7 +78,7 @@ read.simmap <- function(file="",text=NULL, version=1.1, ...)
 		br.total = 0
 		# get the internal part
 		within = paste(junk[seq( sub.branches[ii,1]+1 , sub.branches[ii,2]-1 )],collapse="")
-		splitchar = ifelse(version==1.0,";",":")
+		splitchar = ifelse(vers==1.0,";",":")
 		within.sub = strsplit(within,splitchar)[[1]]
 		for(jj in within.sub)
 		{
@@ -196,6 +200,7 @@ expand.singles <- function(tree)
 }
 
 
+
 # sister function of expand.singles -> converts internal nodes with
 # zero-length branches into singletons (in phylo4 format).  Will only work if
 # the zero-len branch is connected to a tip
@@ -265,6 +270,7 @@ collapse.to.singles <- function(tree,by.name=NULL)
 
 
 
+
 #-----------------------
 # Read from nexus file |
 #-----------------------
@@ -298,6 +304,7 @@ get.nexus.comments<-function(finput,text=NULL)
 #get.nexus.comments("example.txt")->lala  # test call
 
 
+
 # Internal function - get all content within a nexus block
 .get.nexus.block.inds <- function(filename,blockname,text=NULL)
 {
@@ -321,6 +328,7 @@ get.nexus.comments<-function(finput,text=NULL)
 }
 
 
+
 # internal function to parse / check assumptions block
 .process.assumptions <- function(obj,block.txt)
 {
@@ -330,11 +338,13 @@ get.nexus.comments<-function(finput,text=NULL)
 	return (obj)
 }
 
+
 # internal function to parse / check brownie block
 .process.brownie <- function(obj,block.txt)
 {
 	return(obj)
 }
+
 
 
 # read nexus assumptions block
@@ -372,7 +382,7 @@ read.nexus.block<-function(finput,txt=NULL,block)
 #-----------------------
 
 
-read.brownie<-function(fname)
+readBrownie<-function(fname)
 {	
 	if(!file.exists(fname))
 		stop(paste("File",fname,"cannot be found in",getwd()))
