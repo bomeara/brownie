@@ -20,6 +20,7 @@ class dlInterface
 	int getNumLoadedTrees();
 	std::string getTree(int);
 	float getTreeWeight(int);
+	bool writeTrees(std::string);
 };
 
 

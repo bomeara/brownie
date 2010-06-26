@@ -69,7 +69,23 @@ std::string dlInterface::getTree(int i)
 
 float dlInterface::getTreeWeight(int i)
 {
-	//return (*brownie.trees).GetTreeWeight(i);
-	return brownie.intrees
+	return (*brownie.trees).GetTreeWeight(i);
+	//return brownie.intrees
 }
+
+
+/* write trees to file (should be temporary file)
+ * @author
+ * @return whether or not file was written to.
+ *
+ */
+bool dlInterface::writeTrees(std::string outfile)
+{
+	std::ofstream myfile;
+	myfile.open(outfile.c_str());
+	brownie.intrees.WriteTrees(myfile);
+	
+	return true;
+}
+
 
