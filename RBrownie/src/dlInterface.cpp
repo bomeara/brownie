@@ -67,3 +67,9 @@ std::string dlInterface::getTree(int i)
 	return retstr;
 }
 
+float dlInterface::getTreeWeight(int i)
+{
+	//return (*brownie.trees).GetTreeWeight(i);
+	return brownie.intrees
+}
+

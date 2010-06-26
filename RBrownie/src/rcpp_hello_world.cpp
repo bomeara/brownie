@@ -90,7 +90,7 @@ SEXP readBrownie(SEXP fnamevect)
 	List treelist(ntrees);
 	for (int j=0; j<ntrees; j++)
 	{
-		cout << "Tree " << j<<":"<<endl;
+		cout << "Tree weight: " << dli.getTreeWeight(j) << endl;
 		treelist[j] = dli.getTree(j);
 	}
 	
