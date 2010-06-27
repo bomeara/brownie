@@ -94,9 +94,8 @@ SEXP readBrownie(SEXP fnamevect)
 		treelist[j] = dli.getTree(j);
 	}
 	
-// 	std::ofstream myfile;
-// 	myfile.open("example.txt");
-// 	brownie.intrees.WriteTrees(myfile);
+	// output trees to file:
+	dli.writeTrees("asdf.txt");
 	
 	return treelist;
 }

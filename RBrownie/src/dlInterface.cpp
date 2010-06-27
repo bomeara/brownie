@@ -61,31 +61,52 @@ int dlInterface::getNumLoadedTrees()
 	return brownie.intrees.GetNumTrees();
 }
 
+
 std::string dlInterface::getTree(int i)
 {
 	std::string retstr = (std::string)(*brownie.trees).GetTranslatedTreeDescription(i);
 	return retstr;
 }
 
+/* Get tree weight (should come from comment in nexus file) [&W=...]
+ *
+ * 
+ */
 float dlInterface::getTreeWeight(int i)
 {
 	return (*brownie.trees).GetTreeWeight(i);
-	//return brownie.intrees
 }
 
 
-/* write trees to file (should be temporary file)
- * @author
+/* Write trees to file (should be temporary file)
+ *
+ * @author Conrad Stack
  * @return whether or not file was written to.
  *
  */
 bool dlInterface::writeTrees(std::string outfile)
 {
-	std::ofstream myfile;
-	myfile.open(outfile.c_str());
-	brownie.intrees.WriteTrees(myfile);
+	bool retbool = false;
+	if(getNumLoadedTrees() >= 1)
+	{
+		std::ofstream output;
+		try
+		{
+			output.open(outfile.c_str());
+			retbool = brownie.intrees.WriteTrees(output);
+			output.close();
+		} 
+		catch (std::ios_base::failure const& ex) 
+		{
+			if( output.is_open() )
+				output.close();
+			
+			std::cerr << "dlInterface::writeTrees -> I/O error.  Could not write to file " << outfile << std::endl;
+			throw;
+		}
+	}
 	
-	return true;
+	return retbool;
 }
 
 
