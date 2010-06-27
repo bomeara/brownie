@@ -69,74 +69,95 @@ int main()
 	//(*brownie.assumptions).Report(cout);
 	//(*brownie.trees).Report(cout);
 	
-
-	// Print translated trees
-	//
-	for (int j=0; j<ntrees; j++)
+	
+	if(ntrees > 0)
 	{
-		//cout<<(*brownie.trees).GetTranslatedTreeDescription(j)<<endl;
-		cout << brownie.intrees.GetIthTree(j).GetWeight() <<endl;
-	}
-	cout<<"Writing trees back....";
-	ofstream output;
-	cout<<"is_open=="<<output.is_open()<<"....";
-	output.open("asdfasdf.txt");
-	if(brownie.intrees.WriteTrees(output))
-		cout<<"done";
-	else
-		cout<<"FAILED";
-	
-	output.close();
-	cout<<endl;
-	
-	
-	// Print characters vectors, including their names
-	cout<<"Character labels: "<<endl;
-	for(int i=0;i<nchar;i++)
-	{
-		cout<<(*brownie.characters).GetCharLabel(i)<< " ";
-	}
-	cout<<endl;	
-	
-	// Characters Block
-	for(int j =0; j < ntaxa; j++)
-	{
+		// Print translated trees
+		//
+		for (int j=0; j<ntrees; j++)
+		{
+			//cout<<(*brownie.trees).GetTranslatedTreeDescription(j)<<endl;
+			//cout << brownie.intrees.GetIthTree(j).GetWeight() <<endl;
+		}
+		cout<<"Writing trees back....";
+		ofstream output;
+		cout<<"is_open=="<<output.is_open()<<"....";
+		output.open("asdfasdf.txt");
+		if(brownie.intrees.WriteTrees(output))
+			cout<<"done";
+		else
+			cout<<"FAILED";
 		
+		output.close();
+		cout<<endl;
+	} else {
+		cout << "no trees" << endl;
+	}
+	
+
+	if(nchar > 0)
+	{	
+		// Print characters vectors, including their names
+		cout<<"Character labels: "<<endl;
 		for(int i=0;i<nchar;i++)
 		{
-			if(!brownie.discretecharloaded)
-			{
-				cout << (*brownie.characters).GetValue(j,i,false) << " ";
-			} else {
-				cout << "State: "<<(*brownie.characters).GetState(j,i);
-				cout << " Value: "<< (*brownie.characters).GetValue(j,i,false);
-				cout << " -- ";
-			}
+			cout<<(*brownie.characters).GetCharLabel(i)<< " ";
 		}
-		cout << endl;
+		cout<<endl;	
+		
+		// Characters Block
+		for(int j =0; j < ntaxa; j++)
+		{
+			
+			for(int i=0;i<nchar;i++)
+			{
+				if(!brownie.discretecharloaded)
+				{
+					cout << (*brownie.characters).GetValue(j,i,false) << " ";
+				} else {
+					cout << "State: "<<(*brownie.characters).GetState(j,i);
+					cout << " Value: "<< (*brownie.characters).GetValue(j,i,false);
+					cout << " -- ";
+				}
+			}
+			cout << endl;
+		}
+	} else {
+		cout << "no characters" << endl;
 	}
 	
 	// Assumptions Block
 	// --- set nexusdefs.h for LabelList and IntSet definitions
 	//
-	LabelList assnames(nass);  // std::vector<nxsstring>
-	(*brownie.assumptions).GetTaxSetNames(assnames);
-	IntSet* isets = new IntSet[nass];  // std::set<int,<less>>
-	
-	for(int j=0; j < nass; j++)
+	if(nass > 0)
 	{
-		cout << assnames[j] << " - " ;
-		isets[j] = (*brownie.assumptions).GetTaxSet(assnames[j]);
-		cout << isets[j].size()<<endl;
-		if(!isets[j].empty())
+		LabelList assnames(nass);  // std::vector<nxsstring>
+		(*brownie.assumptions).GetTaxSetNames(assnames);
+		IntSet* isets = new IntSet[nass];  // std::set<int,<less>>
+		
+		for(int j=0; j < nass; j++)
 		{
-			cout << "Taxa:";
-			for(IntSet::iterator kk=isets[j].begin(); kk != isets[j].end(); kk++)
-				cout << " " << *kk; // should be an int value
-			cout << endl;
-		}
+			cout << assnames[j] << " - " ;
+			if(assnames[j].substr(0,3).compare("NOT")!=0 && assnames[j].compare("ALL")!=0)
+			{	
+				isets[j] = (*brownie.assumptions).GetTaxSet(assnames[j]);
+				cout << isets[j].size()<<endl;
+				if(!isets[j].empty())
+				{
+					cout << "Taxa:";
+					for(IntSet::iterator kk=isets[j].begin(); kk != isets[j].end(); kk++)
+						cout << " " << (*brownie.taxa).GetTaxonLabel(*kk); // *kk is an int, gettaxonlabel returns nxsstring
+					cout << endl;
+				}
+			} else {
+				cout << "do not return"<<endl;
+			}
+			
+		}		
+		delete [] isets;
+	} else {
+		cout <<"no assumptions"<<endl;
 	}
-	delete [] isets;
 	
 	return 0;
 }
