@@ -75,7 +75,10 @@ is.simmap <- function(finput="",text=NULL)
 	return(any(potentialsimmap))
 }
 
-# Check foe evidence that this file contains simmap-formatted trees
+
+# Read trees from a nexus file.  This function is only really necessary for 
+# nexus files where trees have simmap formatting.  If they don't, then
+# readNexus really should be used.
 #
 read.nexus.simmap <- function(finput="",text=NULL)
 {
@@ -97,12 +100,31 @@ read.nexus.simmap <- function(finput="",text=NULL)
 		return(FALSE)
 	}
 
-	## TODO: split individual strings on ';' character
+	## TODO: split individual strings on ';' character into newlines
 	
 	treelines = which(tolower(substr(treesblock,1,4))=="tree")
 	if(length(treelines)==0)
 		return(NULL)
+
 	
+	# make sure the the translated table is used if found
+	transstart = which(sapply(treesblock,function(i) tolower(i)=="translate",USE.NAMES=F))
+	translated = length(transstart)!=0
+	transend=integer(0)
+	taxatrans=""
+	index=integer(0)
+	taxname=""
+	
+	# assume that trees are not translated otherwise:
+	if(translated)
+	{
+		transend = seq(transstart,min(treelines)-1)[min(grep(";",treesblock[seq(transstart,min(treelines)-1)]))]
+		taxatrans = treesblock[(transstart+1):transend]
+		index = as.integer(sapply(strsplit(taxatrans,"\\s"),function(i) i[1]))  # I'm assuming that they are integers
+		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub(",","",i[2]))
+	}
+
+
 	outtrees=list()
 	count = 1
 	for(linenumb in treelines)
@@ -128,8 +150,17 @@ read.nexus.simmap <- function(finput="",text=NULL)
 		outtrees = append(outtrees,trtmp)
 		count = count + 1
 	}
+	
+	# if the trees have been translated, then
+	# add the names back in.
+	#
+	if(translated)
+	{
+	}
+	
 	return(outtrees)
 }
+
 
 
 # read modified newick file
@@ -437,8 +468,15 @@ get.nexus.comments<-function(finput,text=NULL)
 	if(!is(obj,"brownie"))
 		stop("Processed object needs to be of class brownie")
 	
+	for(aline in block.txt)
+	{
+		tokens = strsplit(aline,"\\s")
+		
+	}
+	
 	return (obj)
 }
+
 
 
 # internal function to parse / check brownie block

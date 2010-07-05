@@ -48,6 +48,7 @@ int main()
    	brownie.HandleNextCommand();
 	printf(" ...DONE\n");
 	
+	cout << "\n\n------------\nSUMMARY INFORMATION:\n-------------\n";;	
 	// How to get information from a BROWNIE object
 	LabelList nn;
 	int nchar = (*brownie.characters).GetNCharTotal();
@@ -69,17 +70,36 @@ int main()
 	//(*brownie.assumptions).Report(cout);
 	//(*brownie.trees).Report(cout);
 	
-	
+	cout << "\n\n------------\nTREE STUFF\n-------------\n";;
 	if(ntrees > 0)
 	{
 		// Print translated trees
 		//
+		cout<<"WEIGHTS:";
 		for (int j=0; j<ntrees; j++)
 		{
 			//cout<<(*brownie.trees).GetTranslatedTreeDescription(j)<<endl;
-			//cout << brownie.intrees.GetIthTree(j).GetWeight() <<endl;
+			//cout<<(*brownie.trees).GetTreeDescription(j)<<endl;
+			//cout << brownie.intrees.GetIthTree(j).Weight() <<endl;
 		}
-		cout<<"Writing trees back....";
+		cout<<endl;
+		
+		cout<<"TREE NEXUS STRING:"<<endl;
+		stringstream ss(stringstream::in | stringstream::out); 
+		//if(brownie.intrees.WriteTrees(ss))
+			//cout<<ss.str();
+		//cout<<endl;
+		
+			// Try to get simmap formatted tree..
+		brownie.intrees.GetIthTree(brownie.chosentree-1).WriteNoQuote(ss);
+		cout<<ss.str();
+		cout<<endl;
+		
+		cout<<"TREE LABELS:";
+		brownie.intrees.ShowLabelList(cout);
+		cout<<endl;
+		
+		cout<<"Writing trees to file....";
 		ofstream output;
 		cout<<"is_open=="<<output.is_open()<<"....";
 		output.open("asdfasdf.txt");
@@ -87,21 +107,22 @@ int main()
 			cout<<"done";
 		else
 			cout<<"FAILED";
-		
 		output.close();
 		cout<<endl;
+		
+		
 	} else {
 		cout << "no trees" << endl;
 	}
 	
-
+	cout << "\n\n------------\nCHARACTER STUFF\n-------------\n";;
 	if(nchar > 0)
 	{	
 		// Print characters vectors, including their names
 		cout<<"Character labels: "<<endl;
 		for(int i=0;i<nchar;i++)
 		{
-			cout<<(*brownie.characters).GetCharLabel(i)<< " ";
+			cout << (*brownie.characters).GetCharLabel(i) << " ";
 		}
 		cout<<endl;	
 		
@@ -111,11 +132,13 @@ int main()
 			
 			for(int i=0;i<nchar;i++)
 			{
+				
+				// NOTE: GetState returns char and GetValues return float
 				if(!brownie.discretecharloaded)
 				{
-					cout << (*brownie.characters).GetValue(j,i,false) << " ";
+					cout << (*brownie.characters).GetValue(j,i,false) << " "; // GetValue returns a float
 				} else {
-					cout << "State: "<<(*brownie.characters).GetState(j,i);
+					cout << "State: "<<(*brownie.characters).GetState(j,i); // this one is the one to use
 					cout << " Value: "<< (*brownie.characters).GetValue(j,i,false);
 					cout << " -- ";
 				}
@@ -125,6 +148,10 @@ int main()
 	} else {
 		cout << "no characters" << endl;
 	}
+	
+	vector<string> taxanames(nass);
+	vector< vector<string> > taxasets(nass);
+	int currindex = 0;
 	
 	// Assumptions Block
 	// --- set nexusdefs.h for LabelList and IntSet definitions
@@ -137,17 +164,26 @@ int main()
 		
 		for(int j=0; j < nass; j++)
 		{
-			cout << assnames[j] << " - " ;
 			if(assnames[j].substr(0,3).compare("NOT")!=0 && assnames[j].compare("ALL")!=0)
 			{	
+				taxanames[currindex] = (std::string)assnames[j];
+				cout << taxanames[currindex] << " - " ;
+				// IntSets:
 				isets[j] = (*brownie.assumptions).GetTaxSet(assnames[j]);
-				cout << isets[j].size()<<endl;
+				
 				if(!isets[j].empty())
 				{
 					cout << "Taxa:";
 					for(IntSet::iterator kk=isets[j].begin(); kk != isets[j].end(); kk++)
+					{
 						cout << " " << (*brownie.taxa).GetTaxonLabel(*kk); // *kk is an int, gettaxonlabel returns nxsstring
+						taxasets[currindex].push_back((*brownie.taxa).GetTaxonLabel(*kk));
+					}
+					
+					//cout << isets[j].size() << endl;
+					cout << "Total: " << taxasets[currindex].size() << endl;
 					cout << endl;
+					currindex++;
 				}
 			} else {
 				cout << "do not return"<<endl;
@@ -158,6 +194,13 @@ int main()
 	} else {
 		cout <<"no assumptions"<<endl;
 	}
+	
+	taxanames.resize(currindex);
+	taxasets.resize(currindex);
+	
+	cout<<currindex<<" taxa sets used:"<<endl;
+	for(int iii = 0; iii < taxanames.size(); iii++)
+		cout<<taxanames[iii]<<endl;
 	
 	return 0;
 }
