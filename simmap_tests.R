@@ -29,6 +29,108 @@ get.nodenames<-function(newick.txt)
 	return(nnames)
 }
 
+# Check foe evidence that this file contains simmap-formatted trees
+#
+is.simmap <- function(finput="",text=NULL)
+{
+	if(!is.null(text)){
+		# TODO: check text for newlines and split on them if they exist.
+		rawtext=text
+	} else {
+		if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+	}
+
+	## TODO: split individual strings on ';' character
+	
+	# if there is only one string, then just check that
+	if(length(rawtext)==1)
+	{
+		treesblock = rawtext
+	} else {
+		treesblock = read.nexus.block(txt=rawtext,block="trees")
+	}
+	
+	if(length(treesblock)==0)
+	{
+		warning("No trees in this file...")
+		return(FALSE)
+	}
+
+	treelines = which(tolower(substr(treesblock,1,4))=="tree")
+	
+	potentialsimmap = logical(length(treelines))
+	count = 1
+	for(linenumb in treelines)
+	{
+		# check for simmap style
+		# remove first comment (should others be removed?
+		junk =  gsub("\\[(.*?)\\]","",treesblock[linenumb])
+		potentialsimmap[count] = as.logical(length(grep(":\\{.*?\\}",junk)))
+		count = count + 1
+	}
+	
+	return(any(potentialsimmap))
+}
+
+# Check foe evidence that this file contains simmap-formatted trees
+#
+read.nexus.simmap <- function(finput="",text=NULL)
+{
+	if(!is.null(text)){
+		# TODO: check text for newlines and split on them if they exist.
+		rawtext=text
+	} else {
+		if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+	}
+
+	treesblock = read.nexus.block(txt=rawtext,block="trees")
+	
+	if(length(treesblock)==0)
+	{
+		warning("No trees in this file...")
+		return(FALSE)
+	}
+
+	## TODO: split individual strings on ';' character
+	
+	treelines = which(tolower(substr(treesblock,1,4))=="tree")
+	if(length(treelines)==0)
+		return(NULL)
+	
+	outtrees=list()
+	count = 1
+	for(linenumb in treelines)
+	{
+		# clearly, this will not work for non-simmap, non-newick trees
+		tmpstr = tail(strsplit(treesblock[linenumb],"=")[[1]],1)
+		
+		# check for simmap style
+		# remove first comment (should others be removed?
+		if(is.simmap(text=treesblock[linenumb]))
+		{
+			trtmp = read.simmap(text=tmpstr)
+		} else {
+			trtmp = read.tree(text=tmpstr)
+		}
+		trtmp = as(trtmp,'phylo4')
+		
+		if(!inherits(trtmp,"phylo4")){
+			cat("Trouble parsing line for trees:\n",treesblock[linenumb],"\n")
+			stop()
+		}
+		
+		outtrees = append(outtrees,trtmp)
+		count = count + 1
+	}
+	return(outtrees)
+}
+
 
 # read modified newick file
 # citation: 
@@ -153,7 +255,7 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 		}
 	}
 	
-	write.nexus(tr,file="written.tree")
+	#write.nexus(tr,file="written.tree")
 	return(as(tr,"phylo4"))
 }
 
