@@ -29,6 +29,7 @@ get.nodenames<-function(newick.txt)
 	return(nnames)
 }
 
+
 # Check foe evidence that this file contains simmap-formatted trees
 #
 is.simmap <- function(finput="",text=NULL)
@@ -116,12 +117,13 @@ read.nexus.simmap <- function(finput="",text=NULL)
 	taxname=""
 	
 	# assume that trees are not translated otherwise:
+	# these should be in order numerically.
 	if(translated)
 	{
 		transend = seq(transstart,min(treelines)-1)[min(grep(";",treesblock[seq(transstart,min(treelines)-1)]))]
 		taxatrans = treesblock[(transstart+1):transend]
 		index = as.integer(sapply(strsplit(taxatrans,"\\s"),function(i) i[1]))  # I'm assuming that they are integers
-		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub(",","",i[2]))
+		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub("(,|;)","",i[2]))
 	}
 
 
@@ -156,6 +158,10 @@ read.nexus.simmap <- function(finput="",text=NULL)
 	#
 	if(translated)
 	{
+		for(treeind in seq(length(outtrees)))
+		{
+			tipLabels(outtrees[[treeind]]) <- taxname[as.integer(tipLabels(outtrees[[treeind]]))]
+		}
 	}
 	
 	return(outtrees)
@@ -465,17 +471,71 @@ get.nexus.comments<-function(finput,text=NULL)
 # internal function to parse / check assumptions block
 .process.assumptions <- function(obj,block.txt)
 {
-	if(!is(obj,"brownie"))
+	
+	if(!is(obj[[1]],"brownie"))
 		stop("Processed object needs to be of class brownie")
+	
 	
 	for(aline in block.txt)
 	{
-		tokens = strsplit(aline,"\\s")
+		tokens = strsplit(aline,"\\s")[[1]]
+		next.is.name=F
+		next.is.taxa=F
+		taxinds=numeric(0)
+		taxname=""
 		
+		for(kk in seq(length(tokens)))
+		{
+			if(tolower(tokens[kk]) == "taxset")
+			{
+				next.is.name = T
+				next
+			} else {
+				
+				# reset and start recording names
+				if(next.is.name){
+					next.is.name=F
+					taxname = sub("=","",tokens[kk])
+					next.is.taxa=T
+					next
+				}
+				
+				if(next.is.taxa){
+					if(length(grep(";",tokens[kk]))==1)
+					{
+						taxinds = append(taxinds,sub(";","",tokens[kk]))
+						break
+					} else {
+						taxinds = append(taxinds,tokens[kk])
+					}
+				}
+			}
+		}
+		
+		# add this taxaset to the object, if there is one:
+		if(taxname != "")
+		{
+			nm = paste("TAXSET",taxname,sep="_")
+			taxaI = data.frame(all=rep(0,nTips(tree)))
+			names(taxaI) <- nm
+			
+			for(tind in seq(length(obj)))
+			{
+				# convert if needed
+				if(!inherits(obj[[tind]],"phylo4d"))
+					obj[[tind]] = phylo4d(obj[[tind]])
+				
+				taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
+				#names(taxaI) <- nm
+				obj[[tind]] = addData(obj[[tind]],tip.data=taxaI)
+				
+			}
+		}
 	}
 	
 	return (obj)
 }
+
 
 
 
@@ -531,10 +591,51 @@ readBrownie<-function(fname)
 	brownie.part = read.nexus.block(txt=filetxt,block="BROWNIE")
 	assumptions.part = read.nexus.block(txt=filetxt,block="ASSUMPTIONS")
 	
-	phy.part = readNexus(fname)  # convert nexus strings to simmap tree
+	if(!is.simmap(fname)){
+		
+		# this function should read in character data
+		# wrap in list to make it compatible with read.nexus.simmap output
+		phy.part = list(readNexus(fname))  
+		
+	} else {
+		
+		# should return a list
+		phy.part = read.nexus.simmap(fname) 
+		
+		# process data part (the hard way)
+		data.part = readNexus(fname,type="data")
+		
+		if(length(data.part) > 0)
+		{
+			warning("Having to use sketchy regular expressions to add data (i.e. The difficult way)")
+			data.names = tolower(rownames(data.part))
+			
+			# TODO: fix phylobase!
+			for(tind in seq(length(phy.part)))
+			{
+				# NOTE: doing this reordering is necessary because phylobase does not seem to
+				# 		return unadulterated taxa names where reading character data.
+				# convert to phylo4d 
+				if(!inherits(phy.part[[tind]],"phylo4d"))
+					phy.part[[tind]] = phylo4d(phy.part[[tind]])
+				
+				tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
+				neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
+				data.part.tmp = data.part[neworder,]
+				phy.part[[tind]] = addData(phy.part[[tind]],tip.data=data.part.tmp,match.data=F)
+			}
+		}
+	}
 	
-	brau.new = new("brownie",phy.part,commands=brownie.part)
-	brau.new = .process.assumptions(assumptions.part)  # TODO: overload constructor to do this processing.
+	if(!inherits(phy.part[[1]],"phylo4"))
+		stop("Object of class phylo4 was not created.  Email author of this shoddy code.")
+	
+	brau.new = list()
+	for(tind in seq(length(phy.part)))
+	{
+		 brau.new = append(brau.new,new("brownie",phy.part[[tind]],commands=brownie.part))
+	}
+	brau.new = .process.assumptions(brau.new,assumptions.part)  # TODO: overload constructor to do this processing.
 	
 	return(brau.new)
 }
