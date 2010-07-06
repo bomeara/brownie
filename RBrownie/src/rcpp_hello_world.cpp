@@ -92,11 +92,11 @@ SEXP readBrownie(SEXP fnamevect)
 	int nchar = dli.getNumChars();
 	int ntaxa = dli.getNumTaxa();
 	int tset = dli.getNumTaxaSets();
-// 	cout<<"Number of trees: "<<ntrees<<endl;
-// 	cout<<"Number of taxa: "<< ntaxa <<endl;
-// 	cout<<"Number of chars: "<< nchar<<endl;
-// 	cout<<"Number of dchars: " << nchard <<endl;
-// 	cout<<"Number of taxasets: " << tset <<endl;
+	cout<<"Number of trees: "<<ntrees<<endl;
+	cout<<"Number of taxa: "<< ntaxa <<endl;
+	cout<<"Number of chars: "<< nchar<<endl;
+	cout<<"Number of dchars: " << nchard <<endl;
+	cout<<"Number of taxasets: " << tset <<endl;
 
 
 	// retrieve TREES
@@ -107,15 +107,27 @@ SEXP readBrownie(SEXP fnamevect)
 		treelist[j] = dli.getTree(j);
 	}
 	
-	// retrieve TAXA
+	// retrieve TAXASETS
 	//cout<<dli.getCharLabels()<<endl;
 	std::vector<std::string> taxasets(dli.getTaxaSetNames());
 	std::vector< std::vector<std::string> > taxasetfull(dli.getTaxaSets());
 	
-	std::vector< std::vector<char> > dchars(nchard, std::vector<char>(ntaxa,'A'));
-	std::vector< std::vector<float> > cchars(nchar, std::vector<float>(ntaxa,0));
+	// retrieve CHARACTERS
+	std::vector<std::string> charlabels(dli.getCharLabels());
+	std::vector< std::vector<char> > dchars(nchard);
+	std::vector< std::vector<float> > cchars(nchar);
 	
-
+	// load discrete characters
+	for(int ii = 0; ii < nchard; ii++)
+	{
+		dchars[ii] = dli.getDiscreteChar(ii);
+	}
+	
+	// load continuous characters
+	for(int ii = 0; ii < nchar; ii++)
+	{
+		cchars[ii] = dli.getContChar(ii);
+	}
 	
 	
 	// output trees to file (regular nexus format)
@@ -125,6 +137,10 @@ SEXP readBrownie(SEXP fnamevect)
 	
 	return List::create(Named("trees")=treelist,
 						Named("taxasetnames")=wrap(taxasets),
-						Named("taxasets")=taxasetfull);
+						Named("taxasets")=taxasetfull,
+						Named("CharLabels")=charlabels,
+						Named("DisChars")=dchars,
+						Named("ContChars")=cchars);
+		
 	
 }

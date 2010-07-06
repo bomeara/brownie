@@ -110,6 +110,7 @@ std::vector<std::string> dlInterface::getCharLabels()
 	{
 		charnames[i] = (*brownie.characters).GetCharLabel(i);
 	}
+	return charnames;
 }
 
 /* Method to return DISCRETE character states (if they are loaded)
