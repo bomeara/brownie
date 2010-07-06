@@ -49,8 +49,10 @@ is.simmap <- function(finput="",text=NULL)
 	if(length(rawtext)==1)
 	{
 		treesblock = rawtext
+		treelines = 1
 	} else {
 		treesblock = read.nexus.block(txt=rawtext,block="trees")
+		treelines = which(tolower(substr(treesblock,1,4))=="tree")
 	}
 	
 	if(length(treesblock)==0)
@@ -58,8 +60,6 @@ is.simmap <- function(finput="",text=NULL)
 		warning("No trees in this file...")
 		return(FALSE)
 	}
-
-	treelines = which(tolower(substr(treesblock,1,4))=="tree")
 	
 	potentialsimmap = logical(length(treelines))
 	count = 1
