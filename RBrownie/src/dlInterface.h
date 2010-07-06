@@ -2,8 +2,7 @@
 #define _RBrownie_DLINTERFACE_H
 
 #include "dl.h"
-
-const std::string EXECUTE = "execute ";
+#include "browniecmds.h"
 
 class dlInterface
 {

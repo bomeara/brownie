@@ -245,8 +245,8 @@ std::vector< std::vector<std::string> > dlInterface::getTaxaSets()
 		// resize:
 		if( currindex < ntaxa )
 			taxasets.resize(currindex);
-		
 	}
+	return taxasets;
 }
 
 

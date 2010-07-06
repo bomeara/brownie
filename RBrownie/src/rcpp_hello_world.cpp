@@ -13,6 +13,8 @@
 #include "dlInterface.h"
 
 
+// TODO: Depreciate this class and replace it with a Module directly to dlInterface
+
 SEXP rcpp_hello_world()
 {
 	
@@ -66,7 +68,7 @@ SEXP rcpp_hello_world()
 }
 
 /* Method which executes a brownie file and returns a list
- * which can be construed into an Robject of class brownie
+ * which can be compiled into an Robject of class brownie
  *
  * @author Conrad Stack
  */
@@ -77,7 +79,6 @@ SEXP readBrownie(SEXP fnamevect)
 	// Setup interface object
 	dlInterface dli;
 	
-	
 	// Execute the filename
 	CharacterVector fname(fnamevect);
 	std::string newstr = "" + fname[0];  // convery string_proxy to std::string
@@ -85,8 +86,20 @@ SEXP readBrownie(SEXP fnamevect)
 	dli.execute(newstr);
 	
 	
-	// Retrieve variables (might need to use CharacterVector or StringVector)
+	// Number of loaded things:
 	int ntrees = dli.getNumLoadedTrees();
+	int nchard = dli.getNumDiscreteChars();
+	int nchar = dli.getNumChars();
+	int ntaxa = dli.getNumTaxa();
+	int tset = dli.getNumTaxaSets();
+// 	cout<<"Number of trees: "<<ntrees<<endl;
+// 	cout<<"Number of taxa: "<< ntaxa <<endl;
+// 	cout<<"Number of chars: "<< nchar<<endl;
+// 	cout<<"Number of dchars: " << nchard <<endl;
+// 	cout<<"Number of taxasets: " << tset <<endl;
+
+
+	// retrieve TREES
 	List treelist(ntrees);
 	for (int j=0; j<ntrees; j++)
 	{
@@ -94,8 +107,24 @@ SEXP readBrownie(SEXP fnamevect)
 		treelist[j] = dli.getTree(j);
 	}
 	
-	// output trees to file:
-	dli.writeTrees("asdf.txt");
+	// retrieve TAXA
+	//cout<<dli.getCharLabels()<<endl;
+	std::vector<std::string> taxasets(dli.getTaxaSetNames());
+	std::vector< std::vector<std::string> > taxasetfull(dli.getTaxaSets());
 	
-	return treelist;
+	std::vector< std::vector<char> > dchars(nchard, std::vector<char>(ntaxa,'A'));
+	std::vector< std::vector<float> > cchars(nchar, std::vector<float>(ntaxa,0));
+	
+
+	
+	
+	// output trees to file (regular nexus format)
+	// (an alternative way to retrieve info)
+	//dli.writeTrees("asdf.txt");
+	
+	
+	return List::create(Named("trees")=treelist,
+						Named("taxasetnames")=wrap(taxasets),
+						Named("taxasets")=taxasetfull);
+	
 }
