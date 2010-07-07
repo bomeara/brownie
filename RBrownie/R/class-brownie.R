@@ -3,7 +3,7 @@ setClass("brownie",
 		validity = checkBrownie
 		)
 
-		
+
 #---------------
 # constructors |
 #---------------
