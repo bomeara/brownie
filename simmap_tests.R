@@ -9,6 +9,11 @@ rd.simmap = "((Taxon1:{A,0.1; C,0.1}, Taxon2:{T,0.1; C,0.1}):{C,0.5}, Taxon3:{C,
 sub.br = ":\\{([a-zA-z0-9]{1,5}),(\\d{0,10}\\.\\d{0,10});"
 #gsub(rd.nowhite, sub.br ,"-(\\1)-(\\2)-" ,rd.nowhite)
 
+
+#------------------------
+# SIMMAP Methods		|
+#------------------------
+
 # get node names from newick string
 get.nodenames<-function(newick.txt)
 {
@@ -319,11 +324,12 @@ expand.singles <- function(tree)
 	count = 1
 	for(ii in snodes)
 	{
-		tree@label = append(sprintf("Junk%0.7d",count),tree@label)
+		tree@label = append(sprintf("JUNK%0.7d",count),tree@label)
 		tree@edge = rbind(tree@edge, c(ii, count))
 		tree@edge.length = append(tree@edge.length,0)
 		count = count + 1
 	}
+	
 	# rearrange
 	#tree@order = "unknown"
 	rootind = which(tree@edge[,1] == 0)
@@ -332,6 +338,7 @@ expand.singles <- function(tree)
 	tree@edge[rootind,1] = 0
 	
 	# rename
+	nnodes = nTips(tree) + nNodes(tree)
 	names(tree@label) <- as.character(seq(1,nnodes))
 	names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
 	
@@ -417,6 +424,9 @@ collapse.to.singles <- function(tree,by.name=NULL)
 # Method to read the first comment in a line in the format '[&...]'
 # This is for reading tree weights chiefly
 #
+# Example:
+# get.nexus.comments("example.txt")->lala
+#
 get.nexus.comments<-function(finput,text=NULL)
 {
 	if(!is.null(text)){
@@ -440,8 +450,32 @@ get.nexus.comments<-function(finput,text=NULL)
 	
 	return(comments)	
 }
-#get.nexus.comments("example.txt")->lala  # test call
 
+
+# Internal function - split tokens by a certain character
+.split.tokens <- function(txt,char)
+{
+	nlines = length(txt)
+	newtokens = character(nlines)
+	charlines = unname(sapply(txt,function(i) length(grep(char,i))))
+	curline=1
+	for(ll in seq(nlines))
+	{
+		if(charlines[ll] == 0){
+			newtokens[curline] = txt[ll]
+			curline = curline + 1
+		}else{
+			tmp = strsplit(txt[ll],char)[[1]]
+			for(tmpline in tmp){
+				#if(tmpline!=""){
+					newtokens[curline] = paste(tmpline,char,sep="")
+					curline = curline + 1
+				#}
+			}
+		}
+	}
+	return (newtokens)
+}
 
 
 # Internal function - get all content within a nexus block
@@ -468,7 +502,7 @@ get.nexus.comments<-function(finput,text=NULL)
 
 
 
-# internal function to parse / check assumptions block
+# Internal function to parse / check assumptions block
 .process.assumptions <- function(obj,block.txt)
 {
 	
