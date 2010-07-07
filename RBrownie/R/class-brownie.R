@@ -8,6 +8,7 @@ setClass("brownie",
 # constructors |
 #---------------
 
+# for checking datatypes (to be used with 'data' slot)
 brownie_datatype_options = c("taxset","cont","discrete","data")
 
 # 'brownie' to be a generic function
