@@ -19,7 +19,7 @@ get.nodenames<-function(newick.txt)
 {
 	nnames = character(0)
 	ttmp = newick.txt
-	nname.pat="(\\(|,|\\))([a-zA-Z0-9]{1,}):"
+	nname.pat="(\\(|,|\\))([a-zA-Z0-9']{1,})(:|;)"
 	junk = regexpr(nname.pat,ttmp)
 	count = 0
 	while(junk[1] != -1)
@@ -35,7 +35,7 @@ get.nodenames<-function(newick.txt)
 }
 
 
-# Check foe evidence that this file contains simmap-formatted trees
+# Check for evidence that this file contains simmap-formatted trees
 #
 is.simmap <- function(finput="",text=NULL)
 {
@@ -80,6 +80,8 @@ is.simmap <- function(finput="",text=NULL)
 	
 	return(any(potentialsimmap))
 }
+
+
 
 
 # Read trees from a nexus file.  This function is only really necessary for 
@@ -179,7 +181,9 @@ read.nexus.simmap <- function(finput="",text=NULL)
 # Bollback J. P. (2006) SIMMAP: Stochastic character mapping of 
 # discrete traits on phylogenies. BMC Bioinformatics. 7:88
 # 
+#
 # Assume that branch lengths are present (otherwise, why use SIMMAP?)
+# Assume that the root node can only have one simmap state (or, only use the first)
 #
 read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 {
@@ -217,6 +221,7 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 	junk = strsplit(text,"")[[1]]
 	sub.branches = cbind( which(junk=="{"), which(junk=="}") )
 	br.lens = numeric(nrow(sub.branches))
+	
 	for(ii in seq(nrow(sub.branches)))
 	{
 		br.total = 0
@@ -234,8 +239,7 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 		}
 		br.lens[ii] = br.total
 	}
-	#
-	##
+
 	
 	# horrible way to put it back together:
 	# switch to regular expressions
@@ -251,29 +255,49 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 	
 	# convert to ape format:
 	tr = read.tree(text=newick.str)
-
 	
 	# make singleton nodes
 	#
 	edge.len = as.numeric(edge.len)
 	all.labels = c(tr$tip.label,tr$node.label)
-	nnames = head(get.nodenames(newick.str),-1)
+	
+	# all names except the root node (which ought to be named, otherwise this will break)
+	#
+	#nnames = head(get.nodenames(newick.str),-1)  # This should match up with edge.ind
+	nnames = get.nodenames(newick.str)
 	scount = 1
 	nTips = length(tr$tip.label)
 	nInts = length(tr$node.label)
-
+	
+	# node information
+	dataVal = character(0)
+	dataNode = integer(0)
+		
 	# loop through split branches
 	for(kk in unique(edge.ind))
 	{
 		# this information shouldn't change:
+		is.root = F
 		edgeind = which(edge.ind == kk)
 		trind = which(nnames[kk] == all.labels)
-		esplice = which(tr$edge[,2] == trind) # except this, this will change
+		esplice = which(tr$edge[,2] == trind) # which edge to chop
 		anc = tr$edge[esplice,1]
 		dec = tr$edge[esplice,2]
 	
+		# assume that this is the root (no way to check for it otherwise..)
+		if( length(esplice) == 0 )
+		{
+			dec = trind
+			is.root = T
+		}
+		
+		# store data information:
+		dataNode = append(dataNode,dec)
+		dataVal = append(dataVal, edge.state[edgeind[1]])
+
 		newsingles = length(edgeind)-1
-		if(newsingles==0)
+		
+		if(newsingles==0 || is.root)
 			next
 		
 		# add new singleton nodes
@@ -289,7 +313,12 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 			tr$edge = rbind(tr$edge,c(anc,nodeid))
 			tr$edge.length[esplice] = edge.len[edgeind[mm]]
 			tr$edge.length = append(tr$edge.length,edge.len[edgeind[(mm+1)]])
-		
+			
+			# store data information:
+			dataNode = append(dataNode,nodeid)
+			dataVal = append(dataVal, edge.state[edgeind[(mm+1)]])
+			
+			
 			# update info:
 			esplice = length(tr$edge.length) # should be the last one
 			dec = nodeid
@@ -297,9 +326,15 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 		}
 	}
 	
+	# create phylo4d object
+	new.labels = c(tr$tip.label,tr$node.label)
+	tmpdf = data.frame("simmap_state"=dataVal, row.names=new.labels[dataNode])
+	rettree = phylo4d(tr,all.data=tmpdf,missing.data="OK")
+	
 	#write.nexus(tr,file="written.tree")
-	return(as(tr,"phylo4"))
+	return(rettree)
 }
+
 
 testtree = read.simmap(text="(((((32:{0,0.058907691963},(31:{0,0.022424212177:1,0.016767967599},(34:{1,0.036771632295},(30:{1,0.033928324112},33:{0,0.029725747655:1,0.004202576457}):{1,0.002843308183}):{1,0.002420547480}):{1,0.000275233450:0,0.019440278711}):{0,0.008552585573},29:{0,0.067460277504}):{0,0.040135207374},8:{0,0.091158418718:1,0.000880105051:0,0.015556961136}):{0,0.019704981181},(10:{0,0.112116752589},(2:{0,0.000772585273},3:{0,0.000772585273}):{0,0.014969340499:1,0.029030780722:0,0.067344046095}):{0,0.015183713480}):{0,0.023742583944},((1:{1,0.066050466671},4:{1,0.066050466671}):{1,0.039823924285},(9:{1,0.086482781129},(((5:{1,0.017325369522},6:{1,0.017325369522}):{1,0.006182126280},7:{1,0.023507495803}):{1,0.034790702136},(((26:{1,0.019800202825},14:{1,0.019800202825}):{1,0.016420404516},22:{1,0.036220607341}):{1,0.009769629593},(((23:{1,0.014983924906},(24:{1,0.004248281035},(18:{1,0.001668719645},21:{1,0.001668719645}):{1,0.002579561389}):{1,0.010735643875}):{1,0.009021350133},12:{1,0.024005275044}):{1,0.015472368742},(((((20:{1,0.019149815099},(15:{1,0.015578674920},11:{1,0.015578674920}):{1,0.003571140182}):{1,0.006407372276},25:{1,0.025557187375}):{1,0.001278231913},(13:{1,0.017974442632},16:{1,0.017974442632}):{1,0.008860976659}):{1,0.004074632240},(17:{1,0.027243985323},(28:{1,0.022983956116},19:{1,0.022983956116}):{1,0.004260029207}):{1,0.003666066205}):{1,0.005572724711},27:{1,0.036482776240}):{1,0.002994867546}):{1,0.006512593148}):{1,0.012307961005}):{1,0.028184583180}):{1,0.019391609822}):{1,0.019245403638:0,0.025923255434});")
 
