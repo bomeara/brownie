@@ -5,7 +5,6 @@ new.tree = read.tree(text=rd)
 plot(new.tree)
 
 rd.simmap = "((Taxon1:{A,0.1; C,0.1}, Taxon2:{T,0.1; C,0.1}):{C,0.5}, Taxon3:{C,0.4} );"
-
 sub.br = ":\\{([a-zA-z0-9]{1,5}),(\\d{0,10}\\.\\d{0,10});"
 #gsub(rd.nowhite, sub.br ,"-(\\1)-(\\2)-" ,rd.nowhite)
 
@@ -14,6 +13,7 @@ sub.br = ":\\{([a-zA-z0-9]{1,5}),(\\d{0,10}\\.\\d{0,10});"
 # SIMMAP Methods		|
 #------------------------
 
+# internal:
 # get node names from newick string
 get.nodenames<-function(newick.txt)
 {
@@ -80,100 +80,6 @@ is.simmap <- function(finput="",text=NULL)
 	
 	return(any(potentialsimmap))
 }
-
-
-
-
-# Read trees from a nexus file.  This function is only really necessary for 
-# nexus files where trees have simmap formatting.  If they don't, then
-# readNexus really should be used.
-#
-read.nexus.simmap <- function(finput="",text=NULL)
-{
-	if(!is.null(text)){
-		# TODO: check text for newlines and split on them if they exist.
-		rawtext=text
-	} else {
-		if(!file.exists(finput))
-			stop("Assuming finput is a file and could not find it")
-		
-		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
-	}
-
-	treesblock = read.nexus.block(txt=rawtext,block="trees")
-	
-	if(length(treesblock)==0)
-	{
-		warning("No trees in this file...")
-		return(FALSE)
-	}
-
-	## TODO: split individual strings on ';' character into newlines
-	
-	treelines = which(tolower(substr(treesblock,1,4))=="tree")
-	if(length(treelines)==0)
-		return(NULL)
-
-	
-	# make sure the the translated table is used if found
-	transstart = which(sapply(treesblock,function(i) tolower(i)=="translate",USE.NAMES=F))
-	translated = length(transstart)!=0
-	transend=integer(0)
-	taxatrans=""
-	index=integer(0)
-	taxname=""
-	
-	# assume that trees are not translated otherwise:
-	# these should be in order numerically.
-	if(translated)
-	{
-		transend = seq(transstart,min(treelines)-1)[min(grep(";",treesblock[seq(transstart,min(treelines)-1)]))]
-		taxatrans = treesblock[(transstart+1):transend]
-		index = as.integer(sapply(strsplit(taxatrans,"\\s"),function(i) i[1]))  # I'm assuming that they are integers
-		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub("(,|;)","",i[2]))
-	}
-
-
-	outtrees=list()
-	count = 1
-	for(linenumb in treelines)
-	{
-		# clearly, this will not work for non-simmap, non-newick trees
-		tmpstr = tail(strsplit(treesblock[linenumb],"=")[[1]],1)
-		
-		# check for simmap style
-		# remove first comment (should others be removed?
-		if(is.simmap(text=treesblock[linenumb]))
-		{
-			trtmp = read.simmap(text=tmpstr)
-		} else {
-			trtmp = read.tree(text=tmpstr)
-		}
-		trtmp = as(trtmp,'phylo4')
-		
-		if(!inherits(trtmp,"phylo4")){
-			cat("Trouble parsing line for trees:\n",treesblock[linenumb],"\n")
-			stop()
-		}
-		
-		outtrees = append(outtrees,trtmp)
-		count = count + 1
-	}
-	
-	# if the trees have been translated, then
-	# add the names back in.
-	#
-	if(translated)
-	{
-		for(treeind in seq(length(outtrees)))
-		{
-			tipLabels(outtrees[[treeind]]) <- taxname[as.integer(tipLabels(outtrees[[treeind]]))]
-		}
-	}
-	
-	return(outtrees)
-}
-
 
 
 # read modified newick file
@@ -340,9 +246,104 @@ testtree = read.simmap(text="(((((32:{0,0.058907691963},(31:{0,0.022424212177:1,
 
 
 
+
+#
+# Read trees from a nexus file.  This function is only really necessary for 
+# nexus files where trees have simmap formatting.  If they don't, then
+# readNexus really should be used.
+#
+read.nexus.simmap <- function(finput="",text=NULL)
+{
+	if(!is.null(text)){
+		# TODO: check text for newlines and split on them if they exist.
+		rawtext=text
+	} else {
+		if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+	}
+
+	treesblock = read.nexus.block(txt=rawtext,block="trees")
+	
+	if(length(treesblock)==0)
+	{
+		warning("No trees in this file...")
+		return(FALSE)
+	}
+
+	## TODO: split individual strings on ';' character into newlines
+	
+	treelines = which(tolower(substr(treesblock,1,4))=="tree")
+	if(length(treelines)==0)
+		return(NULL)
+
+	
+	# make sure the the translated table is used if found
+	transstart = which(sapply(treesblock,function(i) tolower(i)=="translate",USE.NAMES=F))
+	translated = length(transstart)!=0
+	transend=integer(0)
+	taxatrans=""
+	index=integer(0)
+	taxname=""
+	
+	# assume that trees are not translated otherwise:
+	# these should be in order numerically.
+	if(translated)
+	{
+		transend = seq(transstart,min(treelines)-1)[min(grep(";",treesblock[seq(transstart,min(treelines)-1)]))]
+		taxatrans = treesblock[(transstart+1):transend]
+		index = as.integer(sapply(strsplit(taxatrans,"\\s"),function(i) i[1]))  # I'm assuming that they are integers
+		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub("(,|;)","",i[2]))
+	}
+
+
+	outtrees=list()
+	count = 1
+	for(linenumb in treelines)
+	{
+		# clearly, this will not work for non-simmap, non-newick trees
+		tmpstr = tail(strsplit(treesblock[linenumb],"=")[[1]],1)
+		
+		# check for simmap style
+		# remove first comment (should others be removed?
+		if(is.simmap(text=treesblock[linenumb]))
+		{
+			trtmp = read.simmap(text=tmpstr)
+		} else {
+			trtmp = read.tree(text=tmpstr)
+		}
+		trtmp = as(trtmp,'phylo4')
+		
+		if(!inherits(trtmp,"phylo4")){
+			cat("Trouble parsing line for trees:\n",treesblock[linenumb],"\n")
+			stop()
+		}
+		
+		outtrees = append(outtrees,trtmp)
+		count = count + 1
+	}
+	
+	# if the trees have been translated, then
+	# add the names back in.
+	#
+	if(translated)
+	{
+		for(treeind in seq(length(outtrees)))
+		{
+			tipLabels(outtrees[[treeind]]) <- taxname[as.integer(tipLabels(outtrees[[treeind]]))]
+		}
+	}
+	
+	return(outtrees)
+}
+
+
+
+
 # expand singleton nodes into bifurcating nodes with one junk node
 # this function is mainly for plotting and saving files
-# TODO: convert all explicit calls to @'slot' to their abstract counterpart (e.g. tree@edge.length goes to edgeLength(tree)
+# TODO: convert all explicit calls to @'slot' to their accessor counterpart (e.g. tree@edge.length goes to edgeLength(tree)
 #
 expand.singles <- function(tree)
 {
@@ -350,32 +351,35 @@ expand.singles <- function(tree)
 	if(!is(tree,"phylo4"))
 		stop("tree needs to be of class phylo4")
 	
-	tmptable=table(tree@edge[,1])
-	snodes = as.integer(names(tmptable)[which(tmptable==1)])
-	snodes = snodes[snodes!=0] # 0 is the root node (check on this...)
-	
-	nold = nrow(tree@edge)
-	nnew = length(snodes)
-	count = 1
-	for(ii in snodes)
+	if(hasSingle(tree))
 	{
-		tree@label = append(sprintf("JUNK%0.7d",count),tree@label)
-		tree@edge = rbind(tree@edge, c(ii, count))
-		tree@edge.length = append(tree@edge.length,0)
-		count = count + 1
+		tmptable=table(tree@edge[,1])
+		snodes = as.integer(names(tmptable)[which(tmptable==1)])
+		snodes = snodes[snodes!=0] # 0 is the root node (check on this...)
+		
+		nold = nrow(tree@edge)
+		nnew = length(snodes)
+		count = 1
+		for(ii in snodes)
+		{
+			tree@label = append(sprintf("JUNK%0.7d",count),tree@label)
+			tree@edge = rbind(tree@edge, c(ii, count))
+			tree@edge.length = append(tree@edge.length,0)
+			count = count + 1
+		}
+		
+		# rearrange
+		#tree@order = "unknown"
+		rootind = which(tree@edge[,1] == 0)
+		tree@edge[seq(nold),] = tree@edge[seq(nold),] + nnew
+		tree@edge[seq(from=nold+1,to=nold+nnew),1] = tree@edge[seq(from=nold+1,to=nold+nnew),1] + nnew
+		tree@edge[rootind,1] = 0
+		
+		# rename
+		nnodes = nTips(tree) + nNodes(tree)
+		names(tree@label) <- as.character(seq(1,nnodes))
+		names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
 	}
-	
-	# rearrange
-	#tree@order = "unknown"
-	rootind = which(tree@edge[,1] == 0)
-	tree@edge[seq(nold),] = tree@edge[seq(nold),] + nnew
-	tree@edge[seq(from=nold+1,to=nold+nnew),1] = tree@edge[seq(from=nold+1,to=nold+nnew),1] + nnew
-	tree@edge[rootind,1] = 0
-	
-	# rename
-	nnodes = nTips(tree) + nNodes(tree)
-	names(tree@label) <- as.character(seq(1,nnodes))
-	names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
 	
 	return(tree)
 }
@@ -449,11 +453,45 @@ collapse.to.singles <- function(tree,by.name=NULL)
 }
 
 
+# TODO: make this generic
+# collapse singleton nodes
+collapse.singletons <- function(phy)
+{
+	rettree = phy
+	
+	# if singletons exist
+	if(hasSingle(rettree))
+	{
+		if(is(rettree,"phylo4d"))
+		{
+			tab=table(edges(rettree)[,1])
+			snodeid = as.integer(names(tab)[which(tab==1)])
+			snodeid = snodeid[snodeid!=0]  # 0 is a dummy node
+			
+			#
+			ancs =  sapply(snodeid,function(i) which(edges(rettree)[,1] == i)) # where it is the ancestor
+			decs =  sapply(snodeid,function(i) which(edges(rettree)[,2] == i)) # where it is the decendant
+			newdata = data.frame(tdata(rettree,"all")[-decs,],row.names=labels(rettree)[-decs])
+			colnames(newdata) <- colnames(tdata(rettree))
+			
+			# hack it for now:
+			rettree = as(rettree,"phylo") # convert to ape
+			rettree <- collapse.singles(rettree) # collapse singles
+			rettree = phylo4d(rettree,all.data=newdata) # create new phylo4d object
+		} else {
+			rettree = as(rettree,"phylo") # convert to ape
+			rettree <- collapse.singles(rettree) # collapse singles
+			rettree = phylo4(rettree)
+		}
+	}
+	
+	return(rettree)
+}
 
 
 
 #-----------------------
-# Read from nexus file |
+# Process Nexus files  |
 #-----------------------
 
 # Method to read the first comment in a line in the format '[&...]'
@@ -615,8 +653,8 @@ get.nexus.comments<-function(finput,text=NULL)
 }
 
 
-
-# read nexus assumptions block
+# Internal:
+# Get text of a read nexus block
 read.nexus.block<-function(finput,txt=NULL,block)
 {	
 	if(!is.null(txt)){
