@@ -230,6 +230,7 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 			dec = nodeid
 			scount = scount + 1
 		}
+		
 	}
 	
 	# create phylo4d object
