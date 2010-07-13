@@ -8240,9 +8240,12 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							tablef<<tmessage;
 						}
 						PrintMessage();
+						
 						if (reconstruct) {
+							
 							NodePtr newroot=EstimateMLDiscreteCharJointAncestralStates(optimaldiscretecharQmatrix,optimaldiscretecharstatefreq,breaknum);
 //(intrees.GetIthTree(chosentree-1)).SetRoot(newroot);
+							
 						}
 						gsl_vector_free(output);
 					}
@@ -17401,8 +17404,15 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 		logf<<"begin trees;\n[reconstruction of ancestral states]\ntree input"<<chosentree<<" = ";
 		(*Tptr).WriteNoQuote(logf);
 		logf<<"\nend;\n";
-		
 	}
+	
+	// TODO: Conrad - check for ostringstream buffer failure
+	// reset return string object:
+	if(rettree.str().length()!=0)
+		rettree.str(string());
+	
+	(*Tptr).WriteNoQuote(rettree);
+	
 	//Now go back to original form:
 	currentnode = q.begin();
 	while (currentnode)

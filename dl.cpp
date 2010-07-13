@@ -84,19 +84,25 @@ int main()
 		}
 		cout<<endl;
 		
-		cout<<"TREE NEXUS STRING:"<<endl;
-		stringstream ss(stringstream::in | stringstream::out); 
+		cout<<"TREE NEXUS STRING:";
+		cout<<" (the chosen tree is at index: "<<brownie.chosentree<<")"<<endl;
+		//stringstream ss(stringstream::in | stringstream::out); 
+		ostringstream ss;
 		//if(brownie.intrees.WriteTrees(ss))
 			//cout<<ss.str();
 		//cout<<endl;
+		if(ss.str().length() == 0)
+			cout<<"Nothing in there yet!"<<endl;
 		
 			// Try to get simmap formatted tree..
 		brownie.intrees.GetIthTree(brownie.chosentree-1).WriteNoQuote(ss);
-		cout<<ss.str();
+		cout<<ss.str()<<endl;
+		ss.str(std::string());
+		cout<<"Num chars now: "<<ss.str().length()<<endl;
 		cout<<endl;
 		
 		cout<<"TREE LABELS:";
-		brownie.intrees.ShowLabelList(cout);
+		//brownie.intrees.ShowLabelList(cout);
 		cout<<endl;
 		
 		cout<<"Writing trees to file....";
@@ -110,6 +116,9 @@ int main()
 		output.close();
 		cout<<endl;
 		
+		// Check rettree:
+		if(brownie.rettree.str().length() != 0)
+			cout << brownie.rettree.str() << endl;
 		
 	} else {
 		cout << "no trees" << endl;

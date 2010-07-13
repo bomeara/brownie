@@ -13,7 +13,8 @@
 #include <gsl/gsl_matrix.h>
 #include "containingtree.h"
 #include "charactersblock2.h"
-
+#include <iostream>  // added jcs 7/13/2010
+#include <sstream>   // added jcs 7/13/2010
 
 
 class BROWNIE : public NexusBlock, public Nexus
@@ -24,7 +25,7 @@ class BROWNIE : public NexusBlock, public Nexus
 	friend class CDFvectorholder;
 public:
 	
-        bool inf_open;
+    bool inf_open;
     bool logf_open;
     bool echof_open;
     bool quit_now;
@@ -140,6 +141,7 @@ public:
 	nxsstring globalchosentaxset;
     map<nxsstring, IntSet> MrcaMap;
     Profile<Tree> intrees;
+    std::ostringstream rettree;  // added jcs 7/13/2010 // TODO: turn this into vector of these objects?
     //profileTree intrees;
     int tipvariancetype;
     int progressbartotal;
