@@ -36,7 +36,8 @@ dnl                AC_MSG_ERROR(could not find required version of GSL))
 
 dnl configure include/load flags and copy sample source to inst/doc
 AC_SUBST([CPPFLAGS],["-I. -I./brownie_src ${CXXFLAGS} ${RCPP_FLAGS}"])
-AC_SUBST([LDFLAGS],["-s -L. -L./brownie_src -lBrownie -lR ${LIBS} ${RCPP_LIB} "])
+AC_SUBST([LDFLAGS],["-s -L. -L./brownie_src/libBrownie.a  ${LIBS} ${RCPP_LIB} "])
+dnl AC_SUBST([LDFLAGS],["-s -L. -L./brownie_src -lBrownie ${LIBS} ${RCPP_LIB} "])
 
 dnl DEBUGGING BLOCK
 echo "STD libs=$LIBS"
