@@ -145,10 +145,10 @@ int main()
 				// NOTE: GetState returns char and GetValues return float
 				if(!brownie.discretecharloaded)
 				{
-					cout << (*brownie.characters).GetValue(j,i,false) << " "; // GetValue returns a float
+					cout << (*brownie.continuouscharacters).GetValue(j,i,false) << " "; // GetValue returns a float
 				} else {
-					cout << "State: "<<(*brownie.characters).GetState(j,i); // this one is the one to use
-					cout << " Value: "<< (*brownie.characters).GetValue(j,i,false);
+					cout << "State: "<<(*brownie.discretecharacters).GetState(j,i); // this one is the one to use
+					cout << " Value: "<< (*brownie.discretecharacters).GetValue(j,i,false);
 					cout << " -- ";
 				}
 			}

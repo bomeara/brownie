@@ -13,25 +13,36 @@ class dlInterface
 	public:
 	dlInterface();
 	~dlInterface();
+	
+	// lower level functions:
 	void pipe( std::string );
 	void execute(std::string);
+	
+	// get counts:
 	int getNumLoadedTrees();
 	int getNumTaxa();
 	int getNumDiscreteChars();
-	int getNumChars();
-	std::vector<std::string> getCharLabels();
+	int getNumContinuousChars();
+	int getNumRetTrees();
+	
+	// CHARACTERS
+	std::vector<std::string> getCharLabels(bool cont = true);
+	//TODO: add indexing by character label:
 	std::vector<char> getDiscreteChar(int colindex=0);
 	std::vector<float> getContChar(int colindex=0);
-	//TODO: add indexing by character name?
-		
+	
+	// TAXA
 	int getNumTaxaSets();
 	std::vector<std::string> getTaxaSetNames();
 	std::vector< std::vector<std::string> > getTaxaSets();
 	
+	// TREES
 	std::string getTree(int,bool=true);  // these two might not return the same trees.
 	bool getTree(int, std::ostream &f, bool=true);
 	float getTreeWeight(int);
 	bool writeTrees(std::string);
+	bool hasRetTrees();
+	std::string getRetTree(int index=0);
 };
 
 

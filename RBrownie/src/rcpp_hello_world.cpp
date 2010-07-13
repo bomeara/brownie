@@ -89,15 +89,16 @@ SEXP readBrownie(SEXP fnamevect)
 	// Number of loaded things:
 	int ntrees = dli.getNumLoadedTrees();
 	int nchard = dli.getNumDiscreteChars();
-	int nchar = dli.getNumChars();
+	int nchar = dli.getNumContinuousChars();
 	int ntaxa = dli.getNumTaxa();
 	int tset = dli.getNumTaxaSets();
+	int nrettrees = dli.getNumRetTrees();
 	cout<<"Number of trees: "<<ntrees<<endl;
 	cout<<"Number of taxa: "<< ntaxa <<endl;
 	cout<<"Number of chars: "<< nchar<<endl;
 	cout<<"Number of dchars: " << nchard <<endl;
 	cout<<"Number of taxasets: " << tset <<endl;
-
+	cout<<"Number of return trees cached: " << nrettrees << endl;
 
 	// retrieve TREES
 	List treelist(ntrees);

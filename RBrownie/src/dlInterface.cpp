@@ -10,6 +10,7 @@
 #include <memory>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 /* Default constructor
  *
@@ -92,24 +93,34 @@ int dlInterface::getNumDiscreteChars()
  *   		otherwise this method will crash the program.
  *
  */
-int dlInterface::getNumChars()
+int dlInterface::getNumContinuousChars()
 {
-	return (*brownie.characters).GetNCharTotal();
+	return (*brownie.continuouscharacters).GetNCharTotal();
 }
 
 
 /* Method to return the names of each taxa (if specified)
- * @TODO: Clear up whether this should be 
+ * @TODO: Should this be continuous? or Discrete?
 */
-std::vector<std::string> dlInterface::getCharLabels()
+std::vector<std::string> dlInterface::getCharLabels(bool cont)
 {
-	int nchar = getNumChars();
+	int nchar = 0;
+	if(cont)
+		nchar = getNumContinuousChars();
+	else
+		nchar = getNumDiscreteChars();
+	
 	std::vector<std::string> charnames(nchar);
 	
 	for(int i=0;i<nchar;i++)
 	{
-		charnames[i] = (*brownie.characters).GetCharLabel(i);
+		
+		if(cont)
+			charnames[i] = (*brownie.continuouscharacters).GetCharLabel(i);
+		else
+			charnames[i] = (*brownie.discretecharacters).GetCharLabel(i);
 	}
+	
 	return charnames;
 }
 
@@ -119,16 +130,16 @@ std::vector<std::string> dlInterface::getCharLabels()
  */
 std::vector<char> dlInterface::getDiscreteChar(int colindex)
 {
-	int nchar = getNumChars();
+	int nchar = getNumDiscreteChars();
 	int ntaxa = getNumTaxa();
 	std::vector<char> charvals(ntaxa);
 	
 	// if colindex is within range and there are discrete characters loaded
 	//
-	if( colindex <= (nchar-1) && getNumDiscreteChars() != 0 ){
+	if( colindex <= (nchar-1) && nchar > 0 ){
 		for(int j =0; j < ntaxa; j++)
 		{
-			charvals[j] = (*brownie.characters).GetState(j,colindex);
+			charvals[j] = (*brownie.discretecharacters).GetState(j,colindex);
 		}
 	}
 	
@@ -142,16 +153,16 @@ std::vector<char> dlInterface::getDiscreteChar(int colindex)
  */
 std::vector<float> dlInterface::getContChar(int colindex)
 {
-	int nchar = getNumChars();
+	int nchar = getNumContinuousChars();
 	int ntaxa = getNumTaxa();
 	std::vector<float> fvals(ntaxa);
 	
-	// if colindex is within range and there are discrete characters loaded
+	// if colindex is within range and there are continuous characters loaded
 	//
-	if( colindex <= (nchar-1) && getNumChars() > 0 ){
+	if( colindex <= (nchar-1) && nchar > 0 ){
 		for(int j =0; j < ntaxa; j++)
 		{
-			fvals[j] = (*brownie.characters).GetValue(j,colindex,false);
+			fvals[j] = (*brownie.continuouscharacters).GetValue(j,colindex,false);
 		}
 	}
 	return fvals;
@@ -340,4 +351,38 @@ bool dlInterface::writeTrees(std::string outfile)
 }
 
 
+int dlInterface::getNumRetTrees()
+{
+	// only allow 1 for now:
+	int maxtree=1;
+	return( min( (int)brownie.rettree.str().length() , maxtree) );
+}
+
+
+/* Check if return tree stream has any data:
+ *
+ */
+bool dlInterface::hasRetTrees()
+{
+	return(getNumRetTrees()==0);
+}
+
+
+/* Get reconstructed tree, if there is one available
+ *
+ *
+ */
+std::string dlInterface::getRetTree(int index)
+{
+	std::string retstr;
+	// force only one for now:
+	index = 0;
+	
+	if(hasRetTrees())
+	{
+		retstr = brownie.rettree.str();
+	}
+	return (retstr);
+	
+}
 
