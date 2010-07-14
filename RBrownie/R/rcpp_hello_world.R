@@ -20,5 +20,4 @@ read.brownie <- function(filename)
 	filename = paste("'",filename,"'",sep="")
 	
 	.Call("readBrownie",filename,PACKAGE="RBrownie")
-	
 }

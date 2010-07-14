@@ -1,7 +1,9 @@
 #------------------------
-# Exporting functions	|
+# Coersing functions	|
 #------------------------
 
+### to/from brownie
+#
 setAs('brownie','phylo',function(from,to) {
 	
 	# brownie will be automatically coersed to phylo4d,
@@ -38,10 +40,36 @@ setAs('phylo','brownie',function(from,to) {
 	
 	#TODO?: make default annote arg NULL, and only assign if !is.null;
 	# then update phylo4d methods accordingly (same thing with metadata?)
-	res@annote <- annote
+	#res@annote <- annote
 	
 	return(res)
 })
 
 
+## from/to phylo4d_ext:
+#
+# up convert:
+
+
+# down convert:
+# setAs('phylo4d_ext','phylo4d',function(from,to) {
+# 	
+# 	#TODO: Need to convert subnodes back into singletons
+# 
+# })
+# 
+# 
+# setAs('phylo4d_ext','phylo4',function(from,to) {
+# 	
+# 	#TODO: Need to convert subnodes back into singletons
+# 
+# })
+# 
+# 
+# setAs('phylo4d_ext','phylo',function(from,to) {
+# 	
+# 	# TODO: Need to convert subnodes back into singlestons, 
+# 	#		and then collapse the singletons.
+# 	
+# })
 
