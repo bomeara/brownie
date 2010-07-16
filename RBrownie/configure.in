@@ -2,7 +2,6 @@ AC_PREREQ(2.50) dnl require version 2.5+ of autoconf
 
 AC_INIT([RBrownie], 0.0.4) dnl package name, version
 
-AC_LANG(C++)
 AC_REQUIRE_CPP
 AC_PROG_RANLIB
 
@@ -21,6 +20,8 @@ RCPP_FLAGS=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::CxxFlags()'`
 NCL_LIB="-L./brownie_src/ncl-2.0/src -lncl"
 NCL_FLAGS="-I./brownie_src/ncl-2.0/src"
 
+dnl Check language
+AC_LANG(C++)
 
 dnl check math library, cblas, and gsl
 AC_CHECK_LIB([m],[cos])
@@ -36,8 +37,8 @@ dnl                AC_MSG_ERROR(could not find required version of GSL))
 
 dnl configure include/load flags and copy sample source to inst/doc
 AC_SUBST([CPPFLAGS],["-I. -I./brownie_src ${CXXFLAGS} ${RCPP_FLAGS}"])
-AC_SUBST([LDFLAGS],["-s -L. brownie_src/libBrownie.a  ${LIBS} ${RCPP_LIB} "])
-dnl AC_SUBST([LDFLAGS],["-s -L. -L./brownie_src -lBrownie ${LIBS} ${RCPP_LIB} "])
+AC_SUBST([LDFLAGS],[" brownie_src/libBrownie.a  ${LIBS} ${RCPP_LIB} "])
+dnl to work on macports, add -nostdlib
 
 dnl DEBUGGING BLOCK
 echo "STD libs=$LIBS"
