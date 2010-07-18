@@ -263,6 +263,7 @@ void BROWNIE::FactoryDefaults()
     characters = NULL;
     discretecharacters = NULL;
     discretecharloaded = false;
+	continuouscharloaded=false;
     chosenchar=1;
 	discretechosenchar=0; //starts at index=0;
 	ratematfixedvector.push_back(0); 
@@ -599,6 +600,7 @@ void BROWNIE::HandleExecuteCmdLine(nxsstring fn)
 		if(!characters->IsEmpty() ) {
 			if (characters->GetDataType()==6) {
 				continuouscharacters=characters;
+				continuouscharloaded=true;
 				//cout<<"Found continuous characters\n";
 			}
 			else {
@@ -613,6 +615,7 @@ void BROWNIE::HandleExecuteCmdLine(nxsstring fn)
 		if(!characters2->IsEmpty() ) {
 			if (characters2->GetDataType()==6) {
 				continuouscharacters=characters2;
+				continuouscharloaded=true;
 				//cout<<"Found continuous characters\n";
 			}
 			else {
@@ -736,6 +739,7 @@ void BROWNIE::HandleExecute( NexusToken& token )
 			if(!characters->IsEmpty() ) {
 				if (characters->GetDataType()==6) {
 					continuouscharacters=characters;
+					continuouscharloaded=true;
 					//cout<<"Found continuous characters\n";
 				}
 				else {
@@ -750,6 +754,7 @@ void BROWNIE::HandleExecute( NexusToken& token )
 			if(!characters2->IsEmpty() ) {
 				if (characters2->GetDataType()==6) {
 					continuouscharacters=characters2;
+					continuouscharloaded=true;
 					//cout<<"Found continuous characters\n";
 				}
 				else {

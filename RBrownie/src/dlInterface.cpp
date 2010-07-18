@@ -76,6 +76,14 @@ int dlInterface::getNumTaxa()
 }
 
 
+/* This method really should not be used and might cause a segmentation fault
+ * if it tries to access brownie.characters if it is not set
+ */
+int dlInterface::getNumChars()
+{
+	return (*brownie.characters).GetNCharTotal();
+}
+
 /* Method which returns the number of CHARACTERS (discrete) which have been loaded
  *
  */
@@ -95,7 +103,10 @@ int dlInterface::getNumDiscreteChars()
  */
 int dlInterface::getNumContinuousChars()
 {
-	return (*brownie.continuouscharacters).GetNCharTotal();
+	int retval = 0;
+	if (brownie.continuouscharloaded)
+		retval = (*brownie.continuouscharacters).GetNCharTotal();
+	return retval;
 }
 
 
@@ -364,7 +375,7 @@ int dlInterface::getNumRetTrees()
  */
 bool dlInterface::hasRetTrees()
 {
-	return(getNumRetTrees()==0);
+	return(getNumRetTrees()!=0);
 }
 
 

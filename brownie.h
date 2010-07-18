@@ -57,6 +57,7 @@ public:
 	CharactersBlock* discretecharacters;
 	bool discretecharloaded;
 	CharactersBlock* continuouscharacters;
+	bool continuouscharloaded;
     int chosentree;
     int chosenchar;
 	int discretechosenchar;

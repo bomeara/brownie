@@ -130,6 +130,12 @@ SEXP readBrownie(SEXP fnamevect)
 		cchars[ii] = dli.getContChar(ii);
 	}
 	
+	// show rettree:
+	if(nrettrees > 0)
+	{
+		cout<<"Returned tree: "<<endl;
+		cout << dli.getRetTree() << endl;
+	}
 	
 	// output trees to file (regular nexus format)
 	// (an alternative way to retrieve info)

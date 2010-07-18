@@ -21,6 +21,7 @@ class dlInterface
 	// get counts:
 	int getNumLoadedTrees();
 	int getNumTaxa();
+	int getNumChars(); // mainly for debugging
 	int getNumDiscreteChars();
 	int getNumContinuousChars();
 	int getNumRetTrees();
