@@ -111,13 +111,16 @@ write.nexus.both <- function(phytree,file="",usechar=NULL)
 			tmp4 = .write.brownie.block(phytree)
 			file.append(tmp1,tmp4)
 		}
-				
-		# IF windows:
-		# convert to windows path:
-		tmp1 = gsub("\\\\","/",tmp1)
-		tmp3 = gsub("\\\\","/",tmp3)
-		sysstr = paste("tr -d '\\015' < ", tmp1, " > ", tmp3)
-		shell(sysstr)
+		
+		if(.Platform$OS.type=="windows")
+		{
+			# IF windows:
+			# convert to windows path:
+			tmp1 = gsub("\\\\","/",tmp1)
+			tmp3 = gsub("\\\\","/",tmp3)
+			sysstr = paste("tr -d '\\015' < ", tmp1, " > ", tmp3)
+			shell(sysstr)
+		}
 		retbool = retbool && file.copy(tmp3,file,overwrite=TRUE)
 		
 		unlink(tmp1)
