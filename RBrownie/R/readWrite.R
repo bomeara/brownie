@@ -64,6 +64,9 @@ readBrownie<-function(fname)
 	brau.new = .process.assumptions(brau.new,assumptions.part) 
 	brau.new = .process.datatypes(brau.new)  # may or may not be useful
 	
+	if(length(brau.new)==1)
+		return(brau.new[[1]])
+	
 	return(brau.new)
 }
 
@@ -100,32 +103,35 @@ write.nexus.both <- function(phytree,file="",usechar=NULL)
 		
 		tmp1 = tempfile()
 		tmp2 = tempfile()
-		tmp3 = tempfile()
 		tmp4 = ""
 		
 		write.nexus(phy,file=tmp1)
 		write.nexus.data(dat,file=tmp2,"STANDARD",datablock=F)
-		file.append(tmp1,tmp2)
+		retbool = retbool && file.append(tmp1,tmp2)
 		
 		if(brownieblock){
 			tmp4 = .write.brownie.block(phytree)
-			file.append(tmp1,tmp4)
+			retbool = retbool && file.append(tmp1,tmp4)
 		}
 		
 		if(.Platform$OS.type=="windows")
 		{
+			tmp3 = tempfile()
 			# IF windows:
 			# convert to windows path:
 			tmp1 = gsub("\\\\","/",tmp1)
 			tmp3 = gsub("\\\\","/",tmp3)
 			sysstr = paste("tr -d '\\015' < ", tmp1, " > ", tmp3)
 			shell(sysstr)
+			retbool = retbool && file.copy(tmp3,file,overwrite=TRUE)
+			unlink(tmp3)
+		} else {
+			retbool = retbool && file.copy(tmp1,file,overwrite=TRUE)
 		}
-		retbool = retbool && file.copy(tmp3,file,overwrite=TRUE)
 		
 		unlink(tmp1)
 		unlink(tmp2)
-		unlink(tmp3)
+		
 		if(brownieblock)
 			unlink(tmp4)
 		
