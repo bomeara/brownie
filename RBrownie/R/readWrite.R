@@ -68,3 +68,68 @@ readBrownie<-function(fname)
 }
 
 
+.write.brownie.block <- function(phytree)
+{
+	outfile = tempfile()
+	cat(paste("begin brownie;",paste(phytree@commands,collapse="\n"),"end;",sep="\n"),file=outfile)
+	return(outfile)
+}
+
+# write nexus file with trees and characters
+# NOTE: this converts file to Unix line-endings
+#		need to figure out a better way to do this. 
+#
+write.nexus.both <- function(phytree,file="",usechar=NULL)
+{
+	brownieblock=FALSE
+	retbool = TRUE
+	
+	if(is(phytree,'phylo4d'))
+	{	
+		if(is(phytree,'brownie'))
+			brownieblock = TRUE
+		
+		if(missing(usechar) || is.null(usechar))
+			usechar = names(tdata(phytree,"tip"))[1]
+			
+		phy = as(phytree,'phylo')
+		dat = tdata(phytree,"tip")[usechar]
+		dnames = rownames(dat)
+		dat = as.character(dat[,1])
+		names(dat) <- dnames
+		
+		tmp1 = tempfile()
+		tmp2 = tempfile()
+		tmp3 = tempfile()
+		tmp4 = ""
+		
+		write.nexus(phy,file=tmp1)
+		write.nexus.data(dat,file=tmp2,"STANDARD",datablock=F)
+		file.append(tmp1,tmp2)
+		
+		if(brownieblock){
+			tmp4 = .write.brownie.block(phytree)
+			file.append(tmp1,tmp4)
+		}
+				
+		# IF windows:
+		# convert to windows path:
+		tmp1 = gsub("\\\\","/",tmp1)
+		tmp3 = gsub("\\\\","/",tmp3)
+		sysstr = paste("tr -d '\\015' < ", tmp1, " > ", tmp3)
+		shell(sysstr)
+		retbool = retbool && file.copy(tmp3,file,overwrite=TRUE)
+		
+		unlink(tmp1)
+		unlink(tmp2)
+		unlink(tmp3)
+		if(brownieblock)
+			unlink(tmp4)
+		
+	} else {
+		warning("Object phytree did not inherit from phylo4d")
+	}
+	
+	return( retbool )
+}
+

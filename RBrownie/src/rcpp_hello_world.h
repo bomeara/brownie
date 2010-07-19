@@ -5,5 +5,6 @@
 
 RcppExport SEXP rcpp_hello_world();
 RcppExport SEXP readBrownie(SEXP fnamevect);
+RcppExport SEXP doASR(SEXP fnamevect);
 
 #endif

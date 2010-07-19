@@ -14,7 +14,7 @@ setAs('brownie','phylo',function(from,to) {
 	apeobj = NULL
 	
 	# TODO: Should this collapse singles?  Or create zero-length branches?
-	if(hasSingle(junk)){
+	if(hasSingle(phyobj)){
 		#apeobj = collapse.singles(apeobj)
 		apeobj = as(expand.singles(phyobj),'phylo')
 	} else {

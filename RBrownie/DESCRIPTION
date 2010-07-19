@@ -8,7 +8,7 @@ Maintainer: J. Conrad Stack <stack@psu.edu>
 Description: This R package implements the BROWNIE phylogenetics module 
 URL: http://code.google.com/p/brownie/, http://www.conradstack.info
 License: GPL-2
-Collate: processNexus.R processBrownie.R class-phylo4d_ext.R class-brownie.R methods-phylo4d_ext.R setAs-methods.R phyextPlots.R readWrite.R rcpp_hello_world.R Rpack-internal.R zzz.R
+Collate: processNexus.R processBrownie.R class-phylo4d_ext.R class-brownie.R methods-phylo4d_ext.R setAs-methods.R phyextPlots.R readWrite.R rcpp_hello_world.R Rpack-internal.R zzz.R analyses.R
 LazyLoad: yes
 Depends: methods, Rcpp (>= 0.8.2), phylobase (>= 0.5)
 LinkingTo: Rcpp
