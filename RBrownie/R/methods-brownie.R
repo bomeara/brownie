@@ -276,16 +276,15 @@ taxaMono <- function(x,taxindex)
 # Check if taxaset is paraphyletic
 #
 taxaPara <- function(x,taxind)
-{
-	# if it is monophyletic then it is para?
-	if(taxaMono(x,taxind))
-		return(TRUE)
-	
+{	
 	retbool = FALSE
 	tipvect = taxa.charvect(x,taxind) # character vector of taxa to check
 	
 	desc = descendants(x,MRCA(x,tipvect))
 	excluded = setdiff(names(desc),tipvect)
-	return (taxa.mono(x,excluded))
+	if(length(excluded) > 0)
+		retbool = taxa.mono(x,excluded)
+	
+	return (retbool)
 }
 
