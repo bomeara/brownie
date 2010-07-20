@@ -31,11 +31,11 @@ setAs('phylo','brownie',function(from,to) {
 	# this method will also strip labels which start with JUNK
 	has.junk = any(as.logical(sapply(from$tip.label, function(i) length(grep("^JUNK.*",i)), simplify=T )))
 	if(any(from$edge.length==0) || has.junk){
-		res1 <- collapse.to.singles(x)
+		res1 <- collapse.to.singles(from)
 		res2 <- as(res1, "phylo4d")
 		res <- new("brownie",res2,commands=character(0),datatypes=character(0))
 	} else {
-		res <- new("brownie",as(x,'phylo4d'),commands=character(0),datatypes=character(0))
+		res <- new("brownie",as(from,'phylo4d'),commands=character(0),datatypes=character(0))
 	}
 	
 	#TODO?: make default annote arg NULL, and only assign if !is.null;

@@ -34,7 +34,10 @@ setMethod("brownie", "phylo", function(x, annote=list()){
 	return(converted)
 })
 
-
+setMethod("brownie","phylo4d", function(x,annote=list()){
+	converted = new("brownie",x,datatypes=.guess.datatype(tdata(x)))
+	return(converted)
+})
 
 #-------------------------------
 # Validate correct brownie object
@@ -142,6 +145,32 @@ checkDataTypes <- function(dtypes)
 }
 
 
+# Internal:
+is.binary <- function(seqvec)
+{
+	
+}
+
+# TODO: Make sure is.factor should be used here to select discrete data
+# Internal:
+.guess.datatype <- function(datvals)
+{
+	if(is.null(dim(datvals)))
+		return(character(0))
+	
+	ndatcols = ncol(datvals)
+	datatypes = rep(genericData(),ndatcols)
+	if(ndatcols > 0)
+	{
+		datatypes[sapply(seq(ndatcols),function(i) is.numeric(datvals[,i]))] = contData()
+		datatypes[sapply(seq(ndatcols),function(i) is.factor(datvals[,i]))] = discData()
+		datatypes[grep("TAXSET_",names(datvals))] = taxaData()
+	}
+	
+	return(datatypes)
+}
+
+
 # Internal function to parse / check assumptions block
 .process.datatypes <- function(obj)
 {
@@ -152,14 +181,11 @@ checkDataTypes <- function(dtypes)
 	ndatcols = ncol(datvals)
 	if(ndatcols > 0)
 	{
-		datatypes = rep(genericData(),ndatcols)
-		datatypes[sapply(seq(ndatcols),is.numeric)] = contData()
-		datatypes[sapply(seq(ndatcols),is.factor)] = discData()
-		datatypes[grep("TAXSET_",names(datvals))] = taxaData()
+		dtypes = .guess.datatype(datvals)
 		
 		for(tind in seq(length(obj)))
 		{
-			datatypes(obj[[tind]]) <- datatypes
+			datatypes(obj[[tind]]) <- dtypes
 		}
 	}
 	

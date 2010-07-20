@@ -17,6 +17,38 @@ setGeneric("taxasets", function(x) { standardGeneric("taxasets")} )
 setGeneric("taxasets<-", function(x,value) { standardGeneric("taxasets<-")} )
 
 
+## OVERLOADED 'phylo4d' functions:
+# Risky ....
+# overload addData (addData the normal way, then guess it's datatype)
+setMethod("addData", signature(x="brownie"),
+	function(x,...,known.types=NULL) {
+		
+		ncols.prev = ncol(tdata(x))
+		dtypes.prev = datatypes(x)
+		
+		# call original phylobase function:
+		x = getMethod("addData","phylo4d")(x,...)
+		
+		# now add datatypes if necessary:
+		ncols.now = ncol(tdata(x))
+		if(ncols.prev==ncols.now)
+			return(x)
+		
+		newcols = seq(ncols.prev+1,ncols.now)
+		
+		if(missing(known.types) || is.null(known.types)){
+			known.types = .guess.datatype(tdata(x)[,newcols,drop=F])
+		} else {
+			if(length(known.types) != length(newcols))
+				warning("known.types does not match the number of new fields")
+		}
+		datatypes(x) <- c(dtypes.prev,known.types)
+		return(x)
+		
+})
+
+
+
 ## COMMANDS:
 #
 setMethod("commands", signature(x="brownie"),
@@ -82,6 +114,8 @@ setReplaceMethod("weight", signature(x="brownie"),
 
 ## DataTypes
 #
+
+
 setMethod("datatypes", signature(x="brownie"),
   function(x) {
 	return(x@datatypes)
@@ -172,7 +206,12 @@ setReplaceMethod("taxasets", signature(x="phylo4d"),
 		if(is.null(colnames(value)))
 			colnames(value) <- "TAXSET_"
 		
-		x <- addData(x,value)
+		# ohh, this is a hack:
+		if(is(x,"brownie")){
+			x <- addData(x,value,known.types=taxaData())
+		} else {
+			x <- addData(x,value)
+		}
 	}
 	
 	return(x)
@@ -185,10 +224,11 @@ setReplaceMethod("taxasets", signature(x="brownie"),
 		stop("Taxaset replacement method not available: package bug, email authors")
 	
 	x = getMethod("taxasets<-","phylo4d")(x,value)
-	datatypes(x) <- append(datatypes(x),taxaData())
+	#datatypes(x) <- append(datatypes(x),taxaData()) # comments out after hack applied
 	
 	return(x)
 })
+
 
 # Internal:
 # get character vector of taxa:
@@ -248,3 +288,4 @@ taxaPara <- function(x,taxind)
 	excluded = setdiff(names(desc),tipvect)
 	return (taxa.mono(x,excluded))
 }
+
