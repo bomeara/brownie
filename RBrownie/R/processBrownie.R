@@ -150,4 +150,148 @@ checkval.model <- function(optstr)
 }
 
 
+#------------------------------------------------------------------
+#
+# Brownie blocks into tokens for validation
+#
+#------------------------------------------------------------------
+
+
+# does the string contain char
+haschar<-function(str,char)
+{
+	as.logical(length(grep(char,str)))
+}
+
+# roughly, is the char in the back or front
+isback <- function(str,char)
+{
+	as.logical( round (which(strsplit(str,"")[[1]] == char ) / nchar(str)) )
+}
+
+
+# assume string is "A<char>B" format, with A or B optional, but not both
+get.left.right <- function(str,char)
+{
+	outvals = strsplit(str,char)[[1]]
+	if(length(outvals) > 2)
+		stop("Problem parsing command: more than one operator in a token")
+	
+	if(length(outvals)==1)
+	{
+		if(isback(str,char))
+			return( c(outvals,"") )
+		
+		return( c("",outvals) )
+	}
+	
+	return( outvals )
+}
+
+check.empty <- function(bb) sapply(bb,function(i) i=="")
+
+rm.ending <- function(str)
+{
+	if(haschar(str,";$"))
+		 str = sub(";$","",str)
+	
+	return(str)
+}
+
+
+read.brownie.string <- function(txtstr,operator="=")
+{
+	command = ""
+	opts = matrix(character(0),ncol=2,nrow=0)
+	optcount = 0
+
+	tokens = strsplit(txtstr,"\\s")[[1]]
+	command = head(tokens,1)
+	tokens = tokens[-1]
+
+	operator="=" # should be const
+	isleft=TRUE # look at left of the equals?
+	for(token in tokens)
+	{
+		#print(token)
+		if(token == operator)
+		{
+			if(isleft)
+				stop("Problem parsing command: '=' before first operand")
+			next
+		}
+	
+		if(isleft)
+		{
+			if(haschar(token,operator))
+			{
+				# process first operand
+				both = get.left.right(token,operator)
+				both.isempty = check.empty(both)
+				if(all(both.isempty))
+					warning("Empty token!")
+				
+				if(both.isempty[1])
+					stop("Problem parsing command: 1st operand is empty")
+				
+				opts = rbind(opts,both)
+				if(both.isempty[2])
+					isleft = FALSE
+				
+			} else {
+				opts = rbind(opts,c(token,""))
+				isleft = FALSE
+			}
+			optcount = optcount + 1
+			
+		} else {
+			
+			if(haschar(token,operator))
+			{
+				# process first operand
+				both = get.left.right(token,operator)
+				both.isempty = check.empty(both)
+				if(all(both.isempty))
+					warning("Empty token!")
+
+				if(both.isempty[2])
+					stop("Problem parsing command: 2nd operand is empty")
+				
+				opts[optcount,2] = both[2]
+			} else {
+				opts[optcount,2] = token
+			}
+		
+			isleft = TRUE
+		}
+	}
+	opts = unname(opts)
+	opts[,2] = unname(sapply(opts[,2],rm.ending))
+	colnames(opts) <- c("operand.1","operand.2")
+	
+	return(list(command=command,options=opts))
+}
+
+
+# assume obj is list with $commands and $options
+write.brownie.string <- function(obj,operator="=")
+{
+	if(is.null(obj$command))
+		stop("Couldn't find 'command' slot for input")
+	
+	retstr = obj$command
+	
+	if(!is.null(obj$options))
+	{
+		tmp=apply(obj$options,1,paste,collapse="=")
+		tmp = paste(tmp,collapse=" ")
+		retstr = paste(retstr,tmp)
+	}
+
+	return( paste(retstr,";",sep="") )
+}
+
+
+
+
 

@@ -12,7 +12,8 @@
 # @param commands text commands to be placed in a brownie block
 # @param datatypes annotation for the data part of phylo4d
 setClass("brownie",
-		representation("phylo4d_ext",commands="character",datatypes="character")
+		representation("phylo4d_ext",commands="character",datatypes="character",weight="numeric"),
+		prototype=prototype(weight=0)
 		)
 
 
@@ -69,5 +70,108 @@ checkDataTypes <- function(dtypes)
 	# brownie_datatype_options should be "more" global
 	# 
 	return (all(dtypes %in% brownie.datatypes()))
+}
+
+
+# Internal function to parse / check assumptions block
+.process.assumptions <- function(obj,block.txt)
+{
+	
+	if(!is(obj[[1]],"brownie"))
+		stop("Processed object needs to be of class brownie")
+	
+	
+	for(aline in block.txt)
+	{
+		tokens = strsplit(aline,"\\s")[[1]]
+		next.is.name=F
+		next.is.taxa=F
+		taxinds=numeric(0)
+		taxname=""
+		
+		for(kk in seq(length(tokens)))
+		{
+			if(tolower(tokens[kk]) == "taxset")
+			{
+				next.is.name = T
+				next
+			} else {
+				
+				# reset and start recording names
+				if(next.is.name){
+					next.is.name=F
+					taxname = sub("=","",tokens[kk])
+					next.is.taxa=T
+					next
+				}
+				
+				if(next.is.taxa){
+					if(length(grep(";",tokens[kk]))==1)
+					{
+						taxinds = append(taxinds,sub(";","",tokens[kk]))
+						break
+					} else {
+						taxinds = append(taxinds,tokens[kk])
+					}
+				}
+			}
+		}
+		
+		# add this taxaset to the object, if there is one:
+		if(taxname != "")
+		{
+			nm = paste("TAXSET",taxname,sep="_")
+			taxaI = data.frame(all=rep(0,nTips(obj[[1]])))
+			names(taxaI) <- nm
+			
+			for(tind in seq(length(obj)))
+			{
+				# convert if needed
+				if(!inherits(obj[[tind]],"phylo4d"))
+					obj[[tind]] = phylo4d(obj[[tind]])
+				
+				taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
+				#names(taxaI) <- nm
+				obj[[tind]] = addData(obj[[tind]],tip.data=taxaI)
+				
+			}
+		}
+	}
+	
+	return (obj)
+}
+
+
+# Internal function to parse / check assumptions block
+.process.datatypes <- function(obj)
+{
+	if(!is(obj[[1]],"brownie"))
+		stop("Processed object needs to be of class brownie")
+	
+	datvals = tdata(obj[[1]])
+	ndatcols = ncol(datvals)
+	if(ndatcols > 0)
+	{
+		datatypes = rep(genericData(),ndatcols)
+		datatypes[sapply(seq(ndatcols),is.numeric)] = contData()
+		datatypes[sapply(seq(ndatcols),is.factor)] = discData()
+		datatypes[grep("TAXSET_",names(datvals))] = taxaData()
+		
+		for(tind in seq(length(obj)))
+		{
+			datatypes(obj[[tind]]) <- datatypes
+		}
+	}
+	
+	return(obj)
+}
+
+
+
+# internal function to parse / check brownie block
+.process.brownie <- function(obj,block.txt)
+{
+	# TODO
+	return(obj)
 }
 

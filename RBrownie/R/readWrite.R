@@ -74,8 +74,13 @@ readBrownie<-function(fname)
 .write.brownie.block <- function(phytree)
 {
 	outfile = tempfile()
-	cat(paste("begin brownie;",paste(phytree@commands,collapse="\n"),"end;",sep="\n"),file=outfile)
+	cat(paste("begin brownie;",paste(commands(phytree),collapse="\n"),"end;",sep="\n"),file=outfile)
 	return(outfile)
+}
+
+.write.taxa.strings <- function(phytree)
+{
+	
 }
 
 # write nexus file with trees and characters
