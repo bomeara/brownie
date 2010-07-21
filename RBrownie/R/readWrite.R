@@ -70,15 +70,20 @@ readBrownie<-function(fname)
 	brau.new = .process.datatypes(brau.new)  # may or may not be useful
 	brau.new = .process.assumptions(brau.new,assumptions.part) 
 	
-	if(length(brau.new)==1)
-		return(brau.new[[1]])
-	
-	
+	#
 	# Read characters 2 if it exists:
 	if(has.characters2(fname))
 	{
-		
+		cat("Processing CHARACTERS2 block\n")
+		data2.part = read.characters2(fname)
+		for(xx in seq(length(brau.new)))
+			brau.new[[xx]] = addData(brau.new[[xx]],data2.part)		
 	}
+	#
+	#
+	
+	if(length(brau.new)==1)
+		return(brau.new[[1]])
 	
 	return(brau.new)
 }
