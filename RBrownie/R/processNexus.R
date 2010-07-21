@@ -115,7 +115,8 @@ get.tree.weights <- function(finput,text=NULL,splitchar=" ")
 	}
 	filetext = tolower(filetext)
 	
-	start.ind = agrep(paste("begin",tolower(blockname)),filetext,ignore.case=T)
+	search.for=paste(paste("begin",tolower(blockname),sep="\\s"),"[\\s]{0,};",sep="")
+	start.ind = grep( search.for ,filetext,ignore.case=T)
 	if(length(start.ind) == 0)
 		return (integer(0))
 	
@@ -176,6 +177,33 @@ read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F)
 	}
 	
 	return (rawtext)
+}
+
+
+has.characters2 <- function(finput,txt=NULL)
+{
+	retbool = (length(read.nexus.block(finput,txt,block="characters2"))!=0)
+	return(retbool)
+}
+
+
+read.characters2 <- function(finput)
+{
+
+	if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+	
+	rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+	
+	tmpfile = tempfile()
+	tmphead = "#NEXUS"
+	tmptaxa = c("BEGIN TAXA;",read.nexus.block(txt=rawtext,block="taxa"),"END;")
+	tmptext = read.nexus.block(txt=rawtext,block="characters2")
+	tmptext = c("BEGIN CHARACTERS;",tmptext,"END;")
+	writeLines(c(tmphead,tmptaxa,tmptext),con=tmpfile)
+	data2.part = readNexus(tmpfile,type="data")
+	
+	return(data2.part)
 }
 
 

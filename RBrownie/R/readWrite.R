@@ -73,6 +73,13 @@ readBrownie<-function(fname)
 	if(length(brau.new)==1)
 		return(brau.new[[1]])
 	
+	
+	# Read characters 2 if it exists:
+	if(has.characters2(fname))
+	{
+		
+	}
+	
 	return(brau.new)
 }
 
@@ -103,7 +110,7 @@ readBrownie<-function(fname)
 		for(ii in seq(length(taxsetnames)))
 		{
 			tmpname = sub("^TAXSET_","",taxsetnames[ii])
-			tmp = paste(taxa.charvect(shit,taxsetnames[ii]),collapse=" ")
+			tmp = paste(taxa.charvect(phytree,taxsetnames[ii]),collapse=" ")
 			tstring = c(tstring, paste(paste(tmpname,tmp,sep="="),";",sep="") )
 		}
 	}
@@ -128,6 +135,8 @@ readBrownie<-function(fname)
 	
 	return (assout)
 }
+
+
 
 
 
