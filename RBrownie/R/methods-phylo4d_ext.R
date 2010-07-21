@@ -57,7 +57,7 @@ is.simmap <- function(finput="",text=NULL)
 		treesblock = rawtext
 		treelines = 1
 	} else {
-		treesblock = read.nexus.block(txt=rawtext,block="trees")
+		treesblock = read.nexus.block(txt=rawtext,block="trees",rm.comments=T)
 		treelines = which(tolower(substr(treesblock,1,4))=="tree")
 	}
 	
@@ -261,7 +261,7 @@ read.nexus.simmap <- function(finput="",text=NULL)
 		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
 	}
 
-	treesblock = read.nexus.block(txt=rawtext,block="trees")
+	treesblock = read.nexus.block(txt=rawtext,block="trees",rm.comments=T)
 	
 	if(length(treesblock)==0)
 	{
@@ -290,6 +290,11 @@ read.nexus.simmap <- function(finput="",text=NULL)
 	{
 		transend = seq(transstart,min(treelines)-1)[min(grep(";",treesblock[seq(transstart,min(treelines)-1)]))]
 		taxatrans = treesblock[(transstart+1):transend]
+		
+		# should ALWAYS be the last token:
+		if(any(taxatrans==";"))
+			taxatrans = taxatrans[-which(taxatrans==";")]
+		
 		index = as.integer(sapply(strsplit(taxatrans,"\\s"),function(i) i[1]))  # I'm assuming that they are integers
 		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub("(,|;)","",i[2]))
 	}
@@ -328,7 +333,13 @@ read.nexus.simmap <- function(finput="",text=NULL)
 	{
 		for(treeind in seq(length(outtrees)))
 		{
-			tipLabels(outtrees[[treeind]]) <- taxname[as.integer(tipLabels(outtrees[[treeind]]))]
+			tnames = as.integer(tipLabels(outtrees[[treeind]]))
+			if(!any(is.na(tnames)))
+			{
+				tipLabels(outtrees[[treeind]]) <- taxname[tnames]
+			} else {
+				warning("Tree translations found, but could not be mapped")
+			}
 		}
 	}
 	

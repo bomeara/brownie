@@ -6,6 +6,13 @@
 #---------------------------------------------
 
 
+# Strip comments from a tree string
+#
+.strip.tree.comments <- function(text=NULL)
+{
+	
+}
+
 # Method to read the first comment in a line in the format '[&...]'
 # This is for reading tree weights chiefly
 #
@@ -83,7 +90,8 @@ get.tree.weights <- function(finput,text=NULL,splitchar=" ")
 			tmp = strsplit(txt[ll],char)[[1]]
 			for(tmpline in tmp){
 				#if(tmpline!=""){
-					newtokens[curline] = paste(tmpline,char,sep="")
+					#newtokens[curline] = paste(tmpline,char,sep="")
+					newtokens[curline] = tmpline
 					curline = curline + 1
 				#}
 			}
@@ -119,7 +127,7 @@ get.tree.weights <- function(finput,text=NULL,splitchar=" ")
 
 # Internal:
 # Get text of a read nexus block
-read.nexus.block<-function(finput,txt=NULL,block)
+read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F)
 {
 	if(!is.null(txt)){
 		# Using the text argument is not recommended
@@ -139,8 +147,29 @@ read.nexus.block<-function(finput,txt=NULL,block)
 		return (character(0))
 	}
 	
+	rawtext = rawtext[(inds[1]+1):(inds[2]-1)]
 	# TODO: split up newlines if they exist
-	return (rawtext[(inds[1]+1):(inds[2]-1)])
+	
+	if(rm.comments)
+	{
+		# assume comments are start a line with [ 
+		# and end a line with ]
+		#
+		comment.starts = grep("^\\[",rawtext)
+		comment.ending = grep("\\]$",rawtext)
+		comment.pairs = cbind(comment.starts,comment.ending)
+		
+		if(nrow(comment.pairs))
+		{
+			for(pair in seq(nrow(comment.pairs)))
+			{
+				print(pair)
+				rawtext = rawtext[-(comment.pairs[pair,1]:comment.pairs[pair,2])]
+			}
+		}
+	}
+	
+	return (rawtext)
 }
 
 

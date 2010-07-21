@@ -87,6 +87,7 @@ checkDataTypes <- function(dtypes)
 	for(aline in block.txt)
 	{
 		tokens = strsplit(aline,"\\s")[[1]]
+		tokens = .split.tokens(tokens,"=")
 		next.is.name=F
 		next.is.taxa=F
 		taxinds=numeric(0)
@@ -123,9 +124,20 @@ checkDataTypes <- function(dtypes)
 		# add this taxaset to the object, if there is one:
 		if(taxname != "")
 		{
+			taxinds.as.range = FALSE
 			nm = paste("TAXSET",taxname,sep="_")
 			taxaI = data.frame(all=rep(0,nTips(obj[[1]])))
 			names(taxaI) <- nm
+			
+			# check for taxinds as numbers:
+			if(length(taxinds) == 1)
+			{
+				both = get.left.right(taxinds,"-")
+				if( length(both) == 2 && !any(is.integer(both)) ){
+					taxinds.as.range = TRUE
+					taxinds = as.integer(both)
+				}
+			}
 			
 			for(tind in seq(length(obj)))
 			{
@@ -133,7 +145,11 @@ checkDataTypes <- function(dtypes)
 				if(!inherits(obj[[tind]],"phylo4d"))
 					obj[[tind]] = phylo4d(obj[[tind]])
 				
-				taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
+				if(!taxinds.as.range){
+					taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
+				} else {
+					taxaI[seq(taxinds[1],taxinds[2]),1] = taxaI[seq(taxinds[1],taxinds[2]),1] = 1
+				}
 				#names(taxaI) <- nm
 				obj[[tind]] = addData(obj[[tind]],tip.data=taxaI)
 				

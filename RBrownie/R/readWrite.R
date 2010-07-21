@@ -9,18 +9,23 @@
 
 readBrownie<-function(fname)
 {	
+	
 	if(!file.exists(fname))
 		stop(paste("File",fname,"cannot be found in",getwd()))
 	
 	filetxt = scan(fname,what=character(0),strip.white=T,sep="\n")
-	brownie.part = read.nexus.block(txt=filetxt,block="BROWNIE")
-	assumptions.part = read.nexus.block(txt=filetxt,block="ASSUMPTIONS")
+	brownie.part = read.nexus.block(txt=filetxt,block="BROWNIE",rm.comments=T)
+	assumptions.part = read.nexus.block(txt=filetxt,block="ASSUMPTIONS",rm.comments=T)
 	
 	if(!is.simmap(fname)){
 		
 		# this function should read in character data
 		# wrap in list to make it compatible with read.nexus.simmap output
-		phy.part = list(readNexus(fname))  
+		phy.part = readNexus(fname)
+		if(!is.list(phy.part))
+		{
+			phy.part = list(phy.part)
+		}
 		
 	} else {
 		
