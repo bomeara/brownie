@@ -66,8 +66,9 @@ readBrownie<-function(fname)
 	{
 		 brau.new = append(brau.new,new("brownie",phy.part[[tind]],commands=brownie.part))
 	}
-	brau.new = .process.assumptions(brau.new,assumptions.part) 
+
 	brau.new = .process.datatypes(brau.new)  # may or may not be useful
+	brau.new = .process.assumptions(brau.new,assumptions.part) 
 	
 	if(length(brau.new)==1)
 		return(brau.new[[1]])
@@ -78,15 +79,57 @@ readBrownie<-function(fname)
 
 .write.brownie.block <- function(phytree)
 {
-	outfile = tempfile()
-	cat(paste("begin brownie;",paste(commands(phytree),collapse="\n"),"end;",sep="\n"),file=outfile)
-	return(outfile)
+	bblock=character(0)
+	cmds = commands(phytree)
+	cmds[grep(";$",cmds)] = paste(cmds[grep(";$",cmds)],";",sep="")
+	if(length(cmds)!=0)
+	{
+		bblock = paste("begin brownie;",paste(commands(phytree),collapse="\n"),"end;",sep="\n")
+	}
+	bblock
 }
+
 
 .write.taxa.strings <- function(phytree)
 {
+	if(!is(phytree,"phylo4d"))
+		stop("phytree needs to have a data section.")
 	
+	taxsetnames = colnames(taxasets(phytree))
+	tstring = character(0)
+	
+	if(length(taxsetnames)!=0)
+	{
+		for(ii in seq(length(taxsetnames)))
+		{
+			tmpname = sub("^TAXSET_","",taxsetnames[ii])
+			tmp = paste(taxa.charvect(shit,taxsetnames[ii]),collapse=" ")
+			tstring = c(tstring, paste(paste(tmpname,tmp,sep="="),";",sep="") )
+		}
+	}
+	tstring
 }
+
+
+# write assumptions
+#
+.write.assumptions.block <- function(phytree)
+{
+	assout = character(0)
+	if(!is(phytree,"phylo4d"))
+		stop("phytree needs to have a data section.")
+	
+	tstr = .write.taxa.strings(phytree)
+	if(length(tstr)!=0)
+	{
+		tstr = paste(tstr,collapse="\n")
+		assout = paste("BEGIN assumptions;",tstr,"END;",sep="\n")
+	}
+	
+	return (assout)
+}
+
+
 
 # write nexus file with trees and characters
 # NOTE: this converts file to Unix line-endings

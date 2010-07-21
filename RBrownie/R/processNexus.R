@@ -13,6 +13,7 @@
 	
 }
 
+
 # Method to read the first comment in a line in the format '[&...]'
 # This is for reading tree weights chiefly
 #
@@ -21,6 +22,7 @@
 #
 get.nexus.comments<-function(finput,text=NULL)
 {
+	
 	if(!is.null(text)){
 		# TODO: check text for newlines and split on them if they exist.
 		rawtext=text
@@ -157,9 +159,13 @@ read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F)
 		#
 		comment.starts = grep("^\\[",rawtext)
 		comment.ending = grep("\\]$",rawtext)
-		comment.pairs = cbind(comment.starts,comment.ending)
+		if(length(comment.starts) == length(comment.ending)){
+			comment.pairs = cbind(comment.starts,comment.ending)
+		} else {
+			comment.pairs = cbind(character(0),character(0))
+		}
 		
-		if(nrow(comment.pairs))
+		if(nrow(comment.pairs)>0)
 		{
 			for(pair in seq(nrow(comment.pairs)))
 			{

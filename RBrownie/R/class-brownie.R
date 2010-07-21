@@ -146,6 +146,12 @@ checkDataTypes <- function(dtypes)
 					obj[[tind]] = phylo4d(obj[[tind]])
 				
 				if(!taxinds.as.range){
+					
+					if(length(grep("_",taxinds))!=0)
+						warnings("Stipping underscores (because phylobase does).")
+					
+					# assume that phylobase will remove underscore characters
+					taxinds = gsub("_","",taxinds)
 					taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
 				} else {
 					taxaI[seq(taxinds[1],taxinds[2]),1] = taxaI[seq(taxinds[1],taxinds[2]),1] = 1
