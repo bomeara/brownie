@@ -6,6 +6,36 @@
 #  	with phylobase functions.
 #-------------------------------------------------------
 
+# Table of Contents:
+
+## SIMMAP Methods:
+# get.nodenames
+# is.simmap
+# read.simmap
+# read.nexus.simmap
+# expand.singles
+# collapse.to.singles
+# collapse.singletons
+
+## Subnode Methods:
+# .edge.index
+# nSubNodes
+# hasSubNodes
+# getSubNodeData
+# getSubNodePosish
+# getSubNodeEdgeInds
+# getSubNodeEdgeInds
+# getEmptyDataFrame
+# addSubNode
+# showSubNodes
+
+## Generics
+setGeneric("sndata", function(x, ...) { standardGeneric("sndata") })
+setGeneric("sndata<-", function(x,datnames=NULL, value) { standardGeneric("sndata<-") })
+setGeneric("snid", function(x, ...) { standardGeneric("snid") })
+setGeneric("snposition", function(x, ...) { standardGeneric("snposition") })
+setGeneric("snbranch", function(x, ...) { standardGeneric("snbranch") })
+setGeneric("rmdata", function(x,index) { standardGeneric("rmdata")} )
 
 
 #--------------------------
@@ -568,8 +598,8 @@ getSubNodeEdgeInds <- function(x)
 	return (edgeinds)
 }
 
-
-# return empty data.frame
+# return empty data.frame styled like
+# @data slot
 getEmptyDataFrame <- function(x)
 {
 	tmpdf = data.frame(x@data[0,])
@@ -580,11 +610,15 @@ getEmptyDataFrame <- function(x)
 
 # TODO: overload tdata here
 
-
-# TODO: make this generic
-# add a subnode
+# 
 addSubNode <- function(x,anc,dec,position,dataf)
 {
+	
+	if(!is(x,'phylo4d_ext')){
+		warning("x is not an extended phylo4d object")
+		return(x)
+	}
+	
 	eind = .edge.index(x,anc,dec)
 	if(is.na(eind))
 		stop("Failure to find edge from ",anc, " to ",dec,"\n")
@@ -634,52 +668,56 @@ addSubNode <- function(x,anc,dec,position,dataf)
 
 
 #
-showSubNodes <- function(x,ids)
+showSubNodes <- function(x)
 {
 	charlen = 80
+	brchar = "-"
+	terminalchar = "-"
+	regchar="0"
 	overlapchar = "*"
 	# use them all by default:
-	if(missing(ids))
-		ids = x@subnode.id
 	
-	for(id in ids)
+	einds = apply(x@subnode.branch,1,function(i) .edge.index(x,i[1],i[2]))
+	
+	for(eind in unique(einds))
 	{
-		snid = which(x@subnode.id == id)
+		snid = which(einds == eind)
 		anc = x@subnode.branch[snid,1]
 		dec = x@subnode.branch[snid,2]
-		tmpstr = rep("-",charlen)
-		tmpstr[1] = 'o'; tmpstr[charlen] = 'o'
-		eind = .edge.index(x,anc,dec)
+		
+		# setup output string
+		tmpstr = rep(brchar,charlen)
+		tmpstr[1] = terminalchar
+		tmpstr[charlen] = terminalchar
+		
+		# get relative positions of nodes:
 		elen = edgeLength(x)[eind]
 		breaksize = elen / charlen
-		snpos = x@subnode.pos[snid,] * elen # Conrad: added this to get absolute position of subnode along the branch
+		snpos = x@subnode.pos[snid,] * elen 
+		if(!is.matrix(snpos)) 
+			snpos = matrix(snpos,nrow=1)
 		
-		nbreaks = max(1, floor(diff(snpos) / breaksize) )
-		from = floor(snpos[1] / breaksize)
-		tmpstr[seq(from,length.out=nbreaks)] = rep(overlapchar,nbreaks)
+		for(xx in seq(length(snid)))
+		{
+			nbreaks = max(1, floor(diff(snpos[xx,]) / breaksize) )
+			from = floor(snpos[1] / breaksize)
+			tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==regchar] = overlapchar
+			tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==brchar] = regchar
+			#tmpstr[seq(from,length.out=nbreaks)] = rep(regchar,nbreaks)
+		}
+		
+		# collapse and print:
 		tmpstr = paste(tmpstr,collapse="")
-		names(tmpstr) <- sprintf("Subnode at ~%0.2f on branch: %d to %d (brlen=%0.2f)",snpos[1]+diff(snpos)/2,anc,dec,elen)
+		if(length(snid)==1){
+			names(tmpstr) <- sprintf("Subnode at ~%0.2f on branch: %d to %d (brlen=%0.2f)",snpos[1]+diff(snpos[1,])/2,anc,dec,elen)
+		} else {
+			names(tmpstr) <- sprintf("%d Subnodes on branch: %d to %d (bren=%0.2f)",length(snid),anc[1],dec[1],elen)
+		}
 		print(tmpstr)
 		cat("\n")
 	}
+	print("0 indicates a subnode; * indicates 2+ subnodes overlapping. Positions are relative.")
 }
-
-
-#--------------------------
-# Plotting
-# TODO: virtually all of it.
-#--------------------------
-plotPhyext <- function(x,y,...)
-{
-	# TODO: figure out a way to place node data over nodes...
-	cat("Plotting extensions\n")
-	treePlot(x,plot.data=F, ...)
-}
-
-setMethod('plot', signature(x='phylo4d_ext', y='missing'), function(x, y, ...) {
-    plotPhyext(x, ...)
-})
-
 
 
 #-----------------------------
@@ -689,20 +727,106 @@ setMethod('plot', signature(x='phylo4d_ext', y='missing'), function(x, y, ...) {
 # show
 setMethod("show","phylo4d_ext", function(object){ printphylo4(object); showSubNodes(object)})
 
-## snData
-setGeneric("snData", function(x, ...) {
-    standardGeneric("snData")
+setMethod("snid", signature(x="phylo4d_ext"),
+  function(x) {
+	return(x@subnode.id)
 })
 
-## snData<-
-setGeneric("snData<-", function(x, ..., value) {
-    standardGeneric("snData<-")
-})
-
-
-setMethod("snData", signature(x="phylo4d_ext"),
+setMethod("sndata", signature(x="phylo4d_ext"),
   function(x) {
 	return(x@subnode.data)
 })
 
+# this adds data
+setReplaceMethod("sndata", signature(x="phylo4d_ext"),
+  function(x,datnames=NULL,value) {
+	
+	if(!is.data.frame(value) && (length(value) != nSubNodes(x)))
+	{
+	  warning("Can only add vectors of data if they are the same length as the number of subnodes")
+	  return(x)
+	}
+	if(!is.data.frame(value)){
+		value = data.frame(value)
+		if(!is.null(datnames))
+		{
+			if(is.character(datnames) && length(datnames)==ncol(value))
+			{
+				names(value) <- datnames
+			} else {
+				warning("Not using specified names")
+			}
+		}
+	}
+	x@subnode.data = cbind(x@subnode.data,value)
+	return(x)
+})
 
+setMethod("rmdata", signature(x="phylo4d_ext",index="numeric"),
+  function(x,index) {
+	  if(length(index)>0 && index <= ncol(sndata(x)))
+		x@subnode.data = x@subnode.data[,-index,drop=F]
+	
+	return(x)
+})
+
+setMethod("rmdata", signature(x="phylo4d_ext",index="character"),
+  function(x,index) {
+	inds = which(names(sndata(x)) %in% index)
+	return(rmdata(x,inds))
+})
+
+
+setMethod("snposition", signature(x="phylo4d_ext"),
+  function(x) {
+	return(x@subnode.pos)
+})
+
+setMethod("snbranch", signature(x="phylo4d_ext"),
+  function(x) {
+	return(x@subnode.branch)
+})
+
+
+# 
+# setMethod("addData", signature(x="phylo4d_ext"),
+# 	function(x,...,snode.data=NULL) {
+# 		
+# 		oldcols = names(tdata(x))
+# 		# Add data the normal way:
+# 		x = getMethod("addData","phylo4d")(x,...)
+# 		
+# 		newcols = setdiff(names(tdata(x)),names(sndata(x)))
+# 		supercols = setdiff(oldcols,names(tdata(x)))
+# 		
+# 		cat("newcols: ", newcols,"\n")
+# 		
+# 		# Add data to subedges:
+# 		if(is.null(snode.data))
+# 		{
+# 			if(length(newcols)!=0)
+# 			{
+# 				newdat = data.frame(matrix(NA,nrow=nSubNodes(x),ncol=length(newcols)))
+# 				names(newdat) <- newcols
+# 				x@subnode.data = cbind(x@subnode.data,newdat)
+# 			}
+# 			
+# 			# Remove superfluous columns
+# 			if(length(supercols)!=0)
+# 			{
+# 				for(scol in supercols)
+# 					x = rmdata(x,scol)
+# 			}
+# 		}else{
+# 			# add this data:
+# 			if(length(newcols)!=0)
+# 			{
+# 				print("adding this way")
+# 				sndata(x,datnames=newcols) <- snode.data
+# 			}
+# 		}
+# 		
+# 		return(x)
+# })
+# 
+# 

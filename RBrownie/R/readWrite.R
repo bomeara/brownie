@@ -156,13 +156,16 @@ write.nexus.both <- function(phytree,file="",usechar=NULL)
 	
 	if(is(phytree,'phylo4d'))
 	{	
-		if(is(phytree,'brownie'))
+		if(hasCommands(phytree))
 			brownieblock = TRUE
 		
 		if(missing(usechar) || is.null(usechar))
 			usechar = names(tdata(phytree,"tip"))[1]
-			
+		
+		# Perpare tree	
 		phy = as(phytree,'phylo')
+		
+		# Perpare data
 		dat = tdata(phytree,"tip")[usechar]
 		dnames = rownames(dat)
 		dat = as.character(dat[,1])

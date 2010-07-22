@@ -48,14 +48,17 @@ setMethod("addData", signature(x="brownie"),
 })
 
 
-
+#---------------
 ## COMMANDS:
 #
+#---------------
+
 setMethod("commands", signature(x="brownie"),
   function(x) {
 	return(x@commands)
 })
 
+# actually this appends... (not a great idea)
 setReplaceMethod("commands", signature(x="brownie"),
 	function(x,value) {
 		
@@ -69,6 +72,15 @@ setReplaceMethod("commands", signature(x="brownie"),
 		x@commands = append(x@commands,cmdtext)
 		x		
 })
+
+
+hasCommands <- function(x)
+{
+	if(!is(x,'brownie'))
+		return(FALSE)
+	
+	return((length(commands(x))!=0))
+}
 
 
 setMethod("removeCommands", signature(x="brownie",index="numeric"),
@@ -97,8 +109,10 @@ setMethod("removeCommands", signature(x="brownie",index="character"),
 
 
 
+#---------------
 ## WEIGHT:
 #
+#---------------
 setMethod("weight", signature(x="brownie"),
   function(x) {
 	return(x@weight)
@@ -112,9 +126,11 @@ setReplaceMethod("weight", signature(x="brownie"),
 
 
 
+
+#---------------
 ## DataTypes
 #
-
+#---------------
 
 setMethod("datatypes", signature(x="brownie"),
   function(x) {
@@ -145,8 +161,12 @@ setReplaceMethod("datatypes", signature(x="brownie"),
 
 
 
+
+#---------------
 ## TAXASETS:
 #
+#---------------
+
 setMethod("taxasets", signature(x="phylo4d"),
   function(x) {
 	retdat = data.frame(NULL)
@@ -231,7 +251,7 @@ setReplaceMethod("taxasets", signature(x="brownie"),
 
 
 # Internal:
-# get character vector of taxa:
+# Return character vector of taxa from taxasets
 #
 taxa.charvect <- function(x,taxind)
 {
@@ -253,8 +273,8 @@ taxa.charvect <- function(x,taxind)
 	return(tipvect)
 }
 
-#Internal:
-#
+# Internal:
+# Is a character vector of taxa monophyletic on phylogeny x?
 #
 taxa.mono <- function(x,tipvector)
 {
@@ -268,14 +288,14 @@ taxa.mono <- function(x,tipvector)
 
 # check if certain taxaset is monophyletic:
 #
-taxaMono <- function(x,taxindex)
+areTaxaMono <- function(x,taxindex)
 {	
 	return(taxa.mono(x,taxa.charvect(x,taxindex)))
 }
 
 # Check if taxaset is paraphyletic
 #
-taxaPara <- function(x,taxind)
+areTaxaPara <- function(x,taxind)
 {	
 	retbool = FALSE
 	tipvect = taxa.charvect(x,taxind) # character vector of taxa to check

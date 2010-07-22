@@ -78,9 +78,7 @@ setMethod("phyext", "phylo4d",
 		snode.pos = matrix(0,nrow=0,ncol=2)
 	
 		
-	# convert any singletons into subnodes to be added:
-	# NOTE: subnodes should be fractional.  This makes rescaling
-	# 		of the parent tree less of a hassle.
+	# Convert any singletons into subnodes:
 	#
 	if(hasSingle(x))
 	{
@@ -196,10 +194,11 @@ setMethod("phyext", "phylo4d",
 			#snode.pos = rbind(snode.pos, rep(snode.length[ii],2))
 			snode.pos = rbind(snode.pos, rep(snode.length[ii],2)/edgeLength(x)[.edge.index(x,snode.branch[ii,1],snode.branch[ii,2])]) 
 		}
-	
 	}
 	
-	# create dummy ids for subnodes (not currently being used)
+	# create dummy ids for subnodes 
+	# NOTE: subnode.ids not currently being used
+	#
 	idvals = integer(0)
 	if(nrow(snode.branch)!=0)
 	{
@@ -207,7 +206,7 @@ setMethod("phyext", "phylo4d",
 		idvals = as.integer(seq(from = idstart, length.out=nrow(snode.branch)))
 	} 
 	
-	# Annotate original tree with subnode data:
+	# Annotate collapsed tree with subnode data:
 	retobj = new("phylo4d_ext",
 		x,
 		subnode.id=idvals, 
@@ -250,8 +249,13 @@ setMethod("phyext", "character",
 	if(file.exists(x))
 	{
 		# x points to a file  
+		if(is.simmap(finput=x)){
+			tr = try(read.nexus.simmap(x)[[1]],silent=T)
+		} else {
+			tr = try(read.tree(x),silent=T)
+		}
 		# try newick:
-		tr = try(read.tree(x),silent=T)
+		
 		if(is(tr,"try-error"))
 		{
 			tr = try(read.nexus(x),silent=T)
@@ -260,11 +264,15 @@ setMethod("phyext", "character",
 		}
 	} else {
 		# x is a character string:
-		tr = try(read.tree(text=x),silent=T)
+		if(is.simmap(text=x)){
+			tr = try(read.simmap(text=x),silent=T)
+		} else {
+			tr = try(read.tree(text=x),silent=T)
+		}
 		if(is(tr,"try-error"))
 			stop("If first argument is a string, then it must be newick-formated.")
 	}
-		
+	
 	phyd = phylo4d(tr,...)
 	phyext(phyd,snode.data,snode.branch,snode.pos)
 })
