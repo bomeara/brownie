@@ -196,7 +196,7 @@ read.characters2 <- function(finput)
 	rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
 	
 	tmpfile = tempfile()
-	tmphead = "#NEXUS"
+	tmphead = "#NEXUS\n"
 	tmptaxa = c("BEGIN TAXA;",read.nexus.block(txt=rawtext,block="taxa"),"END;")
 	tmptext = read.nexus.block(txt=rawtext,block="characters2")
 	tmptext = c("BEGIN CHARACTERS;",tmptext,"END;")

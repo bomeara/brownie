@@ -147,7 +147,7 @@ readBrownie<-function(fname)
 # return conditioned character string
 #
 
-.write.characters.block <- function(xdf,blockname="CHARACTERS",dtype)
+.write.characters.block <- function(xdf,blockname="CHARACTERS",dtype,missing.char="?")
 {
 	if(!is.data.frame(xdf))
 		stop("Internal function .write.characters.block needs a data.frame as the first argument")
@@ -155,12 +155,17 @@ readBrownie<-function(fname)
 	header = paste("BEGIN ",blockname,";",sep="")
 	header.title = paste("TITLE ",blockname,"_matrix;",sep="")
 	header.dims = sprintf("DIMENSIONS NTAX=%d NCHAR=%d;",nrow(xdf),ncol(xdf))
-	header.format = sprintf("FORMAT DATATYPE=%s;",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"))   # TODO: add GAP, MISSING, SYMBOLS 
+	header.format = sprintf("FORMAT DATATYPE=%s MISSING=%s;",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"),missing.char)   # TODO: add GAP, MISSING, SYMBOLS 
 	header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
 
 	mmatrix = "MATRIX"
 	#mmatrix.data = unname(cbind(rownames(xdf),apply(xdf,2,as.character)))
-	mmatrix.data = unname(cbind(rownames(xdf),apply(apply(xdf,2,as.character),1,paste,collapse=" ")))
+	mmatrix.data = apply(xdf,2,as.character)
+	if(any(is.na(mmatrix.data)))
+		mmatrix.data[which(is.na(mmatrix.data),T)] <- missing.char
+	
+	mmatrix.data = apply(mmatrix.data,1,paste,collapse=" ")
+	mmatrix.data = unname(cbind(rownames(xdf),mmatrix.data))
 	mmatrix.data = unname(apply(mmatrix.data,1,paste,collapse="\t"))
 	mmatrix.end = ";\n\nEND;"
 	
