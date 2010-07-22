@@ -77,7 +77,7 @@ checkDataTypes <- function(dtypes)
 
 
 # Internal function to parse / check assumptions block
-.process.assumptions <- function(obj,block.txt)
+.process.assumptions <- function(obj,block.txt,simbool)
 {
 	
 	if(!is(obj[[1]],"brownie"))
@@ -151,7 +151,9 @@ checkDataTypes <- function(dtypes)
 						warnings("Stipping underscores (because phylobase does).")
 					
 					# assume that phylobase will remove underscore characters
-					taxinds = gsub("_","",taxinds)
+					if(!simbool)
+						taxinds = gsub("_","",taxinds)
+					
 					taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
 				} else {
 					taxaI[seq(taxinds[1],taxinds[2]),1] = taxaI[seq(taxinds[1],taxinds[2]),1] = 1

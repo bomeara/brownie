@@ -6,6 +6,8 @@
 #
 #--------------------------------------------------
 
+setGeneric("writeNexus", function(x,...) { standardGeneric("writeNexus")} )
+
 
 readBrownie<-function(fname)
 {	
@@ -17,7 +19,8 @@ readBrownie<-function(fname)
 	brownie.part = read.nexus.block(txt=filetxt,block="BROWNIE",rm.comments=T)
 	assumptions.part = read.nexus.block(txt=filetxt,block="ASSUMPTIONS",rm.comments=T)
 	
-	if(!is.simmap(fname)){
+	issim = is.simmap(fname)
+	if(!issim){
 		
 		# this function should read in character data
 		# wrap in list to make it compatible with read.nexus.simmap output
@@ -68,7 +71,7 @@ readBrownie<-function(fname)
 	}
 
 	brau.new = .process.datatypes(brau.new)  # may or may not be useful
-	brau.new = .process.assumptions(brau.new,assumptions.part) 
+	brau.new = .process.assumptions(brau.new,assumptions.part,issim) 
 	
 	#
 	# Read characters 2 if it exists:
@@ -141,74 +144,157 @@ readBrownie<-function(fname)
 	return (assout)
 }
 
+# return conditioned character string
+#
 
+.write.characters.block <- function(xdf,blockname="CHARACTERS",dtype)
+{
+	if(!is.data.frame(xdf))
+		stop("Internal function .write.characters.block needs a data.frame as the first argument")
+	
+	header = paste("BEGIN ",blockname,";",sep="")
+	header.title = paste("TITLE ",blockname,"_matrix;",sep="")
+	header.dims = sprintf("DIMENSIONS NTAX=%d NCHAR=%d;",nrow(xdf),ncol(xdf))
+	header.format = sprintf("FORMAT DATATYPE=%s;",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"))   # TODO: add GAP, MISSING, SYMBOLS 
+	header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
+
+	mmatrix = "MATRIX"
+	#mmatrix.data = unname(cbind(rownames(xdf),apply(xdf,2,as.character)))
+	mmatrix.data = unname(cbind(rownames(xdf),apply(apply(xdf,2,as.character),1,paste,collapse=" ")))
+	mmatrix.data = unname(apply(mmatrix.data,1,paste,collapse="\t"))
+	mmatrix.end = ";\n\nEND;"
+	
+	return(c(header,
+			header.title,
+			header.dims,
+			header.format,
+			header.labels,
+			mmatrix,
+			mmatrix.data,
+			mmatrix.end))
+
+}
 
 
 
 # write nexus file with trees and characters
-# NOTE: this converts file to Unix line-endings
-#		need to figure out a better way to do this. 
+# TODO: -Use text streams instead of temp files
+#		-Better way to convert CR/LF (in Windows)
 #
-write.nexus.both <- function(phytree,file="",usechar=NULL)
-{
-	brownieblock=FALSE
-	retbool = TRUE
-	
-	if(is(phytree,'phylo4d'))
-	{	
-		if(hasCommands(phytree))
-			brownieblock = TRUE
+setMethod("writeNexus", signature(x="brownie"),
+	function(x, file=NULL, usechar=NULL) {
 		
-		if(missing(usechar) || is.null(usechar))
-			usechar = names(tdata(phytree,"tip"))[1]
+		# temporary files for nexus blocks:
+		#
+		tmp1 = tempfile()  # TREES / TAXA
+		tmp2 = tempfile()  # CHARACTERS
+		tmp3 = tempfile()  # CHARACTERS2
+		tmp4 = tempfile()  # BROWNIE 
+		tmp5 = tempfile()  # ASSUMPTIONS
 		
-		# Perpare tree	
-		phy = as(phytree,'phylo')
+		success=TRUE
+		datablock = FALSE
+		datablock2 = FALSE
+		brownieblock=FALSE
+		assumptionsblock=FALSE
 		
-		# Perpare data
-		dat = tdata(phytree,"tip")[usechar]
-		dnames = rownames(dat)
-		dat = as.character(dat[,1])
-		names(dat) <- dnames
+		#if(missing(usechar) || is.null(usechar))
+		#	usechar = names(tdata(x,"tip"))[1]
 		
-		tmp1 = tempfile()
-		tmp2 = tempfile()
-		tmp4 = ""
-		
+		# Perpare tree
+		phy = as(x,'phylo')
 		write.nexus(phy,file=tmp1)
-		write.nexus.data(dat,file=tmp2,"STANDARD",datablock=F)
-		retbool = retbool && file.append(tmp1,tmp2)
 		
-		if(brownieblock){
-			tmp4 = .write.brownie.block(phytree)
-			retbool = retbool && file.append(tmp1,tmp4)
+		# if there is tip data to be written
+		#
+		if(hasTipData(x))
+		{
+			dtypes = datatypes(x)
+			if(any(dtypes == genericData()))
+				warning("Excluding undefined datatypes.")
+		
+			udtypes = sort(unique(dtypes[which(dtypes %in% c(contData(),discData()))]),T)
+			
+			if(length(udtypes) > 0)
+			{
+				
+				# Perpare first CHARACTERS block:
+				#
+				dat = tdata(x,"tip")[,which(dtypes==udtypes[1]),drop=F]
+				tnames = rownames(dat)	
+				#write.nexus.data(dat,file=tmp2,"STANDARD",datablock=F)
+				tmpss = .write.characters.block(dat,"CHARACTERS",udtypes[1])
+				writeLines(tmpss,tmp2)
+				datablock=TRUE
+				
+				if(length(udtypes)==2)
+				{
+					dat = tdata(x,"tip")[,which(dtypes==udtypes[2]),drop=F]
+					#write.nexus.data(dat,file=tmp3,"STANDARD",datablock=F)
+					tmpss = .write.characters.block(dat,"CHARACTERS2",udtypes[2])
+					writeLines(tmpss,tmp3)
+					datablock2=TRUE
+				}
+			}
+		}
+				#retbool = retbool && file.append(tmp1,tmp2)
+		
+		if(hasCommands(x)){
+			tmpss = .write.brownie.block(x)
+			if(length(tmpss)==0) stop("Brownie commands found, but could not be written.  Email authors")
+			writeLines(tmpss,tmp4)
+			brownieblock = TRUE
 		}
 		
+		if(hasTaxasets(x))
+		{
+			tmpss = .write.assumptions.block(x)
+			if(length(tmpss)==0) stop("Taxa sets found, but could not be written.  Email authors")
+			writeLines(tmpss,tmp5)
+			assumptionsblock=TRUE
+		}
+		
+		# write to specified file:
+	
+		success = file.copy(tmp1,file,overwrite=T)
+		
+		if(datablock)
+			success = success && file.append(file,tmp2)
+		if(datablock2)
+			success = success && file.append(file,tmp3)
+		if(assumptionsblock)
+			success = success && file.append(file,tmp5)
+		if(brownieblock)
+			success = success && file.append(file,tmp4)
+		
+		if(!success)
+			stop("Failed to copy between temporary files")
+		
+		# IF windows, convert to windows path:
+		# (brownie crashes otherwise)
+		#
 		if(.Platform$OS.type=="windows")
 		{
-			tmp3 = tempfile()
-			# IF windows:
-			# convert to windows path:
-			tmp1 = gsub("\\\\","/",tmp1)
-			tmp3 = gsub("\\\\","/",tmp3)
-			sysstr = paste("tr -d '\\015' < ", tmp1, " > ", tmp3)
+			tmpconvert = tempfile()
+			file = gsub("\\\\","/",file)
+			tmpconvert = gsub("\\\\","/",tmpconvert )
+			sysstr = paste("tr -d '\\015' < ", file, " > ", tmpconvert)
 			shell(sysstr)
-			retbool = retbool && file.copy(tmp3,file,overwrite=TRUE)
-			unlink(tmp3)
-		} else {
-			retbool = retbool && file.copy(tmp1,file,overwrite=TRUE)
-		}
+			success = success && file.copy(tmpconvert,file,overwrite=TRUE)
+			if(!success)
+				stop("Failed to convert line endings on this Windows machine")
+			
+			unlink(tmpconvert)
+		} 
 		
+		# delete temporary files:			
 		unlink(tmp1)
 		unlink(tmp2)
+		unlink(tmp3)
+		unlink(tmp4)
+		unlink(tmp5)
 		
-		if(brownieblock)
-			unlink(tmp4)
-		
-	} else {
-		warning("Object phytree did not inherit from phylo4d")
-	}
+		# return
+		return( success )
+})
 	
-	return( retbool )
-}
-

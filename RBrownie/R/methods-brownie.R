@@ -192,6 +192,12 @@ setMethod("taxasets", signature(x="brownie"),
 })
 
 
+hasTaxasets<-function(x)
+{
+	retbool = (ncol(taxasets(x))!=0)
+	retbool
+}
+
 # adds only:
 setReplaceMethod("taxasets", signature(x="phylo4d"),
   function(x,value) {
