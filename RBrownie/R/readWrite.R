@@ -194,7 +194,7 @@ setMethod("writeNexus",signature(x="brownie"),
 #		-Better way to convert CR/LF (in Windows)
 #
 setMethod("writeNexus", signature(x="list"),
-	function(x, file=NULL, usechar=NULL) {
+	function(x, file=NULL, rmsimmap=TRUE) {
 		
 		# temporary files for nexus blocks:
 		#

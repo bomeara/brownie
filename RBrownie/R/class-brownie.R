@@ -186,8 +186,8 @@ is.binary <- function(seqvec)
 	datatypes = rep(genericData(),ndatcols)
 	if(ndatcols > 0)
 	{
-		datatypes[sapply(seq(ndatcols),function(i) is.numeric(datvals[,i]))] = contData()
 		datatypes[sapply(seq(ndatcols),function(i) is.factor(datvals[,i]))] = discData()
+		datatypes[sapply(seq(ndatcols),function(i) is.numeric(datvals[,i]))] = contData()
 		datatypes[grep("TAXSET_",names(datvals))] = taxaData()
 	}
 	

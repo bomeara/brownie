@@ -566,7 +566,7 @@ write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 				
 				if(length(snpos)>1)
 					for(jj in seq(length(snpos)-1))
-						newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-sum(snpos[(jj+1):length(snpos)])),sep="")
+						newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
 				
 				newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),",",tail(snpos,1),sep="")
 				
@@ -874,53 +874,56 @@ addSubNode <- function(x,anc,dec,position,dataf)
 #
 showSubNodes <- function(x)
 {
-	charlen = 80
-	brchar = "-"
-	terminalchar = "-"
-	regchar="0"
-	overlapchar = "*"
-	# use them all by default:
-	
-	einds = apply(x@subnode.branch,1,function(i) .edge.index(x,i[1],i[2]))
-	
-	for(eind in unique(einds))
+	if(hasSubNodes(x))
 	{
-		snid = which(einds == eind)
-		anc = x@subnode.branch[snid,1]
-		dec = x@subnode.branch[snid,2]
+		charlen = 80
+		brchar = "-"
+		terminalchar = "-"
+		regchar="0"
+		overlapchar = "*"
+		# use them all by default:
 		
-		# setup output string
-		tmpstr = rep(brchar,charlen)
-		tmpstr[1] = terminalchar
-		tmpstr[charlen] = terminalchar
+		einds = apply(x@subnode.branch,1,function(i) .edge.index(x,i[1],i[2]))
 		
-		# get relative positions of nodes:
-		elen = edgeLength(x)[eind]
-		breaksize = elen / charlen
-		snpos = x@subnode.pos[snid,] * elen 
-		if(!is.matrix(snpos)) 
-			snpos = matrix(snpos,nrow=1)
-		
-		for(xx in seq(length(snid)))
+		for(eind in unique(einds))
 		{
-			nbreaks = max(1, floor(diff(snpos[xx,]) / breaksize) )
-			from = floor(snpos[1] / breaksize)
-			tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==regchar] = overlapchar
-			tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==brchar] = regchar
-			#tmpstr[seq(from,length.out=nbreaks)] = rep(regchar,nbreaks)
+			snid = which(einds == eind)
+			anc = x@subnode.branch[snid,1]
+			dec = x@subnode.branch[snid,2]
+			
+			# setup output string
+			tmpstr = rep(brchar,charlen)
+			tmpstr[1] = terminalchar
+			tmpstr[charlen] = terminalchar
+			
+			# get relative positions of nodes:
+			elen = edgeLength(x)[eind]
+			breaksize = elen / charlen
+			snpos = x@subnode.pos[snid,] * elen 
+			if(!is.matrix(snpos)) 
+				snpos = matrix(snpos,nrow=1)
+			
+			for(xx in seq(length(snid)))
+			{
+				nbreaks = max(1, floor(diff(snpos[xx,]) / breaksize) )
+				from = floor(snpos[1] / breaksize)
+				tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==regchar] = overlapchar
+				tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==brchar] = regchar
+				#tmpstr[seq(from,length.out=nbreaks)] = rep(regchar,nbreaks)
+			}
+			
+			# collapse and print:
+			tmpstr = paste(tmpstr,collapse="")
+			if(length(snid)==1){
+				names(tmpstr) <- sprintf("Subnode at ~%0.2f on branch: %d to %d (brlen=%0.2f)",snpos[1]+diff(snpos[1,])/2,anc,dec,elen)
+			} else {
+				names(tmpstr) <- sprintf("%d Subnodes on branch: %d to %d (bren=%0.2f)",length(snid),anc[1],dec[1],elen)
+			}
+			print(tmpstr)
+			cat("\n")
 		}
-		
-		# collapse and print:
-		tmpstr = paste(tmpstr,collapse="")
-		if(length(snid)==1){
-			names(tmpstr) <- sprintf("Subnode at ~%0.2f on branch: %d to %d (brlen=%0.2f)",snpos[1]+diff(snpos[1,])/2,anc,dec,elen)
-		} else {
-			names(tmpstr) <- sprintf("%d Subnodes on branch: %d to %d (bren=%0.2f)",length(snid),anc[1],dec[1],elen)
-		}
-		print(tmpstr)
-		cat("\n")
+		print("0 indicates a subnode; * indicates 2+ subnodes overlapping. Positions are relative.")
 	}
-	print("0 indicates a subnode; * indicates 2+ subnodes overlapping. Positions are relative.")
 }
 
 
@@ -968,17 +971,31 @@ setReplaceMethod("sndata", signature(x="phylo4d_ext"),
 
 setMethod("rmdata", signature(x="phylo4d_ext",index="numeric"),
   function(x,index) {
-	  if(length(index)>0 && index <= ncol(sndata(x)))
-		x@subnode.data = x@subnode.data[,-index,drop=F]
+	  if(length(index)>0 && index <= ncol(tdata(x)))
+		{
+			x@data = x@data[,-index,drop=F]
+			if(hasSubNodes(x))
+				x@subnode.data = x@subnode.data[,-index,drop=F]
+		}
 	
 	return(x)
 })
 
-setMethod("rmdata", signature(x="phylo4d_ext",index="character"),
+
+setMethod("rmdata", signature(x="phylo4d",index="numeric"),
   function(x,index) {
-	inds = which(names(sndata(x)) %in% index)
+	  if(length(index)>0 && index <= ncol(tdata(x)))
+		x@data = x@data[,-index,drop=F]
+	
+	return(x)
+})
+
+setMethod("rmdata", signature(x="phylo4d",index="character"),
+  function(x,index) {
+	inds = which(names(tdata(x)) %in% index)
 	return(rmdata(x,inds))
 })
+
 
 
 setMethod("snposition", signature(x="phylo4d_ext"),

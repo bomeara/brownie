@@ -140,7 +140,7 @@ setMethod("datatypes", signature(x="brownie"),
 
 setReplaceMethod("datatypes", signature(x="brownie"),
   function(x,enforce=TRUE,value) {
-	if(length(value) == ncol(tdata(x))){
+	if(length(value) == ncol(tdata(x)) || !enforce){
 		
 		if(enforce)
 		{
@@ -156,6 +156,19 @@ setReplaceMethod("datatypes", signature(x="brownie"),
 	} else {
 		warning("Values was not the same length as the number of data columns")
 	}
+	return(x)
+})
+
+
+setMethod("rmdata", signature(x="brownie",index="numeric"),
+  function(x,index) {
+	  getMethod("rmdata",signature("phylo4d_ext","numeric"))(x,index)
+		if(length(index)>0 && index <= ncol(tdata(x)))
+		{
+			x@data = x@data[,-index,drop=F]
+			dtypes = datatypes(x)
+			datatypes(x) <- dtypes[-index]
+		}
 	return(x)
 })
 
