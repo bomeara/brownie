@@ -537,6 +537,8 @@ collapse.singletons <- function(phy)
 #  creates a new 'phylo' class using only those labels (without edge lengths).  Then it uses
 #  APEs algorithm to write those labels to a newick string.  
 #
+# -If any of the SIMMAP datatypes are is.na, then they are left out!  TODO:  Look into changing this in the future
+#
 write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 {
 	splitchar = ifelse(vers==1.0,";",":")
@@ -553,7 +555,8 @@ write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 			nodeid=es[ii]
 			if(!(ii %in% snedges.inds))
 			{
-				newlenlab[ii] = paste(tdat[nodeid,1] ,",", elens[ii],sep="")
+				if(!is.na(tdat[nodeid,1]))
+					newlenlab[ii] = paste(tdat[nodeid,1] ,",", elens[ii],sep="")
 			} else {
 				snind = which(snedges.inds == ii)
 				snlens = snposition(x)[snind,] * elens[ii]
@@ -576,7 +579,7 @@ write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 		names(newlenlab) <- oldlabs
 		oldlabs[which(is.na(oldlabs))] <- ""
 		newlab = paste(oldlabs,":{", newlenlab ,"}",sep="")
-	
+		newlab[which(newlenlab=="")] <- ""  # remove any <NA> data
 		
 		# reorder:
 		newlab = newlab[order(es)]

@@ -152,13 +152,34 @@ readBrownie<-function(fname)
 
 .write.characters.block <- function(xdf,blockname="CHARACTERS",dtype,missing.char="?")
 {
+	
+	levs <- function(xdf)
+	{
+		retbool = TRUE
+		if(ncol(xdf)==1)
+			return(TRUE)
+		
+		samelevs = levels(xdf[,1])
+		for(i in seq(from=2,to=ncol(xdf)))
+			retbool && all(samelevs == levels(xdf[,i]))
+		
+		retbool
+	}
+
+	all.levels.similar = levs(xdf)
 	if(!is.data.frame(xdf))
 		stop("Internal function .write.characters.block needs a data.frame as the first argument")
 	
 	header = paste("BEGIN ",blockname,";",sep="")
 	header.title = paste("TITLE ",blockname,"_matrix;",sep="")
 	header.dims = sprintf("DIMENSIONS NTAX=%d NCHAR=%d;",nrow(xdf),ncol(xdf))
-	header.format = sprintf("FORMAT DATATYPE=%s MISSING=%s;",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"),missing.char)   # TODO: add GAP, MISSING, SYMBOLS 
+	header.format = sprintf("FORMAT DATATYPE=%s MISSING=%s",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"),missing.char)   # TODO: add GAP, SYMBOLS 
+	if(dtype == discData() && all.levels.similar){
+		header.format = sprintf("%s SYMBOLS=\"%s;\"",header.format,paste(levels(xdf[,1]),collapse=" "))
+	} else {
+		header.format = paste(header.format,";",sep="")
+	}
+	
 	header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
 
 	mmatrix = "MATRIX"
@@ -185,8 +206,8 @@ readBrownie<-function(fname)
 
 
 setMethod("writeNexus",signature(x="brownie"),
-	function(x,file=NULL,usechar=NULL) {
-		return( writeNexus(list(x),file=file,usechar=NULL) )
+	function(x,file=NULL,rmsimmap=TRUE) {
+		return( writeNexus(list(x),file=file,rmsimmap=rmsimmap) )
 })
 
 # write nexus file with trees and characters
@@ -221,6 +242,11 @@ setMethod("writeNexus", signature(x="list"),
 		#
 		if(hasTipData(x[[1]]))
 		{
+			if(rmsimmap)
+			{
+				x[[1]] = rmdata(x[[1]],'simmap_state')
+			}
+			
 			dtypes = datatypes(x[[1]])
 			if(any(dtypes == genericData()))
 				warning("Excluding undefined datatypes.")
