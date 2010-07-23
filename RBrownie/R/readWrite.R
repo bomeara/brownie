@@ -122,6 +122,7 @@ readBrownie<-function(fname)
 		{
 			tmpname = sub("^TAXSET_","",taxsetnames[ii])
 			tmp = paste(taxa.charvect(phytree,taxsetnames[ii]),collapse=" ")
+			tmpname = paste("taxset",tmpname)
 			tstring = c(tstring, paste(paste(tmpname,tmp,sep="="),";",sep="") )
 		}
 	}
@@ -175,7 +176,7 @@ readBrownie<-function(fname)
 	header.dims = sprintf("DIMENSIONS NTAX=%d NCHAR=%d;",nrow(xdf),ncol(xdf))
 	header.format = sprintf("FORMAT DATATYPE=%s MISSING=%s",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"),missing.char)   # TODO: add GAP, SYMBOLS 
 	if(dtype == discData() && all.levels.similar){
-		header.format = sprintf("%s SYMBOLS=\"%s;\"",header.format,paste(levels(xdf[,1]),collapse=" "))
+		header.format = sprintf("%s SYMBOLS=\"%s\";",header.format,paste(levels(xdf[,1]),collapse=" "))
 	} else {
 		header.format = paste(header.format,";",sep="")
 	}

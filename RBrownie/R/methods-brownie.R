@@ -47,6 +47,23 @@ setMethod("addData", signature(x="brownie"),
 		
 })
 
+# Show brownie object:
+showBrownie <- function()
+{
+	cat("brownie class help:\n")
+	cat("-------------------------------\n")
+	cat("Show/Set datatypes: datatypes(brownieobj) <- c(contData(),discData(),taxaData())\n")
+	cat("Show/Set brownie commands: commands(brownieobj) <- c('cmd1','cmd2',....)\n")
+	cat("Show/Add taxa sets: taxasets(brownieobj) <- c('taxa1','taxa2',....) \n")
+	cat("Show/Add data columns: sndata(brownieobj,<column_index>) <- data.frame\n")
+	cat("Remove data columns: rmdata(brownieobj,<column_index>)\n")
+	cat("Show which branches subnodes are on: snbranch(brownieobj)\n")
+	cat("Show where on branch subnodes are: snposition(brownieobj)\n")
+	cat("-------------------------------\n")	
+}
+
+setMethod("show","brownie", function(object){ printphylo4(object); showSubNodes(object); showBrownie()})
+
 
 #---------------
 ## COMMANDS:
