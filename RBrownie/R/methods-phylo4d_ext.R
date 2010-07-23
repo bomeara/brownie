@@ -16,6 +16,7 @@
 # expand.singles
 # collapse.to.singles
 # collapse.singletons
+# write.simmap
 
 ## Subnode Methods:
 # .edge.index
@@ -37,6 +38,8 @@ setGeneric("snposition", function(x, ...) { standardGeneric("snposition") })
 setGeneric("snbranch", function(x, ...) { standardGeneric("snbranch") })
 setGeneric("rmdata", function(x,index) { standardGeneric("rmdata")} )
 
+# subnode
+setGeneric("hasSubNodes", function(x) { standardGeneric("hasSubNodes") })
 
 #--------------------------
 # SIMMAP Processing Methods		
@@ -281,6 +284,7 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 #
 read.nexus.simmap <- function(finput="",text=NULL)
 {
+	outtrees = NULL
 	if(!is.null(text)){
 		# TODO: check text for newlines and split on them if they exist.
 		rawtext=text
@@ -329,11 +333,10 @@ read.nexus.simmap <- function(finput="",text=NULL)
 		taxname = sapply(strsplit(taxatrans,"\\s"),function(i) sub("(,|;)","",i[2]))
 	}
 
-
-	outtrees=list()
-	count = 1
+	count = 0
 	for(linenumb in treelines)
 	{
+		print(linenumb)
 		# clearly, this will not work for non-simmap, non-newick trees
 		tmpstr = tail(strsplit(treesblock[linenumb],"=")[[1]],1)
 		
@@ -341,11 +344,12 @@ read.nexus.simmap <- function(finput="",text=NULL)
 		# remove first comment (should others be removed?
 		if(is.simmap(text=treesblock[linenumb]))
 		{
-			trtmp = read.simmap(text=tmpstr)
+			trtmp = unname(read.simmap(text=tmpstr))
 		} else {
 			trtmp = read.tree(text=tmpstr)
 		}
-		trtmp = as(trtmp,'phylo4')
+		if(!is(trtmp,'phylo4'))
+			trtmp = as(trtmp,'phylo4')
 		
 		if(!inherits(trtmp,"phylo4")){
 			cat("Trouble parsing line for trees:\n",treesblock[linenumb],"\n")
@@ -528,6 +532,192 @@ collapse.singletons <- function(phy)
 
 
 
+# write modified newick file:
+# -This is kind of a hack: it basically writes subnodes and lengths to a new character label and then
+#  creates a new 'phylo' class using only those labels (without edge lengths).  Then it uses
+#  APEs algorithm to write those labels to a newick string.  
+#
+write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
+{
+	splitchar = ifelse(vers==1.0,";",":")
+	if(hasSubNodes(x))
+	{
+		tdat = tdata(x)[,usestate,drop=F]
+		sdat = sndata(x)[,usestate,drop=F]
+		snedges.inds = apply(snbranch(x),1,function(i) .edge.index(x,i[1],i[2]))
+		es = edges(x)[,2]
+		elens = edgeLength(x)
+		newlenlab=character(length(es))
+		for(ii in seq(length(es)))
+		{
+			nodeid=es[ii]
+			if(!(ii %in% snedges.inds))
+			{
+				newlenlab[ii] = paste(tdat[nodeid,1] ,",", elens[ii],sep="")
+			} else {
+				snind = which(snedges.inds == ii)
+				snlens = snposition(x)[snind,] * elens[ii]
+				snstates = sdat[snind,1]
+				if(!is.matrix(snlens))
+					snlens = matrix(snlens,nrow=1)
+				snpos = apply(snlens,1,mean)
+				snpos = sort(snpos,T)
+				newlenlab[ii] = paste(tdat[nodeid,1],",",(elens[ii]-max(snpos)),sep="")
+				
+				if(length(snpos)>1)
+					for(jj in seq(length(snpos)-1))
+						newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-sum(snpos[(jj+1):length(snpos)])),sep="")
+				
+				newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),",",tail(snpos,1),sep="")
+				
+			}
+		}
+		oldlabs = labels(x)[es]
+		names(newlenlab) <- oldlabs
+		oldlabs[which(is.na(oldlabs))] <- ""
+		newlab = paste(oldlabs,":{", newlenlab ,"}",sep="")
+	
+		
+		# reorder:
+		newlab = newlab[order(es)]
+		ntype = nodeType(x)
+		phy = as(x,'phylo')
+		newedges = edges(x)
+		newphy = list(edge=newedges,tip.label=newlab[which(ntype=="tip")],node.label=newlab[which(ntype!="tip")],Nnode=nrow(newedges))
+		class(newphy) <- "phylo"
+		
+		
+		################################################################
+		# borrowed code from APE (write.tree.R):
+		#
+		output.tree.names=FALSE
+		append = FALSE
+		digits = 10
+		brl <- !is.null(newphy$edge.length)
+		nodelab <- !is.null(newphy$node.label)
+		f.d <- paste("%.", digits, "g", sep = "")
+		cp <- function(s) STRING <<- paste(STRING, s, sep = "")
+		add.internal <- function(i) {
+		    cp("(")
+		    br <- which(newphy$edge[, 1] == i)
+		    for (j in br) {
+		        desc <- newphy$edge[j, 2]
+		        if (desc > n) add.internal(desc)
+		        else add.terminal(j)
+		        if (j != br[length(br)])  cp(",")
+		    }
+		    cp(")")
+		    if (nodelab) cp(newphy$node.label[i - n])
+		    if (brl) {
+		        cp(":")
+		        cp(sprintf(f.d, newphy$edge.length[which(newphy$edge[, 2] == i)]))
+		    }
+		}
+		add.terminal <- function(i) {
+		    cp(newphy$tip.label[newphy$edge[i, 2]])
+		    if (brl) {
+		        cp(":")
+		        cp(sprintf(f.d, newphy$edge.length[i]))
+		    }
+		}
+		n <- length(newphy$tip.label)
+		STRING <- if (output.tree.names) paste(tree.names, "(", sep = "") else "("
+		br <- which(newphy$edge[, 1] == n + 1)
+		for (j in br) {
+		    desc <- newphy$edge[j, 2]
+		    if (desc > n) add.internal(desc)
+		    else add.terminal(j)
+		    if (j != br[length(br)]) cp(",")
+		}
+		if (is.null(newphy$root.edge)) {
+		    cp(")")
+		    if (nodelab) cp(newphy$node.label[1])
+		    cp(";")
+		} else {
+		    cp(")")
+		    if (nodelab) cp(newphy$node.label[1])
+		    cp(":")
+		    cp(sprintf(f.d, newphy$root.edge))
+		    cp(";")
+		}
+		if (file == "") return(STRING)
+	    cat(STRING, file = file, append = append, sep = "\n")
+	    
+		################################################################		
+	} else {
+		phy = as(x,'phylo')
+		write.tree(phy,file,...)
+	}
+}	
+
+
+
+# Mainly ripped from APE write.nexus function
+#
+#
+write.nexus.simmap <- function(obj, file = "", translate = TRUE)
+{
+	if(!is.list(obj))
+	{
+		if(!is(obj,"phylo4d_ext"))
+			stop("This function is only made to work with phylo4d_ext objects.")
+		
+		obj <- list(obj)
+	} else {
+		if(!all(sapply(obj,is,'phylo4d_ext')))
+			stop("This function is only made to work with phylo4d_ext objects or lists of such.")
+	}
+	ntree <- length(obj)
+	
+    cat("#NEXUS\n", file = file)
+    cat(paste("[R-package APE, ", date(), "]\n\n", sep = ""),file = file, append = TRUE)
+	
+    #N <- length(obj[[1]]$tip.label)
+	N <- length(tipLabels(obj[[1]]))
+
+        cat("BEGIN TAXA;\n", file = file, append = TRUE)
+        cat(paste("\tDIMENSIONS NTAX = ", N, ";\n", sep = ""),file = file, append = TRUE)
+        cat("\tTAXLABELS\n", file = file, append = TRUE)
+        cat(paste("\t\t", tipLabels(obj[[1]]), sep = ""),sep = "\n", file = file, append = TRUE)
+        cat("\t;\n", file = file, append = TRUE)
+        cat("END;\n", file = file, append = TRUE)
+   	
+    cat("BEGIN TREES;\n", file = file, append = TRUE)
+    if (translate) {
+        ## We take arbitrarily the labels of the first tree, and
+        ## translate them as "1", "2", "3", ...
+        cat("\tTRANSLATE\n", file = file, append = TRUE)
+        tmp <- checkLabel(tipLabels(obj[[1]]))
+        X <- paste("\t\t", 1:N, "\t", tmp, ",", sep = "")
+        ## We remove the last comma:
+        X[length(X)] <- gsub(",", "", X[length(X)])
+        cat(X, file = file, append = TRUE, sep = "\n")
+        cat("\t;\n", file = file, append = TRUE)
+        token <- as.character(1:N)
+        names(token) <- tipLabels(obj[[1]])
+        tipLabels(obj[[1]]) <- token
+        if (ntree > 1) {
+            for (i in 2:ntree)
+                tipLabels(obj[[i]]) <- token[tipLabels(obj[[i]])]
+            class(obj) <- NULL
+        }
+    } else {
+        for (i in 1:ntree)
+          tipLabels(obj[[i]]) <- checkLabel(tipLabels(obj[[i]]))
+    }
+    for (i in 1:ntree) {
+        if (isRooted(obj[[i]]))
+          cat("\tTREE * UNTITLED = [&R] ", file = file, append = TRUE)
+        else cat("\tTREE * UNTITLED = [&U] ", file = file, append = TRUE)
+        cat(write.simmap(obj[[i]], file = ""),"\n", sep = "", file = file, append = TRUE)
+    }
+    cat("END;\n", file = file, append = TRUE)
+}
+
+
+
+
+
 
 
 
@@ -568,10 +758,24 @@ nSubNodes <- function(x)
 	return (length(x@subnode.id))
 }
 
-hasSubNodes <- function(x)
-{
-	return (nSubNodes(x)!=0)
-}
+
+setMethod("hasSubNodes", signature(x="phylo4d_ext"),
+  function(x) {
+	return(nSubNodes(x)!=0)
+})
+
+
+setMethod("hasSubNodes", signature(x="phylo4"),
+  function(x) {
+	return(FALSE)
+})
+
+setMethod("hasSubNodes", signature(x="phylo"),
+  function(x) {
+	return(FALSE)
+})
+
+
 
 getSubNodeData <- function(x,colname)
 {

@@ -6,6 +6,9 @@
 #
 #--------------------------------------------------
 
+# readBrownie
+# writeNexus
+
 setGeneric("writeNexus", function(x,...) { standardGeneric("writeNexus")} )
 
 
@@ -181,12 +184,16 @@ readBrownie<-function(fname)
 }
 
 
+setMethod("writeNexus",signature(x="brownie"),
+	function(x,file=NULL,usechar=NULL) {
+		return( writeNexus(list(x),file=file,usechar=NULL) )
+})
 
 # write nexus file with trees and characters
 # TODO: -Use text streams instead of temp files
 #		-Better way to convert CR/LF (in Windows)
 #
-setMethod("writeNexus", signature(x="brownie"),
+setMethod("writeNexus", signature(x="list"),
 	function(x, file=NULL, usechar=NULL) {
 		
 		# temporary files for nexus blocks:
@@ -197,24 +204,24 @@ setMethod("writeNexus", signature(x="brownie"),
 		tmp4 = tempfile()  # BROWNIE 
 		tmp5 = tempfile()  # ASSUMPTIONS
 		
-		success=TRUE
+		success = TRUE
 		datablock = FALSE
 		datablock2 = FALSE
-		brownieblock=FALSE
+		brownieblock = FALSE
 		assumptionsblock=FALSE
 		
 		#if(missing(usechar) || is.null(usechar))
 		#	usechar = names(tdata(x,"tip"))[1]
 		
 		# Perpare tree
-		phy = as(x,'phylo')
-		write.nexus(phy,file=tmp1)
+		#phy = as(x[[1]],'phylo')
+		write.nexus.simmap(x,file=tmp1)
 		
 		# if there is tip data to be written
 		#
-		if(hasTipData(x))
+		if(hasTipData(x[[1]]))
 		{
-			dtypes = datatypes(x)
+			dtypes = datatypes(x[[1]])
 			if(any(dtypes == genericData()))
 				warning("Excluding undefined datatypes.")
 		
@@ -225,7 +232,7 @@ setMethod("writeNexus", signature(x="brownie"),
 				
 				# Perpare first CHARACTERS block:
 				#
-				dat = tdata(x,"tip")[,which(dtypes==udtypes[1]),drop=F]
+				dat = tdata(x[[1]],"tip")[,which(dtypes==udtypes[1]),drop=F]
 				tnames = rownames(dat)	
 				#write.nexus.data(dat,file=tmp2,"STANDARD",datablock=F)
 				tmpss = .write.characters.block(dat,"CHARACTERS",udtypes[1])
@@ -234,7 +241,7 @@ setMethod("writeNexus", signature(x="brownie"),
 				
 				if(length(udtypes)==2)
 				{
-					dat = tdata(x,"tip")[,which(dtypes==udtypes[2]),drop=F]
+					dat = tdata(x[[1]],"tip")[,which(dtypes==udtypes[2]),drop=F]
 					#write.nexus.data(dat,file=tmp3,"STANDARD",datablock=F)
 					tmpss = .write.characters.block(dat,"CHARACTERS2",udtypes[2])
 					writeLines(tmpss,tmp3)
@@ -242,18 +249,18 @@ setMethod("writeNexus", signature(x="brownie"),
 				}
 			}
 		}
-				#retbool = retbool && file.append(tmp1,tmp2)
+				
 		
-		if(hasCommands(x)){
-			tmpss = .write.brownie.block(x)
+		if(hasCommands(x[[1]])){
+			tmpss = .write.brownie.block(x[[1]])
 			if(length(tmpss)==0) stop("Brownie commands found, but could not be written.  Email authors")
 			writeLines(tmpss,tmp4)
 			brownieblock = TRUE
 		}
 		
-		if(hasTaxasets(x))
+		if(hasTaxasets(x[[1]]))
 		{
-			tmpss = .write.assumptions.block(x)
+			tmpss = .write.assumptions.block(x[[1]])
 			if(length(tmpss)==0) stop("Taxa sets found, but could not be written.  Email authors")
 			writeLines(tmpss,tmp5)
 			assumptionsblock=TRUE
