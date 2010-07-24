@@ -4,6 +4,12 @@
 # -
 #--------------------------------------------------
 
+# run - will run brownie block as-is.  Need to specify what you want returned.
+# Ancestral State Reconstruction - 
+# Censored Rate tests
+# Non-censored Rate tests
+# ?
+
 
 # Method to do ancestral state reconstruction in brownie
 #
