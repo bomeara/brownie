@@ -7,7 +7,7 @@
 
 # set generics
 setGeneric("commands", function(x) { standardGeneric("commands")} )
-setGeneric("commands<-", function(x,value) { standardGeneric("commands<-")} )
+setGeneric("commands<-", function(x,add=FALSE,index=NULL,replace=FALSE,value) { standardGeneric("commands<-")} )
 setGeneric("removeCommands", function(x,index) { standardGeneric("removeCommands")} )
 setGeneric("weight", function(x) { standardGeneric("weight")} )
 setGeneric("weight<-", function(x,value) { standardGeneric("weight<-")} )
@@ -15,6 +15,7 @@ setGeneric("datatypes", function(x) { standardGeneric("datatypes")} )
 setGeneric("datatypes<-", function(x,enforce=TRUE,value) { standardGeneric("datatypes<-")} )
 setGeneric("taxasets", function(x) { standardGeneric("taxasets")} )
 setGeneric("taxasets<-", function(x,value) { standardGeneric("taxasets<-")} )
+setGeneric("hasTaxasets", function(x) { standardGeneric("hasTaxasets")} )
 
 
 ## OVERLOADED 'phylo4d' functions:
@@ -77,16 +78,44 @@ setMethod("commands", signature(x="brownie"),
 
 # actually this appends... (not a great idea)
 setReplaceMethod("commands", signature(x="brownie"),
-	function(x,value) {
+	function(x,add=FALSE,index=NULL,replace=FALSE,value) {
 		
 		cmdtext = character(0)
 		if(is.list(value)){
-			cmdtext = write.brownie.string(value)
+			cmdtext = write.brownie.string(value)  # assume that list is a 'command struct'-type list
 		} else {
-			cmdtext = value[1]
+			cmdtext = value
 		}
 		
-		x@commands = append(x@commands,cmdtext)
+
+		if(add)
+		{
+			if(is.null(index))
+			{
+				x@commands = append(x@commands,cmdtext)
+			} else {
+				if(max(index) > length(x@commands))
+					stop("Index is too large: cmdlen = ",length(x@commands),"; indices = ",index)
+				
+				if(length(index) != length(cmdtext))
+					stop("replacement index and value do not have the same length")
+				
+				tmp = x@commands[index]
+				x@commands[index] = value
+				if(!replace)
+				{
+					if(max(index) == length(x@commands)){
+						x@commands = append(x@commands,tmp)
+					} else {
+						tmp2 = x@commands[seq(from=max(index)+1,to=length(x@commands))]
+						x@commands = c(x@commands[1:max(index)],tmp,tmp2)
+					}
+				}
+				
+			}
+		} else {
+			x@commands = cmdtext
+		}
 		x		
 })
 
@@ -222,11 +251,19 @@ setMethod("taxasets", signature(x="brownie"),
 })
 
 
-hasTaxasets<-function(x)
-{
-	retbool = (ncol(taxasets(x))!=0)
-	retbool
-}
+setMethod("hasTaxasets",signature(x="phylo4d"),
+	function(x)
+	{
+		retbool = (ncol(taxasets(x))!=0)
+		retbool
+})
+
+setMethod("hasTaxasets",signature(x="ANY"),
+	function(x)
+	{
+		return(FALSE)
+})
+
 
 # adds only:
 setReplaceMethod("taxasets", signature(x="phylo4d"),
@@ -286,10 +323,37 @@ setReplaceMethod("taxasets", signature(x="brownie"),
 })
 
 
+# get taxaset names
+taxaset.names <- function(x)
+{
+	retnames = character(0)
+	
+	if(hasTaxasets(x))
+	{
+		retnames = colnames(taxasets(x))
+		retnames = sub("TAXSET_","",retnames)
+	}
+	return(retnames)
+}
+
+# append TAXSET_ to front of x
+taxaset.rename <- function(x)
+{
+	return(sprintf("TAXSET_%s",x))
+}
+
+# check if taxaset has "TAXSET_" prefix:
+is.taxaname.internal <- function(x)
+{
+	return( (length(grep("TAXSET_",x)) > 0) )
+}
+
 # Internal:
 # Return character vector of taxa from taxasets
+# NOTE: -If taxind is a character string and does not have an 'internal representation' 
+#		 (prefixed with TAXSET_), then TAXSET_ is added.
 #
-taxa.charvect <- function(x,taxind)
+taxa.charvect <- function(x,taxind,append.internal=TRUE)
 {
 	if(!hasTipData(x))
 		stop("x does not have any data")
@@ -299,6 +363,9 @@ taxa.charvect <- function(x,taxind)
 	tsets = taxasets(x)
 	if(is.character(taxind[1]))
 	{
+		if(append.internal && !is.taxaname.internal(taxind))
+			taxind = taxaset.rename(taxind)
+		
 		# assume it's a column header
 		tset = tsets[taxind]
 	} else {
@@ -331,16 +398,106 @@ areTaxaMono <- function(x,taxindex)
 
 # Check if taxaset is paraphyletic
 #
-areTaxaPara <- function(x,taxind)
+# with.respect.to is a work in progress; (see ratetest ? for more details)
+#
+areTaxaPara <- function(x,taxind,with.respect.to=NULL)
 {	
 	retbool = FALSE
 	tipvect = taxa.charvect(x,taxind) # character vector of taxa to check
+	tipcompare=character(0)
+	if(!is.null(with.respect.to))
+		tipcompare = taxa.charvect(x,with.respect.to) 
 	
 	desc = descendants(x,MRCA(x,tipvect))
 	excluded = setdiff(names(desc),tipvect)
 	if(length(excluded) > 0)
 		retbool = taxa.mono(x,excluded)
-	
+	if(!is.null(with.respect.to))
+		retbool = retbool && all(sort(excluded) == sort(tipcompare))
 	return (retbool)
 }
+
+# check if taxasets are mutually exclusive
+areTaxaMutex <- function(x,...)
+{
+	tsets = list(...)
+	overlap = character(0)
+	
+	if(length(tsets) == 0)
+		stop("No taxa specified")
+	
+	if(length(tsets) == 1)
+		return(TRUE)
+	
+	
+	for(ii in seq(length(tsets)))
+	{
+		overlap = append(overlap,taxa.charvect(x,tsets[[ii]]))
+	}
+	tabo = table(overlap)
+	
+	return( all(tabo==1) )
+	
+}
+
+# indices for trees in which the taxaset specified is monophyletic
+#
+which.mono <- function(treeslist,taxaset)
+{
+	retints = integer(0)
+	if(hasTaxasets(treeslist[[1]]))
+	{
+		retints = which(sapply(treeslist,areTaxaMono,taxaset,simplify=T))
+	} else {
+		warning("treeslist does not contain any taxasets")
+	}
+	return(retints)
+}
+
+
+# Check how many trees in a list are monophyletic for a given taxaset:
+checkMono <- function(treeslist,taxaset,percent=T)
+{
+	if(!is.list(treeslist))
+		treeslist = list(treeslist)
+	
+	indices = which.mono(treeslist,taxaset)
+	retnum = length(indices)
+	if(percent)
+		retnum = retnum / length(treeslist)
+	
+	return(retnum) 
+}
+
+
+
+# indices for trees in which the taxaset specified is monophyletic
+#
+which.para <- function(treeslist,taxaset)
+{
+	retints = integer(0)
+	if(hasTaxasets(treeslist[[1]]))
+	{
+		retints = which(sapply(treeslist,areTaxaPara,taxaset,simplify=T))
+	} else {
+		warning("treeslist does not contain any taxasets")
+	}
+	return(retints)
+}
+
+
+# Check how many trees in a list are paraphyletic for a given taxaset:
+checkPara <- function(treeslist,taxaset,percent=T)
+{
+	if(!is.list(treeslist))
+		treeslist = list(treeslist)
+	
+	indices = which.para(treeslist,taxaset)
+	retnum = length(indices)
+	if(percent)
+		retnum = retnum / length(treeslist)
+	
+	return(retnum) 
+}
+
 
