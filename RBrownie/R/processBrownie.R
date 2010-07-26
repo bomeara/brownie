@@ -51,7 +51,7 @@ brownie.commands <- function(with.desc=F)
 
 ## Valid brownie models
 #
-brownie.models <- function(with.desc=F)
+brownie.models.continuous <- function(with.desc=F)
 {
 	brownie_model_options = c(
 		"BM1",
@@ -74,6 +74,56 @@ brownie.models <- function(with.desc=F)
 	
 	return(brownie_model_options)
 }
+
+
+brownie.models.discrete <- function(with.desc=F)
+{
+	brownie_model_options = c(
+		"EQUAL",
+		"REV",
+		"NONREV",
+		"USER"
+	)
+	
+	brownie_model_description = c(
+		"Model where all rates are equal",
+		"Reversible model where q_ij == q_ji for all i and j",
+		"Non-reversible model where all rates, q_ij, can vary independently.",
+		"User-specified model."
+	)
+	
+	if(with.desc)
+		brownie_model_options = cbind(brownie_model_options,brownie_model_description)
+	
+	return(brownie_model_options)
+}
+
+
+
+brownie.freqs <- function(with.desc=F)
+{
+	brownie_freqs_options = c(
+		"EMPIRICAL",
+		"EQUILIBRIUM",
+		"UNIFORM",
+		"OPTIMIZE",
+		"SET"
+	)
+	
+	brownie_freqs_description = c(
+		"Frequencies based on empirical distribution of states at the tips",	
+		"The frequencies expected with the optimized rate matrix given infinitely long branches",
+		"Frequencies all the same",
+		"Frequencies are optimized as part of the model",
+		"User-specified frequencies"
+	)
+	
+	if(with.desc)
+		brownie_freqs_options = cbind(brownie_freqs_options,brownie_freqs_description)
+	
+	return(brownie_freqs_options)
+}
+
 
 
 ## Valid Brownie options (used with cmds)
@@ -142,21 +192,60 @@ checkval.integer <- function(optstr)
 	return( is.na(as.integer(optstr)) )
 }
 
-checkval.model <- function(optstr)
+checkval.model.discrete <- function(optstr)
 {
 	# TODO: figure out if brownie is in fact case-insensitive like I'm assuming
 	#
-	return( tolower(optstr) %in% tolower(brownie.models) )
+	return( tolower(optstr) %in% tolower(brownie.models.discrete()) )
+}
+
+checkval.model.continuous <- function(optstr)
+{
+	# TODO: figure out if brownie is in fact case-insensitive like I'm assuming
+	#
+	return( tolower(optstr) %in% tolower(brownie.models.continuous()) )
+}
+
+checkval.ratemat <- function(optstr,factvect)
+{
+	# rate matrix needs to be in format: (a b c d) (no diagonals)
+	levs = levels(factvect)
+	numberneeded = (length(levs)*length(levs)) - length(levs)
+	if(numberneeded > 2)
+		return(FALSE)
+	
+	inside = sub("^\\((.*)\\)$","\\1",optstr)
+	tokens = strsplit(inside," ")[[1]]
+	
+	# match these:
+	validtokens = length( grep("^([0-9A-Za-z]|[-+]?[0-9]\\d{0,2}(\\.\\d{1,10})?%?)$",tokens) )
+	
+	return( (length(validtokens) == numberneeded) )
+	
+}
+
+check.freq <- function(optstr)
+{
+	return( tolower(optstr) %in% tolower(brownie.freqs()) )	
+}
+
+check.statevector <- function(optstr,factvect)
+{
+	levs = levels(factvect)
+	inside = sub("^\\((.*)\\)$","\\1",optstr)
+	tokens = strsplit(inside," ")[[1]]
+	validtokens = tokens[grep("^([-+]?[0-9]\\d{0,2}(\\.\\d{1,10})?%?)$",tokens)]
+	
+	return( (length(levs) == length(validtokens)) )
 }
 
 
-#------------------------------------------------------------------
-#
-# Brownie blocks into tokens for validation
+
 #
 #------------------------------------------------------------------
-
-
+# Parsing Brownie blocks into tokens for validation.
+#------------------------------------------------------------------
+#
 # does the string contain char
 haschar<-function(str,char)
 {
@@ -293,5 +382,47 @@ write.brownie.string <- function(obj,operator="=")
 
 
 
+#--------------------------------------------------------------
+# Helper functions to write brownie cmd strings.
+#--------------------------------------------------------------
+
+# mat should be in format:
+# to -> 0	1	2
+# from	---------
+# 	| | -	a	0.5
+#   v | b	-	c
+# 	  | 0.0	a	-
+#
+# Example:
+# --------
+# mata = matrix(c("-","a","0.5","b","-","c","0.0","a","-"),nrow=3,byrow=T)
+# write.brownie.matrix(mata)
+#
+write.brownie.matrix<-function(mat)
+{
+	retstr = character(0)
+	for(ii in seq(nrow(mat)))
+		for(jj in seq(ncol(mat)))
+			if(ii!=jj)
+				retstr = append(retstr,mat[ii,jj])
+	
+	retstr = paste(retstr,collapse=" ")
+	retstr = sprintf("(%s)",retstr)
+	return(retstr)
+}
+
+# brownie vector:
+# Example:
+# -------
+# write.brownie.vector(c(0.4,0.6))
+#
+write.brownie.vector <- function(vect,rescale=T)
+{
+	if(rescale)
+		vect = vect / sum(vect)
+	
+	retstr = sprintf("(%s)",paste(vect,collapse=" "))
+	return(retstr)
+}
 
 
