@@ -259,7 +259,10 @@ addCensored <- function(obj,
 	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
 	newcmd$command = "ratetest"
 	
-	newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset) # taxaset
+	if(length(taxset) != 0)
+		for(jj in seq(length(taxset)))
+			newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset[jj]) # taxaset
+		
 	newcmd = addcmd.literal(newcmd,"reps",as.character(reps))
 	newcmd = addcmd.binary(newcmd,"treeloop",treeloop) # treeloop
 	newcmd = addcmd.binary(newcmd,"charloop",charloop) # charloop
