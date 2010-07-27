@@ -60,7 +60,7 @@ validPhylo4d_ext <-function(object)
 #----------------------------------------------
 
 ## make it a generic function with return class of phylo4d_ext
-setGeneric("phyext", function(x, ...) { standardGeneric("phyext")}, valueClass="phylo4d_ext" )
+setGeneric("phyext", function(x, ...) { standardGeneric("phyext")}, valueClass=c("phylo4d_ext","list") )
 
 
 ## first arg is a phylo4d object
@@ -237,6 +237,13 @@ setMethod("phyext", "phylo",
 	
 })
 
+
+setMethod("phyext","list",
+	function(x,...){
+	
+	x = sapply(x,phyext,...)
+	return(x)
+})
 
 
 # assume character points to a file or is a piece of text

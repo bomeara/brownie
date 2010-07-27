@@ -22,7 +22,7 @@ setClass("brownie",
 #---------------
 
 # 'brownie' to be a generic function
-setGeneric("brownie", function(x, ...) { standardGeneric("brownie")} )
+setGeneric("brownie", function(x, ...) { standardGeneric("brownie")}, valueClass=c("brownie","list") )
 
 
 ## first arg is a phylo
@@ -37,6 +37,12 @@ setMethod("brownie", "phylo", function(x, annote=list()){
 setMethod("brownie","phylo4d", function(x,annote=list()){
 	converted = new("brownie",x,datatypes=.guess.datatype(tdata(x)))
 	return(converted)
+})
+
+setMethod("brownie","list",
+	function(x,...){
+		x = sapply(x,brownie,...)
+		return(x)
 })
 
 #-------------------------------

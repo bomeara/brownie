@@ -18,13 +18,18 @@ setGeneric("taxasets<-", function(x,taxnames,value) { standardGeneric("taxasets<
 setGeneric("hasTaxasets", function(x) { standardGeneric("hasTaxasets")} )
 
 
-# helper functions for addData:
+
 
 
 
 ## OVERLOADED 'phylo4d' functions:
-# TODO: If 'discrete' is the known.type (or even a guessed type), then
-#		 check to make sure it is a factor.
+#
+setMethod("addData",signature(x="list"),
+	function(x,...){
+		x = sapply(x,addData,...)
+	return(x)
+})
+
 # overload addData (addData the normal way, then guess it's datatype)
 setMethod("addData", signature(x="brownie"),
 	function(x,...,known.types=NULL) {
@@ -47,10 +52,26 @@ setMethod("addData", signature(x="brownie"),
 		} else {
 			if(length(known.types) != length(newcols))
 				warning("known.types does not match the number of new fields")
+		
+			
+			# Added (7/26/2010)
+			# Making sure that datatypes is either a factor or numeric vector
+			#
+			for(ii in seq(length(newcols)))
+			{
+				dat = tdata(x)[,newcols[ii],drop=T]
+				
+				if(known.types[ii] == contData() && !is.contData(dat))
+					tdata(x)[,newcols[ii]] <- as.contData(dat)
+				
+				if(known.types[ii] == discData() && !is.discData(dat))
+					tdata(x)[,newcols[ii]] <- as.discData(dat)
+				
+			}
+			
 		}
 		datatypes(x) <- c(dtypes.prev,known.types)
 		return(x)
-		
 })
 
 # Show brownie object:
@@ -79,6 +100,11 @@ setMethod("show","brownie", function(object){ printphylo4(object); showSubNodes(
 setMethod("commands", signature(x="brownie"),
   function(x) {
 	return(x@commands)
+})
+
+setMethod("commands", signature(x="list"),
+  function(x) {
+	return(x[[1]]@commands)
 })
 
 # actually this appends... (not a great idea)
@@ -255,6 +281,10 @@ setMethod("taxasets", signature(x="brownie"),
 	return(retdat)
 })
 
+setMethod("taxasets",signature(x="list"),
+	function(x) {
+		return(taxasets(x[[1]]))
+})
 
 setMethod("hasTaxasets",signature(x="phylo4d"),
 	function(x)
@@ -268,6 +298,12 @@ setMethod("hasTaxasets",signature(x="ANY"),
 	{
 		return(FALSE)
 })
+
+setMethod("hasTaxasets",signature(x="list"),
+	function(x){
+		return(hasTaxasets(x[[1]]))
+})
+
 
 
 # adds only:
@@ -335,6 +371,13 @@ setReplaceMethod("taxasets", signature(x="brownie"),
 	return(x)
 })
 
+setReplaceMethod("taxasets",signature(x="list"),
+	function(x,taxnames,value) {
+	for(ii in seq(length(x)))
+		taxasets(x[[ii]],taxnames=taxnames) <- value
+	
+	return(x)
+})
 
 # get taxaset names
 taxaset.names <- function(x)

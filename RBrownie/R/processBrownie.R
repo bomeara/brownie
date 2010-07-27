@@ -27,6 +27,11 @@ as.discData <- function(dat)
 	return(dat)
 }
 
+is.discData <- function(dat)
+{
+	return(is.factor(dat))
+}
+
 as.contData <- function(dat)
 {
 	if(!is.numeric(dat))
@@ -41,6 +46,13 @@ as.contData <- function(dat)
 	}
 	return(dat)
 }
+
+is.contData <- function(dat)
+{
+	return(is.numeric(dat))
+}
+
+
 
 
 ## Valid Brownie Commands:
