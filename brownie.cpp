@@ -9606,7 +9606,7 @@ double BROWNIE::GetLScore(gsl_matrix *VCV,gsl_vector *tipresid,double rate){
     //long double DetRateTimesVCV;
     gsl_matrix_memcpy (RateTimesVCV, VCV);
 
-    if(debugmode) {
+/*    if(debugmode) {
         message="debugging line 957\n";
         for (int currentrow=0;currentrow<VCV->size1;currentrow++) {
             for (int currentcol=0;currentcol<VCV->size2;currentcol++) {
@@ -9625,11 +9625,11 @@ double BROWNIE::GetLScore(gsl_matrix *VCV,gsl_vector *tipresid,double rate){
         }
 
         PrintMessage();
-    }
+    } */
 
 
     gsl_matrix_scale (RateTimesVCV,rate);
-    if(debugmode) {
+/*    if(debugmode) {
         message="debugging line 980\n";
         message+="\nrate is ";
         message+=rate;
@@ -9643,7 +9643,7 @@ double BROWNIE::GetLScore(gsl_matrix *VCV,gsl_vector *tipresid,double rate){
         }
 
         PrintMessage();
-    }
+    } */
 
 
     //RateTimesVCV=rate*VCV;
@@ -9652,16 +9652,16 @@ double BROWNIE::GetLScore(gsl_matrix *VCV,gsl_vector *tipresid,double rate){
     //    errormsg="Singular matrix (RateTimesVCV) during GetLScore";
     //    throw XNexus(errormsg);
     //}
-    if (debugmode) {
+/*    if (debugmode) {
         message="\nNow calculating inverse VCV for estimating lnL.\n";
         PrintMessage();
-    }
+    } */
 //USE THESE
 
 gsl_permutation * p = gsl_permutation_alloc (ntax);
 int signum;
 gsl_matrix_memcpy (InverseRateTimesVCVstart, RateTimesVCV);
-if(debugmode) {
+/*if(debugmode) {
     message="debugging\n";
     for (int currentrow=0;currentrow<RateTimesVCV->size1;currentrow++) {
         for (int currentcol=0;currentcol<RateTimesVCV->size2;currentcol++) {
@@ -9682,12 +9682,12 @@ if(debugmode) {
     message+=" size of perm is ";
     message+=permsize;
     PrintMessage();
-}
+}*/
 gsl_linalg_LU_decomp (InverseRateTimesVCVstart,p, &signum);
 gsl_linalg_LU_invert (InverseRateTimesVCVstart,p, InverseRateTimesVCV);
 //gsl_permutation_free (p);
 //InverseRateTimesVCV=Inverse(RateTimesVCV);
-if (debugmode) {
+/*if (debugmode) {
     message="\nFinished calculating inverse VCV for estimating rate.\n";
     PrintMessage();
     cout<<"RateTimesVCV\n";
@@ -9706,7 +9706,7 @@ if(debugmode) {
     message+=permsize;
     PrintMessage();
 }
-
+*/
 gsl_matrix *tipsasmatrixprime=gsl_matrix_calloc(1,ntax);
 //gsl_matrix tipsasmatrixprime(1,ntax,0);
 for (int i=0; i<ntax; i++) {
@@ -9727,7 +9727,7 @@ gsl_blas_dgemv (CblasNoTrans,1, tipsasmatrixprime, step1vect,0, step2vect); ///T
                                                                             //lscore=-1*log((exp(-0.5*step2vect[0]))/(sqrt(DetRateTimesVCV*(pow((2*PI),ntax)))));
 gsl_matrix *RateTimesVCVLU=gsl_matrix_calloc(ntax,ntax);
 gsl_matrix_memcpy (RateTimesVCVLU, RateTimesVCV);
-if(debugmode) {
+/*if(debugmode) {
     message="debugging\n";
     for (int currentrow=0;currentrow<RateTimesVCV->size1;currentrow++) {
         for (int currentcol=0;currentcol<RateTimesVCV->size2;currentcol++) {
@@ -9737,14 +9737,14 @@ if(debugmode) {
         message+="\n";
     }
     PrintMessage();
-}
+}*/
 gsl_linalg_LU_decomp (RateTimesVCVLU,p, &signum);
 lscore=0.5*gsl_vector_get(step2vect,0)+0.5*(gsl_linalg_LU_lndet(RateTimesVCVLU))+0.5*ntax*log(2*PI);
-if (debugmode) {
+/*if (debugmode) {
     message="Likelihood score is ";
     message+=lscore;
     PrintMessage();
-}
+}*/
 gsl_matrix_free(RateTimesVCV);
 gsl_matrix_free(InverseRateTimesVCVstart);
 gsl_matrix_free(InverseRateTimesVCV);
@@ -14113,16 +14113,16 @@ gsl_matrix* BROWNIE::GetVCV(nxsstring chosentaxset)
             float pathlength=0;
             Node *a;
             a=rleafptr;
-            if (debugmode) {
+   /*         if (debugmode) {
                 cout<<"Taxa "<<rleafptr->GetLabel()<<" (rtaxon="<<rtaxon<<") and "<<cleafptr->GetLabel()<<" (ctaxon="<<ctaxon<<"): ";
-            }
+            } */
             if (cleafptr==rleafptr) { //We need the pendant edge length
                 pathlength+=cleafptr->GetEdgeLength();
             }
             bool mrcanotfound=true;
-            if (debugmode) {
+ /*           if (debugmode) {
                 cout<<pathlength;
-            }
+            } */
             while (a->GetAnc() && mrcanotfound) { //General strategy here:
                 a=a->GetAnc();
                 Node *b;
@@ -14135,18 +14135,18 @@ gsl_matrix* BROWNIE::GetVCV(nxsstring chosentaxset)
                         mrcanotfound=false;
                         while(mrca->GetAnc()) {
                             pathlength+=mrca->GetEdgeLength();
-                            if (debugmode) {
+/*                            if (debugmode) {
                                 cout<<" + "<<mrca->GetEdgeLength();
-                            }
+                            } */
                             mrca=mrca->GetAnc();
                         }
                     }
                 }
             }
             gsl_matrix_set(VCV,rowcount,colcount,pathlength);
-            if (debugmode) {
+  /*          if (debugmode) {
                 cout<<" = "<<pathlength<<endl;
-            }
+            } */
         }
     }
     //matrixsingular=TestSingularity(VCV);
@@ -14246,16 +14246,16 @@ gsl_matrix* BROWNIE::GetVCVwithKappa(nxsstring chosentaxset,double kappa)
             float pathlength=0;
             Node *a;
             a=rleafptr;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<"Taxa "<<rleafptr->GetLabel()<<" (rtaxon="<<rtaxon<<") and "<<cleafptr->GetLabel()<<" (ctaxon="<<ctaxon<<"): ";
-            }
+            } */
             if (cleafptr==rleafptr) { //We need the pendant edge length
                 pathlength+=pow(cleafptr->GetEdgeLength(),kappa);
             }
             bool mrcanotfound=true;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<pathlength;
-            }
+            } */
             while (a->GetAnc() && mrcanotfound) { //General strategy here:
                 a=a->GetAnc();
                 Node *b;
@@ -14268,18 +14268,18 @@ gsl_matrix* BROWNIE::GetVCVwithKappa(nxsstring chosentaxset,double kappa)
                         mrcanotfound=false;
                         while(mrca->GetAnc()) {
                             pathlength+=pow(mrca->GetEdgeLength(),kappa);
-                            if (debugmode) {
+/*                            if (debugmode) {
                                 cout<<" + "<<pow(mrca->GetEdgeLength(),kappa);
-                            }
+                            } */
                             mrca=mrca->GetAnc();
                         }
                     }
                 }
             }
             gsl_matrix_set(VCV,rowcount,colcount,pathlength);
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<" = "<<pathlength<<endl;
-            }
+            } */
         }
     }
     //matrixsingular=TestSingularity(VCV);
@@ -14381,16 +14381,16 @@ gsl_matrix* BROWNIE::GetVCVwithTree(nxsstring chosentaxset,Tree t)
             float pathlength=0;
             Node *a;
             a=rleafptr;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<"Taxa "<<rleafptr->GetLabel()<<" (rtaxon="<<rtaxon<<") and "<<cleafptr->GetLabel()<<" (ctaxon="<<ctaxon<<"): ";
-            }
+            }*/
             if (cleafptr==rleafptr) { //We need the pendant edge length
                 pathlength+=cleafptr->GetEdgeLength();
             }
             bool mrcanotfound=true;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<pathlength;
-            }
+            }*/
             while (a->GetAnc() && mrcanotfound) { //General strategy here:
                 a=a->GetAnc();
                 Node *b;
@@ -14403,18 +14403,18 @@ gsl_matrix* BROWNIE::GetVCVwithTree(nxsstring chosentaxset,Tree t)
                         mrcanotfound=false;
                         while(mrca->GetAnc()) {
                             pathlength+=mrca->GetEdgeLength();
-                            if (debugmode) {
+/*                            if (debugmode) {
                                 cout<<" + "<<mrca->GetEdgeLength();
-                            }
+                            }*/
                             mrca=mrca->GetAnc();
                         }
                     }
                 }
             }
             gsl_matrix_set(VCV,rowcount,colcount,pathlength);
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<" = "<<pathlength<<endl;
-            }
+            }*/
         }
     }
     //matrixsingular=TestSingularity(VCV);
@@ -14622,9 +14622,9 @@ IntSet::const_iterator ci;
             double pathlength=0;
             Node *a;
             a=rleafptr;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<"Taxa "<<rleafptr->GetLabel()<<" (rtaxon="<<rtaxon<<") and "<<cleafptr->GetLabel()<<" (ctaxon="<<ctaxon<<"): ";
-            }
+            }*/
             if (cleafptr==rleafptr) { //We need the pendant edge length
                                       // float unweightedpathlength=cleafptr->GetEdgeLength();
                                       //gsl_vector *modelcategoryvector;
@@ -14645,9 +14645,9 @@ IntSet::const_iterator ci;
                 }
                 }
             bool mrcanotfound=true;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<pathlength;
-            }
+            }*/
             while (a->GetAnc() && mrcanotfound) { //General strategy here:
                 a=a->GetAnc();
                 Node *b;
@@ -14671,9 +14671,9 @@ IntSet::const_iterator ci;
                 }
             }
             gsl_matrix_set(VCV,rowcount,colcount,pathlength);
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<" = "<<pathlength<<endl;
-            }
+            }*/
             }
         }
 //matrixsingular=TestSingularity(VCV);
@@ -14781,9 +14781,9 @@ IntSet::const_iterator ci;
             double pathlength=0;
             Node *a;
             a=rleafptr;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<"Taxa "<<rleafptr->GetLabel()<<" (rtaxon="<<rtaxon<<") and "<<cleafptr->GetLabel()<<" (ctaxon="<<ctaxon<<"): ";
-            }
+            }*/
             if (cleafptr==rleafptr) { //We need the pendant edge length
                                       // float unweightedpathlength=cleafptr->GetEdgeLength();
                                       //gsl_vector *modelcategoryvector;
@@ -14815,9 +14815,9 @@ IntSet::const_iterator ci;
                 //		}
             }
             bool mrcanotfound=true;
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<pathlength;
-            }
+            }*/
             while (a->GetAnc() && mrcanotfound) { //General strategy here:
                 a=a->GetAnc();
                 Node *b;
@@ -14840,15 +14840,15 @@ IntSet::const_iterator ci;
                             }
                             if (wantchangeedges && (numberofnonzeroentries>1)) {
                                 pathlength+=temppathlength;
-                                if (debugmode) {
+/*                                if (debugmode) {
                                     cout<<" + "<<temppathlength;
-                                }
+                                }*/
                             }
                             if (!wantchangeedges && (numberofnonzeroentries<2)) {
                                 pathlength+=temppathlength;
-                                if (debugmode) {
+/*                                if (debugmode) {
                                     cout<<" + "<<temppathlength;
-                                }
+                                }*/
                             }
                             mrca=mrca->GetAnc();
                         }
@@ -14856,9 +14856,9 @@ IntSet::const_iterator ci;
                 }
             }
             gsl_matrix_set(VCV,rowcount,colcount,pathlength);
-            if (debugmode) {
+/*            if (debugmode) {
                 cout<<" = "<<pathlength<<endl;
-            }
+            }*/
         }
     }
 //matrixsingular=TestSingularity(VCV);
@@ -17486,10 +17486,20 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 			for (int breaknum=breaksperbranch;breaknum>=0;breaknum--) { //Break nums are numbered from the tip down, we want to go from the bottom up
 				if (breaknum==breaksperbranch) { //at the rootmost interval
 					i=atoi(((currentnode->GetAnc())->GetLabel()).c_str()); //The label has the last state
+					if (debugmode) {
+						cout<<endl<<"currentnode "<<currentnode<<" currentnode->GetAnc() "<<currentnode->GetAnc()<<" ((currentnode->GetAnc())->GetLabel()) "<<((currentnode->GetAnc())->GetLabel())<<endl;
+					}
 				}
 				j=(Cvector[currentnode])[breaknum][i];
 				//stateordervector.push_back(j);
 				//statetimesvector.push_back(eachsegmentlength);
+				if (debugmode) {
+					cout<<endl<<"breaksperbranch "<<breaksperbranch;
+					cout<<endl<<"breaknum "<<breaknum;
+					cout<<endl<<"i "<<i;
+					cout<<endl<<"j "<<j;
+					cout<<endl<<"eachsegmentlength "<<eachsegmentlength;
+				}
 				modelvector[j]+=eachsegmentlength;
 				if (i!=j) { //There's been a change of state
 					if (numchanges>0) {
@@ -17919,9 +17929,9 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 							probofstatej=1; 
 						}
 						(stateprobatnodes[currentnode]).push_back(probofstatej);
-						if (debugmode) {
+/*						if (debugmode) {
 							cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofstatej = "<<probofstatej.getMantissa()<<" x 10^"<<probofstatej.getExponent()<<", -ln(probofstatej) = "<<-1.0*probofstatej.getLn()<<endl<<endl;
-						}
+						}*/
 						
 					}
 					
@@ -17933,30 +17943,30 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 						while (descnode!=NULL) { 
 							gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength());
 							Superdouble probofthissubtree=0;
-							if (debugmode) {
+/*							if (debugmode) {
 								Tree PrunedTree;
 								PrunedTree.SetRoot((intrees.GetIthTree(chosentree-1)).CopyOfSubtree(descnode));
 								cout<<endl;
 								PrunedTree.Write(cout);
-							}
+							}*/
 							for(int j=0;j<ancestralstatevector->size;j++) {
 								Superdouble transitionprob=gsl_matrix_get(Pmatrix,i,j);
 								probofthissubtree+=transitionprob*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
-								if (debugmode) {
+							/*	if (debugmode) {
 									cout<<"From "<<i<<" to "<<j<<" has move prob "<<gsl_matrix_get(Pmatrix,i,j)<<" and input subtree prob "<<((stateprobatnodes[descnode])[j])<<" product "<<transitionprob*((stateprobatnodes[descnode])[j])<<" and cumulative prob "<<probofthissubtree<<endl;
-								}
+								} */
 							}
 							probofstatei*=probofthissubtree;
 							descnode=descnode->GetSibling(); //we're going to look at all descendant subtrees (even in case of polytomies)
 							gsl_matrix_free(Pmatrix);
 						}
 						(stateprobatnodes[currentnode]).push_back(probofstatei);
-						if (debugmode) {
+				/*		if (debugmode) {
 							cout<<"CalculateDiscreteCharLnL: i = "<<i<<", probofstatei = "<<probofstatei<<", -ln(probofstatei) = "<<-1.0*probofstatei.getLn()<<endl<<endl;
-						}
+						} */
 					}
 				}
-				if (debugmode) {
+		/*		if (debugmode) {
 					Superdouble totalprob=0;
 					cout<<"(stateprobatnodes[currentnode])[i] ";
 					for(int i=0;i<ancestralstatevector->size;i++) {
@@ -17965,7 +17975,7 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 					}
 					cout<<" mantissa="<<totalprob.getMantissa()<<"total = "<<totalprob<<endl;
 					//assert(totalprob.getMantissa()>0);
-				}
+				} */
 				currentnode = n.next();
 				
 			}
@@ -17977,13 +17987,13 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 			if (variablecharonly) {
 				L=L/Superdouble(1.0-Prob); //after equation 3 in Lewis 2001 and equation 8 in Felsenstein 1992
 			}		
-			if (debugmode) {
+/*			if (debugmode) {
 				cout<<"CalculateDiscreteCharLnL: original ("<<neglnL<<" * -1.0*log(L) [L="<<L<<"] = ";
-			}
+			}  */
 			neglnL+=-1.0*L.getLn();
-			if (debugmode) {
+/*			if (debugmode) {
 				cout<<neglnL<<endl;
-			}
+			} */
 			
 		}
 	}
