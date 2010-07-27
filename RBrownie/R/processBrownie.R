@@ -18,6 +18,29 @@ contData <- function() { return("cont") }
 taxaData <- function() { return("taxset") }
 genericData <- function() { return("undef") }
 
+# convert between datatypes:
+# helper functions for addData
+as.discData <- function(dat)
+{
+	if(!is.factor(dat))
+		dat = as.factor(dat)
+	return(dat)
+}
+
+as.contData <- function(dat)
+{
+	if(!is.numeric(dat))
+	{
+		if(is.factor(dat))
+		{
+			dat = as.numeric(levels(dat)[as.numeric(dat)])
+		} else {
+			# assume there are characters:
+			dat = as.numeric(dat)
+		}
+	}
+	return(dat)
+}
 
 
 ## Valid Brownie Commands:
@@ -196,14 +219,14 @@ checkval.model.discrete <- function(optstr)
 {
 	# TODO: figure out if brownie is in fact case-insensitive like I'm assuming
 	#
-	return( tolower(optstr) %in% tolower(brownie.models.discrete()) )
+	return( length(grep(tolower(optstr),tolower(brownie.models.discrete())))>0 )
 }
 
 checkval.model.continuous <- function(optstr)
 {
 	# TODO: figure out if brownie is in fact case-insensitive like I'm assuming
 	#
-	return( tolower(optstr) %in% tolower(brownie.models.continuous()) )
+	return( length(grep(tolower(optstr), tolower(brownie.models.continuous())))>0 )
 }
 
 checkval.ratemat <- function(optstr,factvect)
@@ -226,7 +249,7 @@ checkval.ratemat <- function(optstr,factvect)
 
 check.freq <- function(optstr)
 {
-	return( tolower(optstr) %in% tolower(brownie.freqs()) )	
+	return( length(grep(tolower(optstr),tolower(brownie.freqs())))>0 )
 }
 
 check.statevector <- function(optstr,factvect)

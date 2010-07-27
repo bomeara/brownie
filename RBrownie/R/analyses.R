@@ -293,7 +293,7 @@ addCensored <- function(obj,
 	#
 	for(ii in seq(length(obj)))
 	{
-		commands(obj[[ii]],add=T,...) <- write.brownie.string(newcmd)
+		commands(obj[[ii]],add=T) <- write.brownie.string(newcmd)
 	}
 	
 	###### return
@@ -335,7 +335,7 @@ addDiscrete <- function(obj,
 		
 	###### newcmd
 	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
-	newcmd$command = "ratetest"
+	newcmd$command = "discrete"
 	
 	# RATE MATRIX
 	dat = NULL
@@ -347,7 +347,7 @@ addDiscrete <- function(obj,
 	} else {
 		dat = tdata(obj[[1]],'tip')[,colind,drop=T]
 	}
-	newcmd = addcmd.discrete(newcmd,model,ratemat,dat)
+	newcmd = addcmd.model.discrete(newcmd,model,ratemat,dat)
 	
 	# FREQUENCIES:
 	newcmd = addcmd.freq(newcmd,freq,statevector,dat)
@@ -357,7 +357,7 @@ addDiscrete <- function(obj,
 	newcmd = addcmd.binary(newcmd,"allchar",allchar) # allchar
 	newcmd = addcmd.binary(newcmd,"variable",variable) # variable
 	newcmd = addcmd.binary(newcmd,"reconstruct",reconstruct) # reconstruct
-	newcmd = addcmd.binary(newcmd,"breaknum",as.character(breaknum)) # break number
+	newcmd = addcmd.literal(newcmd,"breaknum",as.character(breaknum)) # break number
 	
 	# FILE:
 	if(!usetempfile && !is.null(file) && is.character(file)) # file, append, replace

@@ -14,12 +14,17 @@ setGeneric("weight<-", function(x,value) { standardGeneric("weight<-")} )
 setGeneric("datatypes", function(x) { standardGeneric("datatypes")} )
 setGeneric("datatypes<-", function(x,enforce=TRUE,value) { standardGeneric("datatypes<-")} )
 setGeneric("taxasets", function(x) { standardGeneric("taxasets")} )
-setGeneric("taxasets<-", function(x,value) { standardGeneric("taxasets<-")} )
+setGeneric("taxasets<-", function(x,taxnames,value) { standardGeneric("taxasets<-")} )
 setGeneric("hasTaxasets", function(x) { standardGeneric("hasTaxasets")} )
 
 
+# helper functions for addData:
+
+
+
 ## OVERLOADED 'phylo4d' functions:
-# Risky ....
+# TODO: If 'discrete' is the known.type (or even a guessed type), then
+#		 check to make sure it is a factor.
 # overload addData (addData the normal way, then guess it's datatype)
 setMethod("addData", signature(x="brownie"),
 	function(x,...,known.types=NULL) {
@@ -267,10 +272,8 @@ setMethod("hasTaxasets",signature(x="ANY"),
 
 # adds only:
 setReplaceMethod("taxasets", signature(x="phylo4d"),
-  function(x,value) {
-	
-	setname = FALSE
-	
+  function(x,taxnames,value) {
+		
 	# if it is a vector and not a
 	if(is.null(dim(value)))
 	{
@@ -286,19 +289,29 @@ setReplaceMethod("taxasets", signature(x="phylo4d"),
 			
 		} else {
 			# assume binary data with names which are the taxa
-			value = data.frame(value)
+			value = data.frame(value,row.names=tipLabels(x))
 		}
-		colnames(value) <- "TAXSET_"
+		
+		if(missing(taxnames)){
+			colnames(value) <- "TAXSET_"
+		}
 	}
 	
 	if( !all(sort(rownames(value)) == sort(tipLabels(x))) )
 	{
 		stop("All taxa in assigning value need to equate to taxa present")
 	} else {
-		
-		if(is.null(colnames(value)))
-			colnames(value) <- "TAXSET_"
-		
+
+		if(!missing(taxnames))
+			colnames(value) <- taxnames
+					
+		cnames = colnames(value)
+		notlabeled = grep("^[^TAXSET_]",cnames)
+		if(length(notlabeled) > 0){
+			cnames[notlabeled] = paste("TAXSET_",cnames[notlabeled],sep="")
+			colnames(value) <- cnames
+		}
+
 		# ohh, this is a hack:
 		if(is(x,"brownie")){
 			x <- addData(x,value,known.types=taxaData())
@@ -312,11 +325,11 @@ setReplaceMethod("taxasets", signature(x="phylo4d"),
 
 
 setReplaceMethod("taxasets", signature(x="brownie"),
-  function(x,value) {
+  function(x,taxnames,value) {
 	if(!existsMethod("taxasets<-","phylo4d"))
 		stop("Taxaset replacement method not available: package bug, email authors")
 	
-	x = getMethod("taxasets<-","phylo4d")(x,value)
+	x = getMethod("taxasets<-","phylo4d")(x,taxnames,value)
 	#datatypes(x) <- append(datatypes(x),taxaData()) # comments out after hack applied
 	
 	return(x)
