@@ -942,10 +942,21 @@ setMethod("snid", signature(x="phylo4d_ext"),
 	return(x@subnode.id)
 })
 
+setMethod("snid", signature(x="list"),
+	function(x) {
+		return(x[[1]]@subnode.id)
+})
+
 setMethod("sndata", signature(x="phylo4d_ext"),
   function(x) {
 	return(x@subnode.data)
 })
+
+setMethod("sndata", signature(x="list"),
+  function(x) {
+	return(x[[1]]@subnode.data)
+})
+
 
 # this adds data
 setReplaceMethod("sndata", signature(x="phylo4d_ext"),
@@ -958,19 +969,29 @@ setReplaceMethod("sndata", signature(x="phylo4d_ext"),
 	}
 	if(!is.data.frame(value)){
 		value = data.frame(value)
-		if(!is.null(datnames))
+	}
+	if(!is.null(datnames))
+	{
+		if(is.character(datnames) && length(datnames)==ncol(value))
 		{
-			if(is.character(datnames) && length(datnames)==ncol(value))
-			{
-				names(value) <- datnames
-			} else {
-				warning("Not using specified names")
-			}
+			names(value) <- datnames
+		} else {
+			warning("Not using specified names")
 		}
 	}
 	x@subnode.data = cbind(x@subnode.data,value)
 	return(x)
 })
+
+
+setReplaceMethod("sndata",signature(x="list"),
+	function(x,datnames=NULL,value) {
+		for(ii in seq(length(x)))
+			sndata(x[[ii]],datnames=datnames) <- value
+			
+	return(x)
+})
+
 
 setMethod("rmdata", signature(x="phylo4d_ext",index="numeric"),
   function(x,index) {
@@ -1000,15 +1021,31 @@ setMethod("rmdata", signature(x="phylo4d",index="character"),
 })
 
 
+setMethod("rmdata", signature(x="list",index="ANY"),
+	function(x,index) {
+		x = sapply(x,rmdata,index)
+	return(x)
+})
+
 
 setMethod("snposition", signature(x="phylo4d_ext"),
   function(x) {
 	return(x@subnode.pos)
 })
 
+setMethod("snposition", signature(x="list"),
+  function(x) {
+	return(x[[1]]@subnode.pos)
+})
+
 setMethod("snbranch", signature(x="phylo4d_ext"),
   function(x) {
 	return(x@subnode.branch)
+})
+
+setMethod("snbranch", signature(x="list"),
+  function(x) {
+	return(x[[1]]@subnode.branch)
 })
 
 

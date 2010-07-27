@@ -185,6 +185,13 @@ setMethod("removeCommands", signature(x="brownie",index="character"),
 })
 
 
+setMethod("removeCommands",signature(x="list",index="ANY"),
+	function(x,index){
+		
+		x = sapply(x,removeCommands,index)
+		return(x)
+})
+
 
 #---------------
 ## WEIGHT:
@@ -215,6 +222,12 @@ setMethod("datatypes", signature(x="brownie"),
 })
 
 
+setMethod("datatypes", signature(x="list"),
+  function(x) {
+	return(x[[1]]@datatypes)
+})
+
+
 setReplaceMethod("datatypes", signature(x="brownie"),
   function(x,enforce=TRUE,value) {
 	if(length(value) == ncol(tdata(x)) || !enforce){
@@ -234,6 +247,15 @@ setReplaceMethod("datatypes", signature(x="brownie"),
 		warning("Values was not the same length as the number of data columns")
 	}
 	return(x)
+})
+
+
+setReplaceMethod("datatypes", signature(x="list"),
+  function(x,enforce=TRUE,value) {
+	  for(ii in seq(length(x)))
+	  	datatypes(x[[ii]],enforce=enforce) <- value
+	  
+	  return(x)
 })
 
 
@@ -378,6 +400,7 @@ setReplaceMethod("taxasets",signature(x="list"),
 	
 	return(x)
 })
+
 
 # get taxaset names
 taxaset.names <- function(x)
