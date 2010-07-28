@@ -159,7 +159,26 @@ brownie.freqs <- function(with.desc=F)
 	return(brownie_freqs_options)
 }
 
-
+# tipvariance types
+brownie.tvtypes <- function(with.desc=F)
+{
+	brownie_freqs_options = c(
+		"None",
+		"Given",
+		"Same"
+	)
+	
+	brownie_freqs_description = c(
+		"Assume no tipvariance",	
+		"User-given tip variances for each taxon",
+		"Estimate one tipvariance across all taxa."
+	)
+	
+	if(with.desc)
+		brownie_freqs_options = cbind(brownie_freqs_options,brownie_freqs_description)
+	
+	return(brownie_freqs_options)
+}
 
 ## Valid Brownie options (used with cmds)
 #

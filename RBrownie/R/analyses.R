@@ -68,6 +68,8 @@ asr <- function(phytree,file="",usedata,extended=TRUE)
 	return( outtree )
 }
 
+
+
 ###### Add to commands list:
 #
 addcmd.taxaset <- function(obj,cmdobj,x)
@@ -163,6 +165,17 @@ addcmd.states <- function(cmdobj,statevect,usingdata)
 }
 
 
+addcmd.tvtype <- function(cmdobj,type)
+{
+	if(!tolower(type) %in% tolower(brownie.tvtypes()))
+		stop("tipvariance type,",type,", is not a valid tipvariance.")
+	
+	cmdobj$options = rbind(cmdobj$options,c("type",type))
+	
+	cmdobj
+}
+
+
 # Non-censored rate test:
 # arguments are options that can be specified:
 #
@@ -246,7 +259,7 @@ addCensored <- function(obj,
 						taxset="ALL",
 						treeloop=FALSE,
 						charloop=FALSE,
-						quiet=TRUE,
+						quiet=FALSE,
 						usetempfile=FALSE,
 						...)
 {
@@ -278,15 +291,17 @@ addCensored <- function(obj,
 		{
 			newcmd = addcmd.literal(newcmd,"file",tempfile())
 		} else {
-			newcmd = addcmd.literal(newcmd,"file","''")
+			#newcmd = addcmd.literal(newcmd,"file","''")
 		}
 	}
 	
 	
 	# TODO: -Check for all trees whether taxasets are monophyletic or paraphyletic.
 	#		 warn if some trees are not either.
-	if(!all(sapply(obj,areTaxaMono,taxset)))
-		warning("In some trees the taxaset,",taxset,", does not form a monophyletic clade.  Might want to remove those trees before running this analysis")
+	if(length(taxset) != 0)
+		for(jj in seq(length(taxset)))
+			if(!all(sapply(obj,areTaxaMono,taxset[jj])))
+				warning("In some trees the taxaset,",taxset[jj],", does not form a monophyletic clade.  Might want to remove those trees before running this analysis")
 	
 	
 	# add commands to all members of the list:
@@ -345,6 +360,11 @@ addDiscrete <- function(obj,
 			stop("Could not find data column to use.")
 		dat = tdata(obj[[1]],'tip')[,colind,drop=T]
 	} else {
+		if(is.integer(model.state)){
+			colind=model.state
+		} else {
+			colind = which(colnames(tdata(obj[[1]],'tip')) == model.state)
+		}
 		dat = tdata(obj[[1]],'tip')[,colind,drop=T]
 	}
 	newcmd = addcmd.model.discrete(newcmd,model,ratemat,dat)
@@ -376,7 +396,7 @@ addDiscrete <- function(obj,
 			newcmd = addcmd.binary(newcmd,"Append",FALSE)
 			newcmd = addcmd.binary(newcmd,"Replace",TRUE)		
 		} else {
-			newcmd = addcmd.literal(newcmd,"file","")
+			#newcmd = addcmd.literal(newcmd,"file","")
 		}
 	}
 	newcmd = addcmd.binary(newcmd,"GlobalStates",globalstates) # allchar
@@ -452,22 +472,7 @@ addStartLog <- function(obj,
 #
 addEndLog <- function(obj)
 {
-	###### initialize
-	if(!is.list(obj)){
-		obj = list(obj)
-	}
-	
-
-	for(ii in seq(length(obj)))
-	{
-			commands(obj[[ii]],add=T,...) <- "log stop;"
-	}
-		
-	###### return
-	if(length(obj) == 1)
-		obj = obj[[1]]
-
-	return(obj)	
+	return( addLiteral(obj,"log stop;") )
 }
 
 
@@ -499,6 +504,11 @@ addModel <- function(obj,
 				stop("Could not find data column to use.")
 			dat = tdata(obj[[1]],'tip')[,colind,drop=T]
 		} else {
+			if(is.integer(model.state)){
+				colind=model.state
+			} else {
+				colind = which(colnames(tdata(obj[[1]],'tip')) == model.state)
+			}
 			dat = tdata(obj[[1]],'tip')[,colind,drop=T]
 		}
 		
@@ -519,6 +529,224 @@ addModel <- function(obj,
 		obj = obj[[1]]
 
 	return(obj)	
+}
+
+
+# add opt command:
+#	" Returns the likelihood and AICc under the current model"
+#
+addOpt <- function(obj,
+					file=NULL,
+					taxset="ALL",
+					treeloop=FALSE,
+					charloop=FALSE,
+					usetempfile=FALSE)
+{
+	###### initialize
+	if(!is.list(obj)){
+		obj = list(obj)
+	}							
+	
+	###### newcmd
+	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
+	newcmd$command = "opt"
+	
+	if(length(taxset) != 0)
+		for(jj in seq(length(taxset)))
+			newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset[jj]) # taxaset
+		
+	newcmd = addcmd.binary(newcmd,"treeloop",treeloop) # treeloop
+	newcmd = addcmd.binary(newcmd,"charloop",charloop) # charloop
+	if(!usetempfile && !is.null(file) && is.character(file)) # file, append, replace
+	{
+		#if(!file.exists(file))
+		#	stop("Specified file,",file,", does not exist.")
+		
+		newcmd = addcmd.literal(newcmd,"file",file[1])		
+	} else {
+		if(usetempfile)
+		{
+			newcmd = addcmd.literal(newcmd,"file",tempfile())
+		} else {
+			#newcmd = addcmd.literal(newcmd,"file","''")
+		}
+	}
+	
+	
+	# TODO: -Check for all trees whether taxasets are monophyletic or paraphyletic.
+	#		 warn if some trees are not either.
+	if(!all(sapply(obj,areTaxaMono,taxset)))
+		warning("In some trees the taxaset,",taxset,", does not form a monophyletic clade.  Might want to remove those trees before running this analysis")
+	
+	
+	# add commands to all members of the list:
+	#
+	for(ii in seq(length(obj)))
+	{
+		commands(obj[[ii]],add=T) <- write.brownie.string(newcmd)
+	}
+	
+	###### return
+	if(length(obj) == 1)
+		obj = obj[[1]]
+	
+	return(obj)	
+}
+
+
+addTipvariance <- function(obj,type=brownie.tvtypes()[1])
+{
+	###### initialize
+	if(!is.list(obj)){
+		obj = list(obj)
+	}							
+	
+	###### newcmd
+	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
+	newcmd$command = "tipvariance"
+	
+	newcmd = addcmd.tvtype(newcmd,type) # treeloop
+	
+	# add commands to all members of the list:
+	#
+	for(ii in seq(length(obj)))
+	{
+		commands(obj[[ii]],add=T) <- write.brownie.string(newcmd)
+	}
+	
+	###### return
+	if(length(obj) == 1)
+		obj = obj[[1]]
+	
+	return(obj)		
+}
+
+
+# add 'choose' command
+# from brownie: message="Usage: Choose [tree=<integer>] [char=<integer>]\n\n";
+#
+addChoose <- function(obj,
+					char=NULL,
+					tree=NULL,
+					discchar=NULL)
+{
+	###### initialize
+	if(!is.list(obj)){
+		obj = list(obj)
+	}
+	
+	###### newcmd
+	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
+	newcmd$command = "choose"
+	
+	if(!is.null(char))
+		newcmd = addcmd.literal(newcmd,"char",as.character(char))
+	
+	if(!is.null(tree))
+		newcmd = addcmd.literal(newcmd,"tree",as.character(tree))
+	
+	if(!is.null(discchar))
+		newcmd = addcmd.literal(newcmd,"d",as.character(discchar))
+	
+	# add commands to all members of the list:
+	#
+	for(ii in seq(length(obj)))
+	{
+		commands(obj[[ii]],add=T) <- write.brownie.string(newcmd)
+	}
+	
+	###### return
+	if(length(obj) == 1)
+		obj = obj[[1]]
+	
+	return(obj)		
+}
+
+
+addNumopt <- function(obj,
+					iter=NULL,
+					toler=NULL,
+					randstart=NULL,
+					seed=NULL,
+					stepsize=NULL,
+					detail=FALSE,
+					redo=FALSE,
+					giveupfactor=NULL
+)
+{
+	###### initialize
+	if(!is.list(obj)){
+		obj = list(obj)
+	}
+	
+	###### newcmd
+	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
+	newcmd$command = "numopt"
+	
+	if(!is.null(iter) && is.numeric(iter))
+		newcmd = addcmd.literal(newcmd,"iter",as.character(iter))
+	
+	if(!is.null(toler) && is.numeric(toler))
+		newcmd = addcmd.literal(newcmd,"toler",as.character(toler))
+
+	if(!is.null(randstart) && is.numeric(randstart))
+		newcmd = addcmd.literal(newcmd,"randstart",as.character(randstart))
+	
+	if(!is.null(seed) && is.numeric(seed))
+		newcmd = addcmd.literal(newcmd,"seed",as.character(seed))
+	
+	if(!is.null(stepsize) && is.numeric(stepsize))
+		newcmd = addcmd.literal(newcmd,"stepsize",as.character(stepsize))
+	
+	newcmd = addcmd.binary(newcmd,"detail",detail)	
+	newcmd = addcmd.binary(newcmd,"redo",redo)
+
+	if(!is.null(giveupfactor) && is.numeric(giveupfactor))
+		newcmd = addcmd.literal(newcmd,"giveupfactor",as.character(giveupfactor))
+	
+	
+	# add commands to all members of the list:
+	#
+	for(ii in seq(length(obj)))
+	{
+		commands(obj[[ii]],add=T) <- write.brownie.string(newcmd)
+	}
+	
+	###### return
+	if(length(obj) == 1)
+		obj = obj[[1]]
+	
+	return(obj)	
+}
+
+
+# This adds the cmdstr to the commands slot.  It does no checking.
+# 
+addLiteral <- function(obj,cmdstr=NULL)
+{
+	###### initialize
+	if(!is.list(obj)){
+		obj = list(obj)
+	}
+	
+	# add ending semicolon
+	if( length(grep(";$",cmdstr))==0 )
+	{
+		cmdstr=paste(cmdstr,";",sep="")
+	}
+	
+	# add commands to all members of the list:
+	#
+	for(ii in seq(length(obj)))
+	{
+		commands(obj[[ii]],add=T) <- cmdstr
+	}
+	
+	###### return
+	if(length(obj) == 1)
+		obj = obj[[1]]
+	
+	return(obj)
 }
 
 

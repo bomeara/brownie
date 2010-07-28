@@ -34,8 +34,21 @@ setMethod("brownie", "phylo", function(x, annote=list()){
 	return(converted)
 })
 
-setMethod("brownie","phylo4d", function(x,annote=list()){
-	converted = new("brownie",x,datatypes=.guess.datatype(tdata(x)))
+setMethod("brownie","phylo4d", function(x,known.types,annote=list()){
+	
+	if(hasSingle(x))
+		x <- phyext(x)
+	
+	if(missing(known.types)){
+		converted = new("brownie",x,datatypes=.guess.datatype(tdata(x)))
+	} else {
+		converted = new("brownie",x,datatypes=known.types)
+	}
+	
+	# TODO: -check if datatypes match up with the @data slot, 
+	#		 convert datatypes if necessary.
+	#
+	
 	return(converted)
 })
 

@@ -579,4 +579,3 @@ checkPara <- function(treeslist,taxaset,percent=T)
 	return(retnum) 
 }
 
-
