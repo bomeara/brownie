@@ -9,8 +9,6 @@
 setGeneric("commands", function(x) { standardGeneric("commands")} )
 setGeneric("commands<-", function(x,add=FALSE,index=NULL,replace=FALSE,value) { standardGeneric("commands<-")} )
 setGeneric("removeCommands", function(x,index) { standardGeneric("removeCommands")} )
-setGeneric("weight", function(x) { standardGeneric("weight")} )
-setGeneric("weight<-", function(x,value) { standardGeneric("weight<-")} )
 setGeneric("datatypes", function(x) { standardGeneric("datatypes")} )
 setGeneric("datatypes<-", function(x,enforce=TRUE,value) { standardGeneric("datatypes<-")} )
 setGeneric("taxasets", function(x) { standardGeneric("taxasets")} )
@@ -191,24 +189,6 @@ setMethod("removeCommands",signature(x="list",index="ANY"),
 		x = sapply(x,removeCommands,index)
 		return(x)
 })
-
-
-#---------------
-## WEIGHT:
-#
-#---------------
-setMethod("weight", signature(x="brownie"),
-  function(x) {
-	return(x@weight)
-})
-
-setReplaceMethod("weight", signature(x="brownie"),
-  function(x,value) {
-	x@weight = value
-	return(x)
-})
-
-
 
 
 #---------------

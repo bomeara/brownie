@@ -7,9 +7,9 @@
 #--------------------------------------------------
 
 # readBrownie
-# writeNexus
+# writeBrownie
 
-setGeneric("writeNexus", function(x,...) { standardGeneric("writeNexus")} )
+setGeneric("writeBrownie", function(x,...) { standardGeneric("writeBrownie")} )
 
 
 readBrownie<-function(fname)
@@ -74,7 +74,7 @@ readBrownie<-function(fname)
 	}
 
 	brau.new = .process.datatypes(brau.new)  # may or may not be useful
-	brau.new = .process.assumptions(brau.new,assumptions.part,issim) 
+	brau.new = .process.assumptions(brau.new,assumptions.part,issim)
 	
 	#
 	# Read characters 2 if it exists:
@@ -82,11 +82,24 @@ readBrownie<-function(fname)
 	{
 		cat("Processing CHARACTERS2 block\n")
 		data2.part = read.characters2(fname)
-		for(xx in seq(length(brau.new)))
-			brau.new[[xx]] = addData(brau.new[[xx]],data2.part)		
+# 		for(xx in seq(length(brau.new)))
+# 			brau.new[[xx]] = addData(brau.new[[xx]],data2.part)		
+		
+		brau.new <- addData(brau.new,data2.part)
 	}
-	#
-	#
+	
+	# read in weights if they exist:
+	if(has.weights(fname))
+	{
+		cat("Processing tree weights...")
+		weights.part = get.tree.weights(fname)
+		if(length(weights.part)==0){
+			cat("not found\n")
+		}else{
+			weight(brau.new) <- weights.part
+			cat("done\n")
+		}
+	}
 	
 	if(length(brau.new)==1)
 		return(brau.new[[1]])
@@ -206,16 +219,16 @@ readBrownie<-function(fname)
 }
 
 
-setMethod("writeNexus",signature(x="brownie"),
+setMethod("writeBrownie",signature(x="brownie"),
 	function(x,file=NULL,rmsimmap=TRUE) {
-		return( writeNexus(list(x),file=file,rmsimmap=rmsimmap) )
+		return( writeBrownie(list(x),file=file,rmsimmap=rmsimmap) )
 })
 
 # write nexus file with trees and characters
 # TODO: -Use text streams instead of temp files
 #		-Better way to convert CR/LF (in Windows)
 #
-setMethod("writeNexus", signature(x="list"),
+setMethod("writeBrownie", signature(x="list"),
 	function(x, file=NULL, rmsimmap=TRUE) {
 		
 		# temporary files for nexus blocks:

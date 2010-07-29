@@ -12,8 +12,7 @@
 # @param commands text commands to be placed in a brownie block
 # @param datatypes annotation for the data part of phylo4d
 setClass("brownie",
-		representation("phylo4d_ext",commands="character",datatypes="character",weight="numeric"),
-		prototype=prototype(weight=0)
+		representation("phylo4d_ext",commands="character",datatypes="character")
 		)
 
 
@@ -28,10 +27,17 @@ setGeneric("brownie", function(x, ...) { standardGeneric("brownie")}, valueClass
 ## first arg is a phylo
 setMethod("brownie", "phylo", function(x, annote=list()){
 	
+	# special way to convert phylo to brownie
 	converted = as(x,"brownie")
 	converted@annote <- annote
 	
 	return(converted)
+})
+
+setMethod("brownie", "phylo4", function(x, annote=list()){
+	
+	converted = as(x,"phylo4d")
+	return(brownie(converted))
 })
 
 setMethod("brownie","phylo4d", function(x,known.types,annote=list()){

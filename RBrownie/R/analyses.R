@@ -719,6 +719,112 @@ addNumopt <- function(obj,
 	return(obj)	
 }
 
+# Add heuristic search.
+#
+addHS <- function(obj,
+					nreps=NULL,#=5,
+					rearrlimit=NULL,
+					maxnumspp=NULL,#=100,
+					minnumspp=NULL,#=1,
+					minsamp=NULL,#=3,
+					structwt=NULL,#=0.5,
+					pthreshold=NULL,#=1.0,
+					subsample=NULL,#=2.0,
+					movefreq=NULL,#="(0.8 0.01 0.01 0.01 0.17 0.0)",
+					file=NULL,#="besttrees.tre",
+					showtries=NULL,#=No,
+					coal=NULL,#=No,
+					ms=NULL,#=No,
+					aic.mode=NULL,#=4,
+					gridwidth=NULL,#=10.0,
+					gridsize=NULL,#=15.0,
+					maxrecursions=NULL,#=20,
+					branch.export=NULL,#=2
+					usetempfile=FALSE
+)
+{
+	###### initialize
+	if(!is.list(obj)){
+		obj = list(obj)
+	}
+	
+	###### newcmd
+	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
+	newcmd$command = "hs"
+	
+	if(!is.null(nreps) && is.numeric(nreps))
+		newcmd = addcmd.literal(newcmd,"NReps",as.character(nreps))
+	
+	if(!is.null(rearrlimit) && is.numeric(rearrlimit))
+		newcmd = addcmd.literal(newcmd,"RearrLimit",as.character(rearrlimit))
+
+	if(!is.null(maxnumspp) && is.numeric(maxnumspp))
+		newcmd = addcmd.literal(newcmd,"MaxNumSpp",as.character(maxnumspp))
+	
+	if(!is.null(minnumspp) && is.numeric(minnumspp))
+		newcmd = addcmd.literal(newcmd,"MinNumSpp",as.character(minnumspp))
+		
+	if(!is.null(minsamp) && is.numeric(minsamp))
+		newcmd = addcmd.literal(newcmd,"MinSamp",as.character(minsamp))
+	
+	if(!is.null(structwt) && is.numeric(structwt))
+		newcmd = addcmd.literal(newcmd,"StructWt",as.character(structwt))
+		
+	if(!is.null(pthreshold) && is.numeric(pthreshold))
+		newcmd = addcmd.literal(newcmd,"PThreshold",as.character(pthreshold))
+	
+	if(!is.null(subsample) && is.numeric(subsample))
+		newcmd = addcmd.literal(newcmd,"SubSample",as.character(subsample))
+
+	if(!is.null(movefreq) && (check.statevector(movefreq,factor(1:5)) || check.statevector(movefreq,factor(1:6))) )
+		newcmd = addcmd.literal(newcmd,"MoveFreq",as.character(movefreq))
+		
+	if(!usetempfile && !is.null(file) && is.character(file)) # file, append, replace
+	{
+		newcmd = addcmd.literal(newcmd,"file",file[1])
+	} else {
+		if(usetempfile)
+			newcmd = addcmd.literal(newcmd,"file",tempfile())
+	}
+	
+	if(!is.null(showtries) && is.logical(showtries))
+		newcmd = addcmd.binary(newcmd,"showtries",showtries)
+
+	# Be careful when using this option: it relies on external program
+	if(!is.null(ms) && is.logical(ms))
+		newcmd = addcmd.binary(newcmd,"MS:",ms)
+
+	if(!is.null(coal) && is.logical(coal))
+		newcmd = addcmd.binary(newcmd,"COAL:",coal)
+										
+	if(!is.null(aic.mode) && (aic.mode %in% seq(0,4)))
+		newcmd = addcmd.literal(newcmd,"AIC_mode",as.character(aic.mode))
+
+	if(!is.null(gridwidth) && is.numeric(gridwidth))
+		newcmd = addcmd.literal(newcmd,"GridWidth",as.character(gridwidth))
+		
+	if(!is.null(gridsize) && is.numeric(gridsize))
+		newcmd = addcmd.literal(newcmd,"GridSize",as.character(gridsize))
+		
+	if(!is.null(maxrecursions) && is.numeric(maxrecursions))
+		newcmd = addcmd.literal(newcmd,"MaxRecursions",as.character(maxrecursions))
+		
+	if(!is.null(branch.export) && is.numeric(branch.export))
+		newcmd = addcmd.literal(newcmd,"Branch_export",as.character(branch.export))
+	
+	
+	for(ii in seq(length(obj)))
+	{
+		commands(obj[[ii]],add=T) <- write.brownie.string(newcmd)
+	}
+	
+	###### return
+	if(length(obj) == 1)
+		obj = obj[[1]]
+	
+	return(obj)	
+}
+
 
 # This adds the cmdstr to the commands slot.  It does no checking.
 # 

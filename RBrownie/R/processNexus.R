@@ -46,11 +46,7 @@ get.nexus.comments<-function(finput,text=NULL)
 }
 
 
-# get tree weights from file or tree string
-# Assuming this format: 
-# [.... &W -122235 ........]
-#
-get.tree.weights <- function(finput,text=NULL,splitchar=" ")
+has.weights <- function(finput,text=NULL)
 {
 	if(!is.null(text)){
 		# TODO: check text for newlines and split on them if they exist.
@@ -60,16 +56,38 @@ get.tree.weights <- function(finput,text=NULL,splitchar=" ")
 			stop("Assuming finput is a file and could not find it")
 		
 		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
-		rawtext = read.nexus.block(txt=rawtext,block="trees")
+		rawtext = read.nexus.block(txt=rawtext,block="trees",silent=T)
+	}
+	
+	comments = grep("(&lnP|&W)( |=)",rawtext)
+	return( length(comments)>0 )
+}
+
+
+# get tree weights from file or tree string
+# Assuming this format: 
+# [.... &W -122235 ........]
+#
+get.tree.weights <- function(finput,text=NULL,starters=c("&W","&lnP"),splitchar="( |=)")
+{
+	if(!is.null(text)){
+		# TODO: check text for newlines and split on them if they exist.
+		rawtext=text
+	} else {
+		if(!file.exists(finput))
+			stop("Assuming finput is a file and could not find it")
+		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+		rawtext = read.nexus.block(txt=rawtext,block="trees",silent=T)
 	}
 	
 	comments = get.nexus.comments(text=rawtext)
 	tokens = strsplit(comments,splitchar)
-	find.weight <- function(ii,ww = "&W")
+	find.weight <- function(ii,ww)
 	{
-		return(ii[(which(toupper(ii) == ww))+1])
+		return(ii[(which(toupper(ii) %in% toupper(ww)))+1])
 	}
-	weighs = unlist(lapply(tokens,find.weight))
+	weighs = unlist(lapply(tokens,find.weight,starters))
 	
 	return(as.numeric(weighs))
 }
@@ -130,7 +148,7 @@ get.tree.weights <- function(finput,text=NULL,splitchar=" ")
 
 # Internal:
 # Get text of a read nexus block
-read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F)
+read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F,silent=F)
 {
 	if(!is.null(txt)){
 		# Using the text argument is not recommended
@@ -140,7 +158,7 @@ read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F)
 		if(!file.exists(finput))
 			stop("Assuming finput is a file and could not find it")
 		
-		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
+		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n",quiet=silent)		
 	}
 	
 	inds = .get.nexus.block.inds(blockname=block,text=rawtext)

@@ -37,6 +37,9 @@ setGeneric("snid", function(x, ...) { standardGeneric("snid") })
 setGeneric("snposition", function(x, ...) { standardGeneric("snposition") })
 setGeneric("snbranch", function(x, ...) { standardGeneric("snbranch") })
 setGeneric("rmdata", function(x,index) { standardGeneric("rmdata")} )
+setGeneric("weight", function(x) { standardGeneric("weight")} )
+setGeneric("weight<-", function(x,value) { standardGeneric("weight<-")} )
+setGeneric("hasWeight",function(x,strict=TRUE) { standardGeneric("hasWeight")} )
 
 # subnode
 setGeneric("hasSubNodes", function(x) { standardGeneric("hasSubNodes") })
@@ -654,7 +657,7 @@ write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 }	
 
 
-
+# This is the main write function for phylo4d_ext
 # Mainly ripped from APE write.nexus function
 #
 #
@@ -709,9 +712,20 @@ write.nexus.simmap <- function(obj, file = "", translate = TRUE)
           tipLabels(obj[[i]]) <- checkLabel(tipLabels(obj[[i]]))
     }
     for (i in 1:ntree) {
-        if (isRooted(obj[[i]]))
-          cat("\tTREE * UNTITLED = [&R] ", file = file, append = TRUE)
-        else cat("\tTREE * UNTITLED = [&U] ", file = file, append = TRUE)
+	    tprefix = "\tTREE * UNTITLED"
+	    #weights
+	    if(hasWeight(obj[[i]])){
+		    tprefix = sprintf("%s [&W %f]",tprefix,weight(obj[[i]]))
+	    }
+	    #is rooted
+        if (isRooted(obj[[i]])){
+        	#cat("\tTREE * UNTITLED = [&R] ", file = file, append = TRUE)
+        	tprefix = paste(tprefix," = [&R] ",sep="")
+    	}else{
+	    	#cat("\tTREE * UNTITLED = [&U] ", file = file, append = TRUE)
+	    	tprefix = paste(tprefix," = [&U] ",sep="")
+		}
+		cat(tprefix, file = file, append = TRUE)
         cat(write.simmap(obj[[i]], file = ""),"\n", sep = "", file = file, append = TRUE)
     }
     cat("END;\n", file = file, append = TRUE)
@@ -1048,6 +1062,62 @@ setMethod("snbranch", signature(x="list"),
 	return(x[[1]]@subnode.branch)
 })
 
+
+#---------------
+## WEIGHT:
+#
+#---------------
+setMethod("weight", signature(x="phylo4d_ext"),
+  function(x) {
+	return(x@weight)
+})
+
+setMethod("weight", signature(x="list"),
+	function(x) {
+		if(hasWeight(x))
+			return( sapply(x,weight) )
+		
+		return(numeric(0))
+})
+
+setReplaceMethod("weight", signature(x="phylo4d_ext"),
+  function(x,value) {
+	x@weight = value
+	return(x)
+})
+
+setReplaceMethod("weight",signature(x="list"),
+	function(x,value) {
+	
+	if(length(x) != length(value))
+		stop("Replacement values need to be same length as the list")
+	
+	for(ii in seq(length(x)))
+		weight(x[[ii]]) <- value[ii]
+	
+	return(x)
+})
+
+setMethod("hasWeight",signature(x="phylo4d_ext"),
+	function(x,strict=TRUE){
+		return( length(x@weight)!=0 )
+})
+
+
+setMethod("hasWeight",signature(x="list"),
+	function(x,strict=TRUE){
+		retbool=ifelse(strict,TRUE,FALSE)
+		for(ii in seq(length(x))){
+			tmpbool = hasWeight(x[[ii]])
+			if(strict && !tmpbool)
+				return(FALSE)
+			
+			if(!strict && tmpbool)
+				return(TRUE)
+			
+		}
+		return(retbool)
+})
 
 # 
 # setMethod("addData", signature(x="phylo4d_ext"),
