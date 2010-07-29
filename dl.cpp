@@ -210,6 +210,19 @@ int main()
 	cout<<currindex<<" taxa sets used:"<<endl;
 	for(int iii = 0; iii < taxanames.size(); iii++)
 		cout<<taxanames[iii]<<endl;
+
+		
+	// RETURN STRINGS vector:
+	cout<<"RETURN STRINGS"<<endl;
+	vector<string> testvect;
+	cout<<"Test vector size: "<<testvect.size()<<endl;
+	
+	int retsize = brownie.retstrings.size();
+	if(retsize != 0){
+		for (int i=0; i<retsize; i++) {
+		    cout << brownie.retstrings[i] << endl;
+		}
+	}
 	
 	return 0;
 }
