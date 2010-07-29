@@ -142,7 +142,8 @@ public:
 	nxsstring globalchosentaxset;
     map<nxsstring, IntSet> MrcaMap;
     Profile<Tree> intrees;
-    std::ostringstream rettree;  // added jcs 7/13/2010 // TODO: turn this into vector of these objects?
+    std::ostringstream rettree;  // added jcs 7/13/2010 
+    std::vector<std::string> retstrings;
     //profileTree intrees;
     int tipvariancetype;
     int progressbartotal;

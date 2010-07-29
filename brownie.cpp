@@ -7853,6 +7853,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 	int breaknum=0;
 	bool reconstruct=false;
 	nxsstring tmessage;
+	nxsstring rcppstr;
     ofstream tablef;
     nxsstring tablefname;
     bool tablef_open=false;
@@ -7918,23 +7919,24 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 				if (globalstates || charloop) {
 					localnumbercharstates=numbercharstates;
 				}
-				tmessage="Tree\tTree weight\tTree name\tChar\tNo. states this char\tNo. states used\tModel\tStateFreq\tVariable Sites Only\tneglnL\tK\tAIC\tAICc\t";
+				tmessage="Tree\tTree weight\tTree name\tChar\tNo. states this char\tNo. states used\tModel\tStateFreq\tVariable Sites Only\tneglnL\tK\tAIC\tAICc";
 				for (int n=0; n<localnumbercharstates; n++) {
-					tmessage+="P(";
+					tmessage+="\tP(";
 					tmessage+=n;
-					tmessage+=")\t";
+					tmessage+=")";
 				}
 				for (int i=0;i<localnumbercharstates;i++) {
 					for (int j=0;j<localnumbercharstates;j++) {
 						if (i!=j) {
-							tmessage+="q_";
+							tmessage+="\tq_";
 							tmessage+=i;
 							tmessage+="_";
 							tmessage+=j;
-							tmessage+="\t";
+							//tmessage+="\t";
 						}
 					}
 				}
+				rcppstr=tmessage;
 				if (tablef_open && (!exists || !appending) ) {
 					tablef<<tmessage;
 				}
@@ -7977,7 +7979,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						message+=": ";
 						message+=treename;
 						message+="\n";
-						if (tablef_open) {
+						if (true) {
 							tmessage="\n";
 							tmessage+=chosentree;
 							tmessage+="\t";
@@ -8012,7 +8014,6 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 								tmessage+=")";
 							}
 							tmessage+="\t";
-							
 							if (discretechosenstatefreqmodel==1) {
 								tmessage+="Uniform";
 							}
@@ -8035,14 +8036,17 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							else {
 								tmessage+="No\t";
 							}
-							tablef<<tmessage;
+							rcppstr+="\n";
+							rcppstr+=tmessage;
+							if(tablef_open)
+								tablef<<tmessage;
 						}
 						assert(output->size>0);
 						double likelihood=gsl_vector_get(output,-1+output->size);
 						double K=1.0*numberoffreeparameters;
 						double aicc=(2.0*likelihood)+2.0*K+2.0*K*(K+1.0)/(1.0*ntax-K-1.0); //AICc, n=1;
 						double aic=(2.0*likelihood)+2.0*K;
-						if (tablef_open) {
+						if (true) {
 							tmessage="";
 							tmessage+=likelihood;
 							tmessage+="\t";
@@ -8052,7 +8056,9 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							tmessage+="\t";
 							tmessage+=aicc;
 							tmessage+="\t";
-							tablef<<tmessage;
+							rcppstr+=tmessage;
+							if (tablef_open)
+								tablef<<tmessage;
 						}
 						char outputstring[21];
 						message+="\n  -lnL = ";
@@ -8241,6 +8247,11 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 								}
 							}
 						}
+						
+						rcppstr+=tmessage;  // added jcs 7/29/2010
+						rcppstr+="\n";		// added jcs 7/29/2010
+						retstrings.push_back(rcppstr);
+						
 						if (tablef_open) {
 							tablef<<tmessage;
 						}
@@ -14719,7 +14730,8 @@ gsl_matrix* BROWNIE::AddTipVarianceVectorToRateTimesVCV(gsl_matrix * VCVorig,gsl
 
 
 
-
+// for: cont and op
+//
 void BROWNIE::HandleDebugOptimization( NexusToken& token )
 {
 	bool justdohelp=false;

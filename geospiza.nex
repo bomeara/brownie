@@ -55,6 +55,8 @@ BEGIN TREES;
 END;
 
 begin brownie;
-discrete model= nonrev freq=unif reconstruct=yes;
-discrete model=nonrev freq=equilib reconstruct=yes;
+log start file=junk.txt replace=y;
+discrete model= nonrev freq=unif reconstruct=yes file=nonrev_unif.txt replace=y;
+discrete model=nonrev freq=equilib reconstruct=yes file=nonrev_equil.txt replace=y;
+log end;
 end;
