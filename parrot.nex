@@ -118,10 +118,10 @@ Taxset intrajoint= Scarus_altipinnis Scarus_chameleon Scarus_dimidiatus Scarus_f
 END;
 
 Begin BROWNIE;
-log start file=parrotlog.txt;
+log file=parrot.txt;
 model type=BM1;
-cont treeloop=yes charloop=y file=parrotfish_feedingmodetest.txt replace=y;
+cont treeloop=yes charloop=y file=parrotfish_feedingmodetest.txt replace=y append=n;
 model type=BMS;
 cont taxset=all treeloop=yes charloop=y file=parrotfish_feedingmodetest.txt append=yes replace=no;
-log stop;
+log end;
 END;
