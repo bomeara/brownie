@@ -431,7 +431,7 @@ addStartLog <- function(obj,
 	}
 	
 	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
-	newcmd$command = "log start"
+	newcmd$command = "log"
 	
 	# FILE:
 	if(!usetempfile && !is.null(file) && is.character(file)) # file, append, replace
