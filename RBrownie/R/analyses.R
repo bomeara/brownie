@@ -184,7 +184,7 @@ addcmd.tvtype <- function(cmdobj,type)
 #
 addNonCensored <- function(obj,
 							file=NULL,
-							taxset="ALL",
+							taxset=character(0),
 							treeloop=FALSE,
 							charloop=FALSE,
 							fileappend=FALSE,
@@ -213,7 +213,9 @@ addNonCensored <- function(obj,
 	newcmd$command = "cont"
 	
 	# add options
-	newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset) # taxaset
+	if(length(taxset)!=0 && is.character(taxset))
+		newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset) # taxaset
+	
 	newcmd = addcmd.binary(newcmd,"treeloop",treeloop) # treeloop
 	newcmd = addcmd.binary(newcmd,"charloop",charloop) # charloop
 	if(!usetempfile && !is.null(file) && is.character(file)) # file, append, replace
@@ -256,7 +258,7 @@ addNonCensored <- function(obj,
 addCensored <- function(obj,
 						file=NULL,
 						reps=0,
-						taxset="ALL",
+						taxset=character(0),
 						treeloop=FALSE,
 						charloop=FALSE,
 						quiet=FALSE,
@@ -272,7 +274,7 @@ addCensored <- function(obj,
 	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
 	newcmd$command = "ratetest"
 	
-	if(length(taxset) != 0)
+	if(length(taxset) != 0 && is.charater(taxset))
 		for(jj in seq(length(taxset)))
 			newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset[jj]) # taxaset
 		
@@ -537,7 +539,7 @@ addModel <- function(obj,
 #
 addOpt <- function(obj,
 					file=NULL,
-					taxset="ALL",
+					taxset=character(0),
 					treeloop=FALSE,
 					charloop=FALSE,
 					usetempfile=FALSE)
@@ -551,7 +553,7 @@ addOpt <- function(obj,
 	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
 	newcmd$command = "opt"
 	
-	if(length(taxset) != 0)
+	if(length(taxset) != 0 && is.character(taxset))
 		for(jj in seq(length(taxset)))
 			newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset[jj]) # taxaset
 		
