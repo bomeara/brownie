@@ -9815,6 +9815,7 @@ void BROWNIE::HandleRateTest( NexusToken& token )
     //srand(time(0));
     typedef std::set<nxsstring, std::less < nxsstring> > nxsstring_set;
     nxsstring tmessage;
+    nxsstring rcppstr;
     ofstream tablef;
     nxsstring tablefname;
     bool tablef_open=false;

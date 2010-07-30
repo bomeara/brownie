@@ -44,6 +44,9 @@ class dlInterface
 	bool writeTrees(std::string);
 	bool hasRetTrees();
 	std::string getRetTree(int index=0);
+	
+	// RETURNED STRINGS:
+	std::vector<std::string> getReturnStrings();
 };
 
 

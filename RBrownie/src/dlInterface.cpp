@@ -397,3 +397,12 @@ std::string dlInterface::getRetTree(int index)
 	
 }
 
+
+/* Get special return string vector.  This vector was created
+ * especially for RBrownie and is filled arbitrarily, by various
+ * functions.
+ */
+std::vector<std::string> dlInterface::getReturnStrings()
+{
+	return(brownie.retstrings);
+}

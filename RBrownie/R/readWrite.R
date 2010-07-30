@@ -89,7 +89,9 @@ readBrownie<-function(fname)
 	}
 	
 	# read in weights if they exist:
-	if(has.weights(fname))
+	# BUG: bad wieghts (negative values?) are crashing the program
+	#if(has.weights(fname))
+	if(FALSE)
 	{
 		cat("Processing tree weights...")
 		weights.part = get.tree.weights(fname)
