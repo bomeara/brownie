@@ -1,4 +1,4 @@
-/*
+/* 
  * TreeLib
  * A library for manipulating phylogenetic trees.
  * Copyright (C) 2001 Roderic D. M. Page <r.page@bio.gla.ac.uk>
