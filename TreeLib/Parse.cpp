@@ -223,7 +223,7 @@ tokentype Parser::ParseNumber ()
 //------------------------------------------------------------------------------
 bool Parser::IsPunctuation (char ch)
 {
-	char punctuation[22];
+	char punctuation[23];
 	punctuation[0]  = '(';
 	punctuation[1]  = ')';
 	punctuation[2]  = '[';
