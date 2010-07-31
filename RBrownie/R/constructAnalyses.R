@@ -1,6 +1,6 @@
 #
 #--------------------------------------------------
-# Phylogenetic analyses for RBrownie
+# Construct Phylogenetic analyses for RBrownie
 # -
 #--------------------------------------------------
 

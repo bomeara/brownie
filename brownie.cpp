@@ -14738,6 +14738,7 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 	bool justdohelp=false;
     ofstream tablef;
     nxsstring tablefname;
+	nxsstring rcppstr;
     bool tablef_open=false;
     bool name_provided=false;
     nxsstring chosentaxset=globalchosentaxset;
@@ -17430,6 +17431,7 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 		rettree.str(string());
 	
 	(*Tptr).WriteNoQuote(rettree);
+	rettrees.push_back(rettree.str());   // added jcs 7/31/2010
 	
 	//Now go back to original form:
 	currentnode = q.begin();

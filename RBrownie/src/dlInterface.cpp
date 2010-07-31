@@ -406,3 +406,14 @@ std::vector<std::string> dlInterface::getReturnStrings()
 {
 	return(brownie.retstrings);
 }
+
+/* Get special return string vector (full of trees!).  This vector was created
+ * especially for RBrownie and is filled arbitrarily, by various
+ * functions (with trees!).
+ */
+std::vector<std::string> dlInterface::getReturnTrees()
+{
+	return(brownie.rettrees);
+}
+
+

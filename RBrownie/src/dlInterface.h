@@ -47,6 +47,7 @@ class dlInterface
 	
 	// RETURNED STRINGS:
 	std::vector<std::string> getReturnStrings();
+	std::vector<std::string> getReturnTrees();
 };
 
 
