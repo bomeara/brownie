@@ -152,28 +152,3 @@ SEXP readBrownie(SEXP fnamevect)
 	
 }
 
-
-SEXP doASR(SEXP fnamevect)
-{
-	using namespace Rcpp;
-	
-	// Setup interface object
-	dlInterface dli;
-	
-	// Execute the filename
-	CharacterVector fname(fnamevect);
-	std::string newstr = "" + fname[0];  // convery string_proxy to std::string
-	cout << "RCPP: " << newstr << endl;
-	dli.execute(newstr);
-	
-	int nrettrees = dli.getNumRetTrees();
-	
-	List treelist(nrettrees);
-	// show rettree:
-	if(nrettrees > 0)
-	{
-		treelist[0] = dli.getRetTree();
-	}
-	
-	return treelist;
-}

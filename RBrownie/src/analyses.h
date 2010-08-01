@@ -5,6 +5,8 @@
 
 // Run brownie file (fnamevect[0]) and return specified objects
 //
-RcppExport SEXP RunTest(SEXP fnamevect, bool retReturnTrees=false, bool retContinuous=false, bool retDiscrete=false, bool retTrees=false, bool retTaxa=false, bool retTaxasets=false);
+// RcppExport SEXP RunTest(SEXP fnamevect, bool retReturnTrees=false, bool retContinuous=false, bool retDiscrete=false, bool retTrees=false, bool retTaxa=false, bool retTaxasets=false);
+
+RcppExport SEXP doAnalysis(SEXP fnamevect);
 
 #endif

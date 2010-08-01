@@ -228,6 +228,7 @@ void BROWNIE::ExitingBlock( nxsstring /*blockName*/ )
  */
 void BROWNIE::FactoryDefaults()
 {
+	doStream = false;
 	
 #ifdef STATIC_LIB
 	// From MAIN - setup random number gen
@@ -235,6 +236,7 @@ void BROWNIE::FactoryDefaults()
     gsl_rng_env_setup();
     T = gsl_rng_mt19937;
     r = gsl_rng_alloc (T);
+    doStream = true;
 #endif
 
     inf_open = false;
@@ -7108,6 +7110,7 @@ void BROWNIE::HandlePagelDiscrete ( NexusToken& token)
     bool donenothing=true;
 	bool treeloop=false;
  	nxsstring tmessage;
+ 	nxsstring rcppstr;
     ofstream tablef;
     nxsstring tablefname;
     bool tablef_open=false;
@@ -7479,6 +7482,8 @@ Char1:				Char2
 			if (tablef_open && (!exists || !appending) ) {
 				tablef<<tmessage;
 			}
+			if(doStream)
+				rcppstr += tmessage;
 			
 			
 			
@@ -7936,11 +7941,14 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						}
 					}
 				}
-				rcppstr=tmessage;
 				if (tablef_open && (!exists || !appending) ) {
 					tablef<<tmessage;
 				}
-				if (!globalstates && tablef_open) {
+					
+				if(doStream)
+					rcppstr+=tmessage;
+				
+				if ((!globalstates && tablef_open) || (!globalstates && doStream)) {
 					message="WARNING: if some characters have fewer than ";
 					message+=numbercharstates;
 					message+=" character states, the output in the output table will be wrong for those chars";
@@ -7948,8 +7956,17 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 					tmessage+=message;
 					PrintMessage();
 					tmessage+="\n";
-					tablef<<tmessage;
+					
+					if(tablef_open)
+						tablef<<tmessage;
+					
+					if(doStream)
+						rcppstr += tmessage;
+								
 				}
+				
+				
+				
 				for (int charnum=1;charnum<=charlooplimit;charnum++) {
 					if (charloop==true) {
 						discretechosenchar=charnum;
@@ -8036,10 +8053,12 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							else {
 								tmessage+="No\t";
 							}
-							rcppstr+="\n";
-							rcppstr+=tmessage;
 							if(tablef_open)
 								tablef<<tmessage;
+							
+							if(doStream)
+								rcppstr+=tmessage;
+							
 						}
 						assert(output->size>0);
 						double likelihood=gsl_vector_get(output,-1+output->size);
@@ -8056,9 +8075,10 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							tmessage+="\t";
 							tmessage+=aicc;
 							tmessage+="\t";
-							rcppstr+=tmessage;
 							if (tablef_open)
 								tablef<<tmessage;
+							if(doStream)
+								rcppstr+=tmessage;
 						}
 						char outputstring[21];
 						message+="\n  -lnL = ";
@@ -8248,10 +8268,13 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							}
 						}
 						
-						rcppstr+=tmessage;  // added jcs 7/29/2010
-						rcppstr+="\n";		// added jcs 7/29/2010
-						retstrings.push_back(rcppstr);
-						
+						// added jcs 7/29/2010
+						if(doStream)
+						{
+							rcppstr+=tmessage;
+							rcppstr+="\n";		
+							retstrings.push_back(rcppstr);
+						}
 						if (tablef_open) {
 							tablef<<tmessage;
 						}
@@ -9991,11 +10014,13 @@ IntSet::const_iterator xi;
         }
 
 
-
+        tmessage="Output in tab-delimited table:\nModel A is constrained to have one rate for all groups, Model B has one rate for each group.\n";
         if (tablef_open) {
-            tmessage="Output in tab-delimited table:\nModel A is constrained to have one rate for all groups, Model B has one rate for each group.\n";
             tablef<<tmessage;
         }
+        if(doStream)
+        	rcppstr+=tmessage;
+        
         nxsstring_set chosentaxSETS;
         map<nxsstring, int>::const_iterator iter;
         int n=1;
@@ -10012,6 +10037,8 @@ IntSet::const_iterator xi;
             if (tablef_open) {
                 tablef<<tmessage;
             }
+            if(doStream)
+            	rcppstr+=tmessage;
             }
         tmessage="Tree\tTree weight\tTree name\tChar\t";
         for (int n=0; n<listedtaxsets; n++) {
@@ -10027,6 +10054,9 @@ IntSet::const_iterator xi;
         if (tablef_open) {
             tablef<<tmessage;
         }
+        if(doStream)
+        	rcppstr+=tmessage;
+        
         int starttree, stoptree, startchar, stopchar;
         int originalchosentree=chosentree;
         int originalchosenchar=chosenchar;
@@ -10131,18 +10161,22 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
     message+=", character = ";
     message+=chosenchar;
     message+="\n";
-    if (tablef_open) {
-        tmessage="";
-        tmessage+=chosentree;
-        tmessage+="\t";
-        tmessage+=treeweight;
-        tmessage+="\t";
-        tmessage+=treename;
-        tmessage+="\t";
-        tmessage+=chosenchar;
-        tmessage+="\t";
+
+    tmessage="";
+    tmessage+=chosentree;
+    tmessage+="\t";
+    tmessage+=treeweight;
+    tmessage+="\t";
+    tmessage+=treename;
+    tmessage+="\t";
+    tmessage+=chosenchar;
+    tmessage+="\t";
+    if (tablef_open) {        
         tablef<<tmessage;
     }
+    if(doStream)
+    	rcppstr+=tmessage;
+    
     int ntaxprocessed=0;
     //Do the test, spit out the values
     map<nxsstring, int>::const_iterator iter2;
@@ -10209,12 +10243,16 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
             summaryofresults+="\t--Has a negative rate estimate (";
             summaryofresults+=rate;
             summaryofresults+="). No output.--\n";
+            
+			tmessage="";
+			tmessage+=chosentree;
+			tmessage+="\t--Has a negative rate estimate. No output.--\n";
             if (tablef_open) {
-                tmessage="";
-                tmessage+=chosentree;
-                tmessage+="\t--Has a negative rate estimate. No output.--\n";
                 tablef<<tmessage;
             }
+            if(doStream)
+            	rcppstr+=tmessage;
+            
             goodtree=false;
             noerror=false;
         }
@@ -10231,12 +10269,16 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
             summaryofresults+="\t--Has a zero rate estimate (";
             summaryofresults+=rate;
             summaryofresults+="). No output.--\n";
+            
+            tmessage="";
+            tmessage+=chosentree;
+            tmessage+="\t--Has a zero rate estimate. No output.--\n";
             if (tablef_open) {
-                tmessage="";
-                tmessage+=chosentree;
-                tmessage+="\t--Has a zero rate estimate. No output.--\n";
                 tablef<<tmessage;
             }
+            if(doStream)
+            	rcppstr+=tmessage;
+            
             goodtree=false;
             noerror=false;
 			
@@ -10260,16 +10302,20 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
             message+="\n    -lnL = ";
             message+=likelihood;
             message+="\n";
+            
+            tmessage="";
+            tmessage+=ancstate;
+            tmessage+="\t";
+            tmessage+=rate;
+            tmessage+="\t";
+            tmessage+=likelihood;
+            tmessage+="\t";
             if (tablef_open) {
-                tmessage="";
-                tmessage+=ancstate;
-                tmessage+="\t";
-                tmessage+=rate;
-                tmessage+="\t";
-                tmessage+=likelihood;
-                tmessage+="\t";
                 tablef<<tmessage;
             }
+            if(doStream)
+            	rcppstr+=tmessage;
+            
             gsl_vector_set(weightedratevector,taxsetnumber,gsl_vector_get(weightedratevector,taxsetnumber)+(treeweight*rate));
             gsl_vector_set(weightedancstatevector,taxsetnumber,gsl_vector_get(weightedancstatevector,taxsetnumber)+(treeweight*ancstate));
             // }
@@ -10359,36 +10405,38 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
         weightedAIC2+=treeweight*model2aic;
         weightedAICc1+=treeweight*model1aicc;
         weightedAICc2+=treeweight*model2aicc;
-
-
-        if (tablef_open) {
-            sprintf(outputstring,"%14.6f",model1aic);
-            tmessage+=outputstring;
-            tmessage+="\t";
-            sprintf(outputstring,"%14.6f",model2aic);
-            tmessage+=outputstring;
-            tmessage+="\t";
-            sprintf(outputstring,"%14.6f",model1aicc);
-            tmessage+=outputstring;
-            tmessage+="\t";
-            sprintf(outputstring,"%14.6f",model2aicc);
-            tmessage+=outputstring;
-            tmessage+="\t";
-            sprintf(outputstring,"%14.6f",likelihoodsingleparametermodel);
-            tmessage+=outputstring;
-            tmessage+="\t";
-            sprintf(outputstring,"%14.6f",likelihoodmultiparametermodel);
-            tmessage+=outputstring;
-            tmessage+="\t";
-            tmessage+=aicdif;
-            tmessage+="\t";
-            tmessage+=aiccdif;
-            tmessage+="\t";
-            sprintf(outputstring,"%3g",plrtchi);
-            tmessage+=outputstring;
-            tmessage+="\t";
+		
+        sprintf(outputstring,"%14.6f",model1aic);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        sprintf(outputstring,"%14.6f",model2aic);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        sprintf(outputstring,"%14.6f",model1aicc);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        sprintf(outputstring,"%14.6f",model2aicc);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        sprintf(outputstring,"%14.6f",likelihoodsingleparametermodel);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        sprintf(outputstring,"%14.6f",likelihoodmultiparametermodel);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        tmessage+=aicdif;
+        tmessage+="\t";
+        tmessage+=aiccdif;
+        tmessage+="\t";
+        sprintf(outputstring,"%3g",plrtchi);
+        tmessage+=outputstring;
+        tmessage+="\t";
+        if (tablef_open) {            
             tablef<<tmessage;
         }
+        if(doStream)
+        	rcppstr+=tmessage;
+        
         double parametricbootstrappingpvalue=0;
         if (repsnumber==0) {
             tmessage="NA\t";
@@ -10477,6 +10525,9 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
             if (tablef_open) {
                 tablef<<tmessage;
             }
+            if(doStream)
+            	rcppstr+=tmessage;
+            
         }
 
         /////////
@@ -10675,6 +10726,10 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
             tmessage+="\n";
             tablef<<tmessage;
         }
+        if(doStream){
+	        rcppstr+="\n";
+	        rcppstr+=tmessage;
+        }
 
     }
 	gsl_vector_free(tipscombresid);	
@@ -10688,12 +10743,16 @@ else {
     PrintMessage();
     summaryofresults+=chosentree;
     summaryofresults+="\t--Has a singular subtree VCV. No output.--\n";
+    
+    tmessage="";
+    tmessage+=chosentree;
+    tmessage+="\t--Has a singular subtree VCV. No output.--\n";
     if (tablef_open) {
-        tmessage="";
-        tmessage+=chosentree;
-        tmessage+="\t--Has a singular subtree VCV. No output.--\n";
         tablef<<tmessage;
     }
+    if(doStream)
+    	rcppstr += tmessage;
+    
 }
 gsl_matrix_free(VCVcomb);
         }
@@ -10756,7 +10815,10 @@ gsl_vector_free(weightedancstatevector);
 if (tablef_open) {
     tablef.close();
 }
-    }
+if(doStream){
+	retstrings.push_back(rcppstr);
+}
+}
 
 
 
@@ -15000,19 +15062,25 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 						message+=gsl_vector_get(optimalrate,3);
 						message+="\n-lnL = ";
 						message+=gsl_vector_get(optimalrate,4);
+						
+						tmessage="\t";
+						tmessage+=gsl_vector_get(optimalrate,0);
+						tmessage+="\t";
+						tmessage+=gsl_vector_get(optimalrate,2);
+						tmessage+="\t";
+						tmessage+=gsl_vector_get(optimalrate,1);
+						tmessage+="\t";
+						tmessage+=gsl_vector_get(optimalrate,3);
+						tmessage+="\t";
+						tmessage+=gsl_vector_get(optimalrate,4);
+						
 						if (tablef_open) {
-							tmessage="\t";
-							tmessage+=gsl_vector_get(optimalrate,0);
-							tmessage+="\t";
-							tmessage+=gsl_vector_get(optimalrate,2);
-							tmessage+="\t";
-							tmessage+=gsl_vector_get(optimalrate,1);
-							tmessage+="\t";
-							tmessage+=gsl_vector_get(optimalrate,3);
-							tmessage+="\t";
-							tmessage+=gsl_vector_get(optimalrate,4);
 							tablef<<tmessage;
 						}
+						if(doStream)
+							rcppstr += tmessage;
+						
+						
 						gsl_vector_free(optimalrate);
 					}
 					else if (chosenmodel==1) {
@@ -15045,7 +15113,7 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 						message+=gsl_vector_get(optimalrate,0);
 						message+=" +/- ";
 						message+=gsl_vector_get(optimalrate,1);
-						if (tablef_open) {
+						if (tablef_open || doStream) {
 							tmessage="Tree\tTree weight\tTree name\tChar\tModel\t-LnL\tAIC\tAICc\tAncState\tBMrate\n";
 							tmessage+=chosentree;
 							tmessage+="\t";
@@ -15065,8 +15133,14 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 							tmessage+="\t";
 							tmessage+=gsl_vector_get(optimalrate,0);
 							tmessage+="\n";
-							tablef<<tmessage;
+							if(tablef_open)
+								tablef<<tmessage;
+							
+							if(doStream)
+								rcppstr += tmessage;							
 						}
+
+						
 						gsl_vector_free(optimalrate);
 					}
 					else if (chosenmodel==3) {
@@ -15329,7 +15403,7 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 							message+=" +/- ";
 							message+=gsl_vector_get(optimalvalues,14+modelstate);
 						}
-						if (tablef_open) {
+						if (tablef_open || doStream) {
 							tmessage+="\n";
 							tmessage+=chosentree;
 							tmessage+="\t";
@@ -15351,8 +15425,13 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 								tmessage+=gsl_vector_get(optimalvalues,3+modelstate);
 							}
 							tmessage+="\n";
-							tablef<<tmessage;
+							if(tablef_open)
+								tablef<<tmessage;
+							
+							if(doStream)
+								rcppstr += tmessage;								
 						}
+						
 						
 						PrintMessage();
 						gsl_vector_free(optimalvalues);
@@ -15440,7 +15519,7 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
                         //message+=gsl_vector_get(optimalvalues,18+modelstate);
 						}
 						PrintMessage();
-						if (tablef_open) {
+						if (tablef_open || doStream) {
 							tmessage="Tree\tTree weight\tTree name\tChar\tModel\t-LnL\tAIC\tAICc\tAncState\tBMrate\tAttraction";
 							for (int modelstate=0;modelstate<(np-3);modelstate++) {
 								tmessage+="\tMean_in_state_";
@@ -15476,8 +15555,14 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 								tmessage+=gsl_vector_get(optimalvalues,5+modelstate);
 							}
 							tmessage+="\n";
-							tablef<<tmessage;
+							
+							if(tablef_open)
+								tablef<<tmessage;
+							
+							if(doStream)
+								rcppstr += tmessage;	
 						}
+						
 						
 						
 						/*		gsl_matrix_free(VCV1);
@@ -15826,7 +15911,7 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 						message+=" +/- ";
 						message+=gsl_vector_get(optimalvalues,6);
 						PrintMessage();
-						if (tablef_open) {
+						if (tablef_open || doStream) {
 							tmessage="Tree\tTree weight\tTree name\tChar\tModel\t-LnL\tAIC\tAICc\tAncState\tRate_No_changes\tRate_Changes\n";
 							tmessage+=chosentree;
 							tmessage+="\t";
@@ -15848,8 +15933,14 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
 							tmessage+="\t";
 							tmessage+=gsl_vector_get(optimalvalues,3);
 							tmessage+="\n";
-							tablef<<tmessage;
+							if(tablef_open)
+								tablef<<tmessage;
+							
+							if(doStream)
+								rcppstr += tmessage;
 						}
+						
+						
 						gsl_vector_free(optimalvalues);
 					}
 					gsl_matrix_free(VCV0);
@@ -15874,6 +15965,9 @@ void BROWNIE::HandleDebugOptimization( NexusToken& token )
         if (tablef_open) {
             tablef.close();
         }
+        if(doStream)
+        	retstrings.push_back(rcppstr);
+        
 		}
 	}
 
@@ -17425,13 +17519,20 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 		logf<<"\nend;\n";
 	}
 	
-	// TODO: Conrad - check for ostringstream buffer failure
+	
+	// added jcs 7/31/2010
+	// TODO: check for ostringstream buffer failure
 	// reset return string object:
 	if(rettree.str().length()!=0)
 		rettree.str(string());
 	
-	(*Tptr).WriteNoQuote(rettree);
-	rettrees.push_back(rettree.str());   // added jcs 7/31/2010
+	if(doStream)
+	{
+		(*Tptr).WriteNoQuote(rettree);
+		rettrees.push_back(rettree.str());   
+	}
+	//
+	
 	
 	//Now go back to original form:
 	currentnode = q.begin();

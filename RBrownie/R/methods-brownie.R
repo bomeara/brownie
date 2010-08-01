@@ -8,6 +8,7 @@
 # set generics
 setGeneric("commands", function(x) { standardGeneric("commands")} )
 setGeneric("commands<-", function(x,add=FALSE,index=NULL,replace=FALSE,value) { standardGeneric("commands<-")} )
+setGeneric("clearCommands", function(x) { standardGeneric("clearCommands")} )
 setGeneric("removeCommands", function(x,index) { standardGeneric("removeCommands")} )
 setGeneric("datatypes", function(x) { standardGeneric("datatypes")} )
 setGeneric("datatypes<-", function(x,enforce=TRUE,value) { standardGeneric("datatypes<-")} )
@@ -146,6 +147,20 @@ setReplaceMethod("commands", signature(x="brownie"),
 			x@commands = cmdtext
 		}
 		x		
+})
+
+
+setMethod("clearCommands",signature(x="brownie"),
+	function(x){
+		x@commands <- character(0)
+	return(x)
+})
+
+
+setMethod("clearCommands",signature(x="list"),
+	function(x){
+		x = sapply(x,clearCommands)
+	return(x)
 })
 
 

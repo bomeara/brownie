@@ -12,7 +12,8 @@
 #include <iostream>
 #include "dlInterface.h"
 
-
+/*
+ // Might use this function in the future:
 RcppExport SEXP RunTest(SEXP fnamevect, bool retReturnTrees, bool retContinuous, bool retDiscrete, bool retTrees, bool retTaxa, bool retTaxasets)
 {
 	using namespace Rcpp;
@@ -114,4 +115,29 @@ RcppExport SEXP RunTest(SEXP fnamevect, bool retReturnTrees, bool retContinuous,
 	
 	return returnlist;
 }
+*/
+
+
+/* Run any analysis and hope that something is returned:
+ */
+SEXP doAnalysis(SEXP fnamevect)
+{
+	using namespace Rcpp;
+	
+	// Setup interface object
+	dlInterface dli;
+	
+	// Execute the filename
+	CharacterVector fname(fnamevect);
+	std::string newstr = "" + fname[0];  // convery string_proxy to std::string
+	cout << "RCPP: " << newstr << endl;
+	dli.execute(newstr);
+		
+	List treelist = List::create(Named("textout")=wrap(dli.getReturnStrings()),
+						Named("treesout")=wrap(dli.getReturnTrees()));	
+	
+	return treelist;
+}
+
+
 

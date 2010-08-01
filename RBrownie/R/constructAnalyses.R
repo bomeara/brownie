@@ -17,7 +17,7 @@
 #
 # return  
 #
-.run.asr <- function(filename)
+run.analysis <- function(filename)
 {
 	# check argument for character string
 	if( !is.character(filename) && length(filename) == 1)
@@ -33,7 +33,7 @@
 	# add single quotes (brownie requirement for full paths
 	filename = paste("'",filename,"'",sep="")
 	
-	return( .Call("doASR",filename,PACKAGE="RBrownie") )
+	return( .Call("doAnalysis",filename,PACKAGE="RBrownie") )
 }
 
 
@@ -41,32 +41,43 @@
 # Do ancestral state reconstruction
 #
 # @param return phylo4d_ext format or non-extended phylo4d
+# @file file to dump output to
+# @... options to be passed to addDiscrete...
 #
-asr <- function(phytree,file="",usedata,extended=TRUE)
+runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.discrete()[1],freqs=brownie.freqs()[1],...)
 {
-	outtree=NULL
-	fname=""
-	if(missing(phytree))
+	# sanity checks:
+	if(length(models) != length(freqs))
+		stop("Must specify the same number of models and frequencies\nType: discreteOptions() for more information.")
+			
+	# lists are easier to work with
+	if(!is(brobj,'list'))
 	{
-		if(file=="")
-			stop("Could not locate the file to read")
-		fname = file
-	} else {
-		fname = tempfile()
-		if(!write.nexus.both(phytree,fname))
-			stop("Writing to temporary file failed")
+		brobj = list(brobj)
+	}
+	# convert to brownie if needed
+	if(!is(brobj[[1]],"brownie"))
+	{
+		brobj = brownie(brobj)
+	}
+	# clear out all other commands:
+	brobj = clearCommands(brobj)
+	
+	for(ii in seq(length(models)))
+	{
+		brobj = addDiscrete(brobj,file=outfile,model=models[ii],freq=freqs[ii],...)
 	}
 	
-	outtext = .run.asr(fname)[[1]]
-	outtext = gsub("'","",outtext)  # brownie seems to put little ticks where the internal node names are
-	if(is.simmap(text=outtext)){
-		outtree = read.simmap(text=outtext)
-		outtree = phyext(outtree)
-	} else {
-		outtree = read.tree(text=outtext)
-	}
-	return( outtree )
+	if(is.null(brfile))
+		brfile=tempfile()
+	
+	writeBrownie(brobj,brfile)
+	
+	outtext = run.analysis(brfile)
+	
+	return( outtext )
 }
+
 
 
 

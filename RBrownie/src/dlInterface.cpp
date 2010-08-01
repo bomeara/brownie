@@ -30,6 +30,16 @@ dlInterface::~dlInterface()
 	
 }
 
+/* Method to disable caching to internal
+ * variables in Brownie.  This might be used when 
+ * very large analyses are being executed (to 
+ * speed things up and free up memory)
+ */
+void dlInterface::disableReturnStream()
+{
+	brownie.doStream = false;
+}
+
 
 /* Method which sends a command to the brownie object and processes it
  * @author Conrad Stack

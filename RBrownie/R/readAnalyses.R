@@ -80,5 +80,46 @@ read.discrete.output <- function(filename,txt=NULL,...)
 	return(ret)
 }
 
+# Internal function:
+scan.textout <- function(output,strip.white=T)
+{
+	# scan text out and remove empty lines:
+	strsplit(output,"\n")->tmp
+	tmp = unlist(tmp)
+	emptylines = which(nchar(tmp)==0)
+	if(length(emptylines)!=0)
+		tmp = tmp[-emptylines]
+	
+	# remove whitespace
+	if(strip.white)
+	{
+		tmp = sub("\\s+$","",tmp) # trim trailing whitespace
+		tmp = sub("^\\s+","",tmp) # trim leading whitespace
+	}
+	
+	return(tmp)
+}
+
+
+# Internal: read treesout into a list of phylogenetic tree objects
+# -this process will not vary between analyses
+#
+scan.treesout <- function(output)
+{
+	tmp = list()
+	for(ii in seq(length(output)))
+	{
+		tmpstr = gsub("'","",output[ii])  # brownie puts little tip marks as internal node names
+		if(is.simmap(text=tmpstr))
+		{
+			tmptree = read.simmap(text=tmpstr)
+		} else {
+			tmptree = read.tree(text=tmpstr)
+		}
+		tmp = append(tmp,phyext(tmptree))
+	}
+	return(tmp)
+}
+
 
 

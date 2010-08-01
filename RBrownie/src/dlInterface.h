@@ -14,11 +14,15 @@ class dlInterface
 	dlInterface();
 	~dlInterface();
 	
+	// Turn on/off Rcpp streaming 
+	// (note: turn off for very large files)
+	void disableReturnStream();
+	
 	// lower level functions:
 	void pipe( std::string );
 	void execute(std::string);
 	
-	// get counts:
+	// RETURN ITEM COUNTS:
 	int getNumLoadedTrees();
 	int getNumTaxa();
 	int getNumChars(); // mainly for debugging
@@ -28,7 +32,6 @@ class dlInterface
 	
 	// CHARACTERS
 	std::vector<std::string> getCharLabels(bool cont = true);
-	//TODO: add indexing by character label:
 	std::vector<char> getDiscreteChar(int colindex=0);
 	std::vector<float> getContChar(int colindex=0);
 	
@@ -45,7 +48,7 @@ class dlInterface
 	bool hasRetTrees();
 	std::string getRetTree(int index=0);
 	
-	// RETURNED STRINGS:
+	// RETURNED STRINGS (most important):
 	std::vector<std::string> getReturnStrings();
 	std::vector<std::string> getReturnTrees();
 };
