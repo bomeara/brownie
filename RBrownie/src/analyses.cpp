@@ -133,10 +133,10 @@ SEXP doAnalysis(SEXP fnamevect)
 	cout << "RCPP: " << newstr << endl;
 	dli.execute(newstr);
 		
-	List treelist = List::create(Named("textout")=wrap(dli.getReturnStrings()),
+	List returnlist = List::create(Named("textout")=wrap(dli.getReturnStrings()),
 						Named("treesout")=wrap(dli.getReturnTrees()));	
 	
-	return treelist;
+	return returnlist;
 }
 
 

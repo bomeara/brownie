@@ -79,6 +79,70 @@ runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.dis
 }
 
 
+# Do uncensored rate test
+#
+#
+runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
+							models=brownie.models.continuous()[1],
+							taxsets=character(0),
+							states=character(0),
+							changes=character(0),...)
+{
+	
+	# sanity checks:
+	if(length(taxsets)>1 && length(models)!=length(taxsets))
+		stop("If you do specify taxasets, the vector must be the same length as the models")
+	
+	cchanges = NULL
+	cstates = NULL
+	if(length(changes)==1)
+		cchanges = rep(changes,length(models))
+	
+	if(length(states)==1)
+		cstates = rep(states, length(models))
+	
+	# lists are easier to work with
+	if(!is(brobj,'list'))
+	{
+		brobj = list(brobj)
+	}
+	# convert to brownie if needed
+	if(!is(brobj[[1]],"brownie"))
+	{
+		brobj = brownie(brobj)
+	}
+	# clear out all other commands:
+	brobj = clearCommands(brobj)
+		
+	for(ii in seq(length(models)))
+	{
+		copt = NULL
+		sopt = NULL
+		if(!is.null(cstates))
+			sopt = cstates[ii]
+		
+		if(!is.null(cchanges))
+			copt = cchanges[ii]
+		
+		brobj = addModel(brobj,type=models[ii],changes=copt,states=sopt)
+		
+		if(length(taxsets)==0){
+			brobj = addNonCensored(brobj,file=outfile,...)			
+		} else {
+			brobj = addNonCensored(brobj,file=outfile,taxset=taxsets[ii],...)
+		}
+	}
+
+	if(is.null(brfile))
+		brfile=tempfile()
+	
+	writeBrownie(brobj,brfile)
+	
+	outtext = run.analysis(brfile)
+	
+	return( outtext )	
+}
+
 
 
 ###### Add to commands list:
