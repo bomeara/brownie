@@ -54,6 +54,8 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	
 }
 
+
+
 # 
 # ellipsis stuff if passed to read.analysis.output
 # 
@@ -79,6 +81,33 @@ read.discrete.output <- function(filename,txt=NULL,...)
 	ret = read.analysis.output(txt=output)
 	return(ret)
 }
+
+# Read continuous test output
+read.continuous.output <- function(filename,txt=NULL,...)
+{
+	# The first line with tabs is the header:
+	tabpattern="\t"
+	output=character(0)
+	if(!is.null(txt))
+	{
+		output = txt
+	} else {
+		output = scan(filename,what="character",sep="\n",strip.white=T)
+	}
+	
+	tablines = grep(tabpattern,output)
+	if(length(tablines)!=0)
+	{
+		output = output[tablines]
+	} else {
+		stop("Failed to find any output that could be coersed into a table\nOUTPUT:\n",output)
+	}
+	
+	ret = read.analysis.output(txt=output)
+	
+	return(ret)
+}
+
 
 # Internal function:
 scan.textout <- function(output,strip.white=T)

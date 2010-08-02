@@ -10727,8 +10727,8 @@ for (chosenchar=startchar;chosenchar<=stopchar;chosenchar++) {
             tablef<<tmessage;
         }
         if(doStream){
-	        rcppstr+="\n";
 	        rcppstr+=tmessage;
+	        rcppstr+="\n";
         }
 
     }

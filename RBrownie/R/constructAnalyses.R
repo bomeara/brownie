@@ -46,6 +46,7 @@ run.analysis <- function(filename)
 #
 runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.discrete()[1],freqs=brownie.freqs()[1],...)
 {
+	
 	# sanity checks:
 	if(length(models) != length(freqs))
 		stop("Must specify the same number of models and frequencies\nType: discreteOptions() for more information.")
@@ -63,9 +64,11 @@ runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.dis
 	# clear out all other commands:
 	brobj = clearCommands(brobj)
 	
+	cmds = character(seq(length(models)))
 	for(ii in seq(length(models)))
 	{
 		brobj = addDiscrete(brobj,file=outfile,model=models[ii],freq=freqs[ii],...)
+		cmds[ii] = tail(commands(brobj),1)
 	}
 	
 	if(is.null(brfile))
@@ -75,12 +78,17 @@ runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.dis
 	
 	outtext = run.analysis(brfile)
 	
-	return( outtext )
+	
+	rettxt = read.discrete.output(txt=scan.textout(outtext$textout))
+	rettr = scan.treesout(outtext$treesout)
+	
+	retlist = list(stats=rettxt,trees=rettr,cmds=cmds)
+	
+	return( retlist )
 }
 
 
-# Do uncensored rate test
-#
+# Do uncensored rate test ("continuous","opt")
 #
 runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
 							models=brownie.models.continuous()[1],
@@ -139,9 +147,65 @@ runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
 	writeBrownie(brobj,brfile)
 	
 	outtext = run.analysis(brfile)
+	if(length(outtext$textout)>0)
+	{
+		outdat = read.continuous.output(txt=scan.textout(outtext$textout[1]))
+		
+		if(length(outtext$textout)>1){
+			for(xx in seq(from=2,to=length(outtext$textout)))
+			{
+				outdat = merge(outdat,read.continuous.output(txt=scan.textout(outtext$textout[xx])),all=T)
+			}
+		}
+	}
 	
-	return( outtext )	
+	if(!is.null(outdat$Model))
+		outdat = outdat[order(outdat$Model),]
+	
+	return( outdat )	
 }
+
+
+# Do censored rate test ("ratetest")
+# @param ellipses are parameters to be passed to addCensored
+# 
+#
+runCensored <- function(brobj,brfile=NULL,file=NULL,...)
+{	
+	
+	# sanity checks
+	if(!is.null(file))
+		if(file.exists(file))
+			stop("File ",file," already exists and will cause this test to fail to run")
+	
+	# lists are easier to work with
+	if(!is(brobj,'list'))
+	{
+		brobj = list(brobj)
+	}
+	# convert to brownie if needed
+	if(!is(brobj[[1]],"brownie"))
+	{
+		brobj = brownie(brobj)
+	}
+	# clear out all other commands:
+	brobj = clearCommands(brobj)
+	
+	# only need one
+	brobj = addCensored(brobj,file=file,...)
+
+	if(is.null(brfile))
+		brfile=tempfile()
+	
+	writeBrownie(brobj,brfile)	
+	outtext = run.analysis(brfile)
+	
+	outdat = read.continuous.output(txt=scan.textout(outtext$textout))
+	
+	return( outdat )
+	
+}
+
 
 
 
@@ -349,7 +413,7 @@ addCensored <- function(obj,
 	newcmd = list(command=NULL,options=matrix(NA,ncol=2,nrow=0))
 	newcmd$command = "ratetest"
 	
-	if(length(taxset) != 0 && is.charater(taxset))
+	if(length(taxset) != 0 && is.character(taxset))
 		for(jj in seq(length(taxset)))
 			newcmd = addcmd.taxaset(obj[[1]],newcmd,taxset[jj]) # taxaset
 		
