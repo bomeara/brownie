@@ -1,4 +1,3 @@
-setwd("C:/Users/conrad/brownie/tests")
 require(RBrownie)
 
 # Discrete tests ("discrete")
