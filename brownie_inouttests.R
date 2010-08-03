@@ -14,6 +14,6 @@ junkrun
 
 # Censored ("ratetest")
 junk = readBrownie("parrot.nex")
-junkrun = runCensored(junk,brfile="ratetest_junk.txt",taxset="intrajoint",reps=1000,charloop=T)
-junkrun
+junkrun = runCensored(junk,taxset="intrajoint",reps=1000,charloop=T)
+summary.ratetest(junkrun)
 

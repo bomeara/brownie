@@ -152,3 +152,91 @@ scan.treesout <- function(output)
 
 
 
+#-----------------------------------------------------
+# Summary functions (for each brownie output)
+# 
+#-----------------------------------------------------
+
+summary.ratetest <- function(ratedf,txt=NULL,short=FALSE)
+{
+	cat("Summary of ratetest results:")
+	bootstrapped=FALSE
+	# convert text into data.frame
+	if(!is.null(txt))
+	{
+		ratedf = read.continuous.output(txt=scan.textout(txt))
+	}
+
+	headers = names(ratedf)
+	if(is.null(ratedf$Tree) || is.null(ratedf$Char))
+		stop("Could not find Trees or Char columns in the ratedf dataframe.\nAvailable columns are:",headers)
+		
+	# check for output columns named 'param', these
+	# are only(?) set when reps!=0 or, to put it another way,
+	# when bootstrapping is done.
+	#
+	if(length(grep("^param",headers,value=T)) != 0)
+		bootstrapped = TRUE
+	
+	utrees = unique(ratedf$Tree)
+	uchars = unique(ratedf$Char)
+	tcgrid = expand.grid(utrees,uchars)
+	
+	if(!short)
+	{
+		for(ii in seq(nrow(tcgrid)))
+		{
+			rowind = which(ratedf$Tree == tcgrid[ii,1] & ratedf$Char == tcgrid[ii,2])
+			if(length(rowind)!=1)
+				stop("Could not find unique row index for tree,char combo (",tcgrid[ii,],")")
+			
+			cat("\n====================================================\n\n")
+			cat("Tree =",tcgrid[ii,1],", character =",tcgrid[ii,2],"\n")
+			cat("----------------------------\n\n")
+			cat("Results for the inverse of the taxaset specified (NOT):\n")
+			cat(sprintf("Anc state = %14.6f\nRate = %14.6f\n-lnL = %14.6f\n\n",ratedf$anc_1[ii],ratedf$rate_1[ii],ratedf$' -lnL_1'[ii]))
+			cat("Results for the taxaset specified:\n")
+			cat(sprintf("Anc state = %14.6f\nRate = %14.6f\n-lnL = %14.6f\n\n",ratedf$anc_2[ii],ratedf$rate_2[ii],ratedf$' -lnL_2'[ii]))
+			cat("----------------------------\n\n")
+			cat("Single rate support (model A) vs. Multiple rate support (model B)\n\n")
+			cat(sprintf("            -lnL          AIC          AICc                 \n"))
+			cat(sprintf("A: %14.6f %14.6f %14.6f\n",ratedf$" -lnL_A"[ii],ratedf$AIC_A[ii],ratedf$AICc_A[ii]))
+			cat(sprintf("B: %14.6f %14.6f %14.6f\n",ratedf$" -lnL_B"[ii],ratedf$AIC_B[ii],ratedf$AICc_B[ii]))
+			cat(sprintf("diff:             %14.6f %14.6f\n",ratedf$"AIC dif"[ii],ratedf$"AICc dif"[ii]))
+			cat("Chi-squared p-value:",ratedf$"chi p"[ii],"\n")
+			if(bootstrapped)
+				cat("Bootstrap p-value:",ratedf$"param p"[ii],"\n")
+			cat("----------------------------\n")
+		}
+	}
+	cat("\nOverall summary of results:\n")
+	cat("(B/b = strong/weak support for multiple rate models)\n")
+	cat(sprintf("%s\t%s\t%s\t%s\t%s\t%s\n","tree","char","AIC","AICc","Chi",ifelse(bootstrapped,"param","")))
+	for(ii in seq(nrow(tcgrid)))
+	{
+		rowind = which(ratedf$Tree == tcgrid[ii,1] & ratedf$Char == tcgrid[ii,2])
+		# assume it's the last column:
+		vals = ratedf[,ncol(ratedf)][ii]
+		vals = strsplit(vals,"")[[1]]
+		cat(sprintf("%d\t%d\t%s\t%s\t%s\t%s\n",ratedf$Tree[ii],ratedf$Char[ii],vals[1],vals[2],vals[3],ifelse(bootstrapped,vals[4],"")))
+	}
+
+}
+
+
+
+
+summary.discrete <- function()
+{
+	
+}
+
+
+
+
+summary.cont <- function()
+{
+	
+}
+
+
