@@ -130,7 +130,7 @@ SEXP doAnalysis(SEXP fnamevect)
 	// Execute the filename
 	CharacterVector fname(fnamevect);
 	std::string newstr = "" + fname[0];  // convery string_proxy to std::string
-	cout << "RCPP: " << newstr << endl;
+	std::cout << "RCPP: " << newstr << std::endl;
 	dli.execute(newstr);
 		
 	List returnlist = List::create(Named("textout")=wrap(dli.getReturnStrings()),
