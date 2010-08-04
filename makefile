@@ -12,7 +12,7 @@
 #
 
 CC = /usr/bin/g++
-CC_OPTIONS = -m32 -fexceptions -O0 -Wno-deprecated -fpermissive -g
+CC_OPTIONS = -m32 -fexceptions -fno-stack-protector -O0 -Wno-deprecated -fpermissive -g
 #added these as link options
 #LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L./gtp.0.15_Modified/nexus_parser/ -lnp -L./gtp.0.15_Modified/my_structures/ -lmy_structures 
 LNK_OPTIONS = -m32 -t -L/usr/local/lib/ -lgsl -lgslcblas -lm
