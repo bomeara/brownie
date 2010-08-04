@@ -22,6 +22,12 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 		rettab = scan(ff,what="character",sep=rowsep,strip.white=T)
 	}
 	
+	if(length(rettab)==0)
+	{
+		warning("Return table has no characters.  Looks like brownie did not return anything or execute possibly.")
+		return(data.frame(NULL))
+	}
+	
 	headercol=1
 	headers = strsplit(rettab[headercol],colsep)[[1]]
 	datacols= integer(0) # put out all data columns
@@ -36,9 +42,15 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	dfout = data.frame(matrix(NA,nrow=length(datacols),ncol=length(headers)))
 	colnames(dfout) <- headers
 	datasep = strsplit(rettab[datacols],'\t')
-	for(jj in seq(length(datasep)))
+	if(length(datasep)!=0)
 	{
-		dfout[jj,] = datasep[[jj]] 
+		for(jj in seq(length(datasep)))
+		{
+			dfout[jj,] = datasep[[jj]] 
+		}
+	} else {
+		warning("No information could be retrieved from analyis. Brownie might not have run properly.")
+		return(dfout)
 	}
 	
 	# post conditioning (changing to numeric):

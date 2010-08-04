@@ -55,7 +55,8 @@ readBrownie<-function(fname)
 				if(!inherits(phy.part[[tind]],"phylo4d"))
 					phy.part[[tind]] = phylo4d(phy.part[[tind]])
 				
-				tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
+				#tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
+				tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]])))
 				neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
 				data.part.tmp = data.part[neworder,]
 				phy.part[[tind]] = addData(phy.part[[tind]],tip.data=data.part.tmp,match.data=F)
