@@ -9,6 +9,9 @@
 #include "assumptionsblock.h"
 #include "charactersblock.h"
 #include <stdlib.h>
+#include <climits>
+#include <cstring>
+#include <memory>
 
 using namespace std;
 /**

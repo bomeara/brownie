@@ -38,7 +38,7 @@
 
 #include <fstream>
 #include <strstream>
-#include <string>
+#include <cstring>
 #include <vector>
 #include <stack>
 #include <map>

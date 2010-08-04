@@ -7,7 +7,8 @@
  * My modifications generally have
  * BCO preceding them.
  */
-
+#include "charactersblock.h"
+class CharactersBlock;
 
 class AssumptionsBlock : public NexusBlock
 {

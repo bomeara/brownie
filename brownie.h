@@ -209,8 +209,8 @@ public:
     nxsstring GetFileName( NexusToken& token );
     nxsstring GetNumber( NexusToken& token );
     nxsstring GetNumberOnly( NexusToken& token );
-    nxsstring& BROWNIE::blanks_to_underscores( nxsstring& s );
-    nxsstring& BROWNIE::underscores_to_blanks( nxsstring& s );
+    nxsstring& blanks_to_underscores( nxsstring& s );
+    nxsstring& underscores_to_blanks( nxsstring& s );
     void FactoryDefaults();
     void HandleEndblock( NexusToken& token );
     void HandleBlocks( NexusToken& token );

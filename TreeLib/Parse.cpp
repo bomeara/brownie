@@ -1,4 +1,4 @@
-/*
+/* 
  * TreeLib
  * A library for manipulating phylogenetic trees.
  * Copyright (C) 2001 Roderic D. M. Page <r.page@bio.gla.ac.uk>
@@ -23,6 +23,9 @@
  
 #include <ctype.h>
 #include "Parse.h"
+#include <climits>
+#include <cstring>
+#include <memory>
 
 // Return the next token in the string
 tokentype Parser::NextToken ()
@@ -220,7 +223,7 @@ tokentype Parser::ParseNumber ()
 //------------------------------------------------------------------------------
 bool Parser::IsPunctuation (char ch)
 {
-	char punctuation[22];
+	char punctuation[23];
 	punctuation[0]  = '(';
 	punctuation[1]  = ')';
 	punctuation[2]  = '[';

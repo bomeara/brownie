@@ -2,6 +2,9 @@
 #include "xnexus.h"
 #include "nexustoken.h"
 #include "nexus.h"
+#include <climits>
+#include <cstring>
+#include <memory>
 
 #define NCL_NAME_AND_VERSION  "NCL version 2.01"
 #define NCL_COPYRIGHT         "Copyright (c) 2000 by Paul O. Lewis"
