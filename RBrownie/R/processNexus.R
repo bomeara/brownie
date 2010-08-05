@@ -216,7 +216,7 @@ has.characters2 <- function(finput,txt=NULL)
 # contains simmap formatted trees
 read.characters2 <- function(finput,blockname="characters2")
 {
-
+	
 	if(!file.exists(finput))
 			stop("Assuming finput is a file and could not find it")
 	
@@ -229,7 +229,7 @@ read.characters2 <- function(finput,blockname="characters2")
 	tmptext = c("BEGIN CHARACTERS;",tmptext,"END;")
 	writeLines(c(tmphead,tmptaxa,tmptext),con=tmpfile)
 	data2.part = readNexus(tmpfile,type="data")
-	
+	rownames(data2.part) <- checkLabel(rownames(data2.part))
 	return(data2.part)
 }
 

@@ -7,7 +7,7 @@ importClassesFrom( Rcpp, "C++ObjectS3", "C++Object", "C++Class", "Module" )
 import(methods)
 import(phylobase) # need virtually everything from this package
 #importFrom(graphics, plot)
-
+importFrom(ape,checkLabel)
 
 #----------------------------------------------------------------------
 # classes and constructors

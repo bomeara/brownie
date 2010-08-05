@@ -13,7 +13,7 @@ setGeneric("writeBrownie", function(x,...) { standardGeneric("writeBrownie")} )
 
 
 readBrownie<-function(fname)
-{	
+{
 	
 	if(!file.exists(fname))
 		stop(paste("File",fname,"cannot be found in",getwd()))
@@ -32,6 +32,10 @@ readBrownie<-function(fname)
 		{
 			phy.part = list(phy.part)
 		}
+		
+		# rename:
+		for(jj in seq(length(phy.part)))
+			tipLabels(phy.part[[jj]])<-checkLabel(tipLabels(phy.part[[jj]]))
 		
 	} else {
 		
@@ -56,23 +60,24 @@ readBrownie<-function(fname)
 				if(!inherits(phy.part[[tind]],"phylo4d"))
 					phy.part[[tind]] = phylo4d(phy.part[[tind]])
 				
-				if(any(data.names != tolower(tipLabels(phy.part[[tind]]))))
-				{
+# 				if(any(data.names != tolower(tipLabels(phy.part[[tind]]))))
+# 				{
+# 					
+				#tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
+				tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]])))
+				data.names = tolower(sub("[^[:alnum:]]","",data.names))
+				
+				if(any(sort(tipmods)!=sort(data.names)))
+					stop("Could not match up tree names against data names")
+				
+				neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
+				data.part.tmp = data.part[neworder,]
 					
-					#tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
-					tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]])))
-					data.names = tolower(sub("[^[:alnum:]]","",data.names))
-					
-					if(any(sort(tipmods)!=sort(data.names)))
-						stop("Could not match up tree names against data names")
-					
-					neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
-					data.part.tmp = data.part[neworder,]
-					
-				} else {
-					# This will probably never be called until NCL is updated
-					data.part.tmp = data.part
-				}
+# 				} else {
+# 					# This will probably never be called until NCL is updated
+# 					data.part.tmp = data.part
+# 				}
+
 				phy.part[[tind]] = addData(phy.part[[tind]],tip.data=data.part.tmp,match.data=F)
 				phy.part[[tind]] = phyext(phy.part[[tind]])
 			}
@@ -90,6 +95,7 @@ readBrownie<-function(fname)
 
 	brau.new = .process.datatypes(brau.new)  # may or may not be useful
 	brau.new = .process.assumptions(brau.new,assumptions.part,issim)
+	
 	
 	#
 	# Read characters 2 if it exists:
@@ -180,10 +186,10 @@ readBrownie<-function(fname)
 
 # return conditioned character string
 #
-
 .write.characters.block <- function(xdf,blockname="CHARACTERS",dtype,missing.char="?")
-{
-	
+{	
+	use.state.labels=F
+	# make sure that disc data level are the same across columns:
 	levs <- function(xdf)
 	{
 		retbool = TRUE
@@ -196,7 +202,46 @@ readBrownie<-function(fname)
 		
 		retbool
 	}
-
+	
+	# For disc data, figure out what the symbols should be 
+	discover.symbols<-function(dat,zero.based=T)
+	{			
+		syms = integer(0)
+		if(ncol(dat)!=0){
+			for(ii in seq(ncol(dat)))
+			{
+				syms = c(syms,unique((as.integer(dat[,ii]))))
+			}
+		}
+		syms = sort(unique(syms))
+		
+		# assume that syms are in order
+		if(zero.based)
+		{
+			if(syms[1] != 0){
+				offs = -syms[1]
+				syms = syms + offs
+			}
+		}
+		
+		return(syms)
+	}
+	
+	# convert factors to zero-based ints
+	# CAUTION: this function might not work in next NCL version
+	convert.to.int <- function(dat,zero.based=T)
+	{
+		offset = 0
+		if(zero.based)
+			offset = -1
+		
+		for(ii in seq(ncol(dat)))
+		{
+			dat[,ii] = as.integer(dat[,ii])+offset
+		}
+		return(dat)
+	}
+	
 	all.levels.similar = levs(xdf)
 	if(!is.data.frame(xdf))
 		stop("Internal function .write.characters.block needs a data.frame as the first argument")
@@ -206,12 +251,24 @@ readBrownie<-function(fname)
 	header.dims = sprintf("DIMENSIONS NTAX=%d NCHAR=%d;",nrow(xdf),ncol(xdf))
 	header.format = sprintf("FORMAT DATATYPE=%s MISSING=%s",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"),missing.char)   # TODO: add GAP, SYMBOLS 
 	if(dtype == discData() && all.levels.similar){
-		header.format = sprintf("%s SYMBOLS=\"%s\";",header.format,paste(levels(xdf[,1]),collapse=" "))
+		# This check is any of the levels are NOT integers
+		# if they are integers, then it is assumed that they do not 
+		# need to be writen as state labels
+		#
+		use.state.labels = any(is.na(as.integer(levels(xdf[,1]))))
+		if(use.state.labels){
+			xdf = convert.to.int(xdf) # this does the zero-based conversion
+		}
+		header.format = sprintf("%s SYMBOLS=\"%s\";",header.format,paste(discover.symbols(xdf),collapse=" "))
 	} else {
 		header.format = paste(header.format,";",sep="")
 	}
 	
-	header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
+	if(use.state.labels){
+		header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
+	}else{
+		header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
+	}
 
 	mmatrix = "MATRIX"
 	#mmatrix.data = unname(cbind(rownames(xdf),apply(xdf,2,as.character)))
