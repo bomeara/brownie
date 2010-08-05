@@ -12755,6 +12755,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
         bool finishexecuting=true;
         bool returnmatches=false;
         bool usefileregex=false;
+        bool usestepwise=true;
       	citationarray[3]=true;
      	nxsstring observedtreefile;
      	nxsstring simtreefile;
@@ -12772,8 +12773,8 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
     		{
 			token.GetNextToken();
 			if( token.Abbreviation("?") ) {
-				message="Usage: GREP  observedtrees=file_of_observedtrees_trees.txt simulatedtrees=file_of_simulated_trees.txt assignments=file_of_assignments.txt returnmatches=no usefileregex=no\n\n";
-			message+="Multiple gene trees may be consistent with a given species tree (i.e, if the species tree is ((A,B),C), gene trees ((((A1,A2,),A3),B1),C1) and ((((A3,A2,),A1),B1),C1) both match. This function takes one or more observed gene trees (in a file), an assignment (tab-delimited text, with the species name followed by a tab and then the gene sample name (i.e, SpeciesA<tab>A1), and makes a string to use with grep that will tell you how many trees in the gene trees file (set of newick trees, one line per tree) are consistent with each observed gene tree, given the assignment of samples to species. Note that passing Brownie's output to 'grep Match' will return only the relevant results. For very big trees, it may be better to set usefileregex=yes so that the grep line is stored in a file (good if you get the error message 'regular expression too big')";
+				message="Usage: GREP  observedtrees=file_of_observedtrees_trees.txt simulatedtrees=file_of_simulated_trees.txt assignments=file_of_assignments.txt returnmatches=no usefileregex=no usestepwise=no\n\n";
+			message+="Multiple gene trees may be consistent with a given species tree (i.e, if the species tree is ((A,B),C), gene trees ((((A1,A2,),A3),B1),C1) and ((((A3,A2,),A1),B1),C1) both match. This function takes one or more observed gene trees (in a file), an assignment (tab-delimited text, with the species name followed by a tab and then the gene sample name (i.e, SpeciesA<tab>A1), and makes a string to use with grep that will tell you how many trees in the gene trees file (set of newick trees, one line per tree) are consistent with each observed gene tree, given the assignment of samples to species. Note that passing Brownie's output to 'grep Match' will return only the relevant results. For very big trees, it may be better to set usefileregex=yes so that the grep line is stored in a file (good if you get the error message 'regular expression too big'). Usestepwise=y passes multiple short arguments to a chain of greps instead of one huge regex.";
 				PrintMessage();
 				finishexecuting=false;
 			}
@@ -12786,13 +12787,22 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 					returnmatches=true;
 				}
 			}		
-			else if (token.Abbreviation("Usefileregex") ) {
+			else if (token.Abbreviation("USEFileregex") ) {
 				nxsstring yesnomatches=GetFileName(token);
 				if (yesnomatches[0] == 'n') {
 					usefileregex=false;
 				}
 				else {
 					usefileregex=true;
+				}
+			}		
+			else if (token.Abbreviation("USEStepwise") ) {
+				nxsstring yesnomatches=GetFileName(token);
+				if (yesnomatches[0] == 'n') {
+					usestepwise=false;
+				}
+				else {
+					usestepwise=true;
 				}
 			}		
 			else if( token.Abbreviation("Simulatedtrees") ) {
@@ -12923,6 +12933,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							nxsstring grepstring="";
 							nxsstring grepfilestring="";
 							nxsstring grepstringreturnmatch="";
+							nxsstring grepstepwise="";
 							int numberintraspecificcherries=0;
 							Tree CurrentGeneTreeTreeFmt=inObservedTrees.GetIthTree(chosentreenum);
 							NodeIterator <Node> n (CurrentGeneTreeTreeFmt.GetRoot());
@@ -12973,6 +12984,9 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 									additionalregex+="\\))";
 									if (cur->GetAnc()!=NULL) { // not root
 										additionalregex+=":*[0-9]*.[0-9]*";
+										grepstepwise+= " | grep \"";
+										grepstepwise+=additionalregex;
+										grepstepwise+="\"";
 									}
 									else { //originally, did this at each node, with the idea that from MS, you first filter out the lines that don't match a cherry, then filter from that filtered set, etc., thinking it would be faster than just using the regex at the root. Actually, just using the regex at the root was faster, so I do that.
 										grepstring+=" | grep -c \"";
@@ -12982,6 +12996,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 										grepfilestring+=additionalregex;
 										grepstring+="\"";
 										grepstringreturnmatch+="\"";
+										grepstepwise+=" | grep -c ';'";
 									}
 									cur->SetLabel(additionalregex);
 								}
@@ -12995,7 +13010,12 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							nxsstring finalsystemcall="cat ";
 							finalsystemcall+=simtreefile;
 							if (!usefileregex) {
-								finalsystemcall+=grepstring;
+								if (!usestepwise) {
+									finalsystemcall+=grepstring;
+								}
+								else {
+									finalsystemcall+=grepstepwise;
+								}
 							}
 							else {
 								nxsstring grepregex="tmp_grepregex.txt";
@@ -13011,7 +13031,13 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							//system("rm mscount.txt");
 							int returncode=system(finalsystemcall.c_str());
 							if (debugmode) {
-								cout<<"grep line is "<<endl<<grepstring<<endl;
+								if (!usestepwise) {
+									cout<<"grep line is "<<endl<<grepstring<<endl;
+								}
+								else {
+									cout<<"grep line is "<<endl<<grepstepwise<<endl;
+
+								}
 								cout<<"return code is "<<returncode<<" (divided by 256, is "<<returncode/256<<")"<<endl;
 							}
 							ifstream msin;
@@ -13050,7 +13076,9 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							}
 							if (!debugmode) {
 								system("rm tmp_mscount.txt");
-								system("rm tmp_grepregex.txt");
+								if (usefileregex) {
+									system("rm tmp_grepregex.txt");
+								}
 							}
 						}
 				
