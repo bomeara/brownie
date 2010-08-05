@@ -164,7 +164,7 @@ read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F,silent=F)
 	inds = .get.nexus.block.inds(blockname=block,text=rawtext)
 	if(length(inds)==0)
 	{
-		warning(paste("This file has",block, "no block"))
+		if(!silent) warning(paste("This file has",block, "no block"))
 		return (character(0))
 	}
 	
@@ -197,15 +197,24 @@ read.nexus.block<-function(finput,txt=NULL,block,rm.comments=F,silent=F)
 	return (rawtext)
 }
 
+has.block <- function(finput,txt=NULL,blockname="characters2")
+{
+	retbool = (length(read.nexus.block(finput,txt,block=blockname,silent=T))!=0)
+	return(retbool)	
+}
 
 has.characters2 <- function(finput,txt=NULL)
 {
-	retbool = (length(read.nexus.block(finput,txt,block="characters2"))!=0)
-	return(retbool)
+	return(has.block(finput,txt,"characters2"))
 }
 
 
-read.characters2 <- function(finput)
+
+# Alternative way to read in characters
+# Also works as a work around to readNexus' annoying habit
+# or crashing when using type="data" but where trees block
+# contains simmap formatted trees
+read.characters2 <- function(finput,blockname="characters2")
 {
 
 	if(!file.exists(finput))
@@ -216,7 +225,7 @@ read.characters2 <- function(finput)
 	tmpfile = tempfile()
 	tmphead = "#NEXUS\n"
 	tmptaxa = c("BEGIN TAXA;",read.nexus.block(txt=rawtext,block="taxa"),"END;")
-	tmptext = read.nexus.block(txt=rawtext,block="characters2")
+	tmptext = read.nexus.block(txt=rawtext,block=blockname)
 	tmptext = c("BEGIN CHARACTERS;",tmptext,"END;")
 	writeLines(c(tmphead,tmptaxa,tmptext),con=tmpfile)
 	data2.part = readNexus(tmpfile,type="data")

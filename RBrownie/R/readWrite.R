@@ -39,14 +39,15 @@ readBrownie<-function(fname)
 		phy.part = read.nexus.simmap(fname) 
 		
 		# process data part (the hard way)
-		data.part = readNexus(fname,type="data")
+		#data.part = readNexus(fname,type="data")
+		data.part = read.characters2(fname,blockname="characters")  # work around; added 08/04
 		
 		if(length(data.part) > 0)
 		{
+			# Different versions of phylobase work differently:
 			warning("Having to use sketchy regular expressions to add data (i.e. The difficult way)")
 			data.names = tolower(rownames(data.part))
 			
-			# TODO: fix phylobase!
 			for(tind in seq(length(phy.part)))
 			{
 				# NOTE: doing this reordering is necessary because phylobase does not seem to
@@ -55,10 +56,23 @@ readBrownie<-function(fname)
 				if(!inherits(phy.part[[tind]],"phylo4d"))
 					phy.part[[tind]] = phylo4d(phy.part[[tind]])
 				
-				#tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
-				tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]])))
-				neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
-				data.part.tmp = data.part[neworder,]
+				if(any(data.names != tolower(tipLabels(phy.part[[tind]]))))
+				{
+					
+					#tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]]),extended=T))
+					tipmods = tolower(sub("[^[:alnum:]]","",tipLabels(phy.part[[tind]])))
+					data.names = tolower(sub("[^[:alnum:]]","",data.names))
+					
+					if(any(sort(tipmods)!=sort(data.names)))
+						stop("Could not match up tree names against data names")
+					
+					neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
+					data.part.tmp = data.part[neworder,]
+					
+				} else {
+					# This will probably never be called until NCL is updated
+					data.part.tmp = data.part
+				}
 				phy.part[[tind]] = addData(phy.part[[tind]],tip.data=data.part.tmp,match.data=F)
 				phy.part[[tind]] = phyext(phy.part[[tind]])
 			}
