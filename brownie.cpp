@@ -8734,6 +8734,9 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
             throw XNexus( errormsg, token.GetFilePosition(), token.GetFileLine(), token.GetFileColumn() );
         }
     }
+    if (debugmode) {
+    	cout<<endl<<"Now leaving Handle Discrete"<<endl;
+    }
 }
 
 //Gets user commands for simulating characters on the tree and outputting them to a file
