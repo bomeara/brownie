@@ -12754,6 +12754,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
     {
         bool finishexecuting=true;
         bool returnmatches=false;
+        bool usefileregex=false;
       	citationarray[3]=true;
      	nxsstring observedtreefile;
      	nxsstring simtreefile;
@@ -12771,8 +12772,8 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
     		{
 			token.GetNextToken();
 			if( token.Abbreviation("?") ) {
-				message="Usage: GREP  observedtrees=file_of_observedtrees_trees.txt simulatedtrees=file_of_simulated_trees.txt assignments=file_of_assignments.txt returnmatches=no\n\n";
-				message+="Multiple gene trees may be consistent with a given species tree (i.e, if the species tree is ((A,B),C), gene trees ((((A1,A2,),A3),B1),C1) and ((((A3,A2,),A1),B1),C1) both match. This function takes one or more observed gene trees (in a file), an assignment (tab-delimited text, with the species name followed by a tab and then the gene sample name (i.e, SpeciesA<tab>A1), and makes a string to use with grep that will tell you how many trees in the gene trees file (set of newick trees, one line per tree) are consistent with each observed gene tree, given the assignment of samples to species. Note that passing Brownie's output to 'grep Match' will return only the relevant results.";
+				message="Usage: GREP  observedtrees=file_of_observedtrees_trees.txt simulatedtrees=file_of_simulated_trees.txt assignments=file_of_assignments.txt returnmatches=no usefileregex=no\n\n";
+			message+="Multiple gene trees may be consistent with a given species tree (i.e, if the species tree is ((A,B),C), gene trees ((((A1,A2,),A3),B1),C1) and ((((A3,A2,),A1),B1),C1) both match. This function takes one or more observed gene trees (in a file), an assignment (tab-delimited text, with the species name followed by a tab and then the gene sample name (i.e, SpeciesA<tab>A1), and makes a string to use with grep that will tell you how many trees in the gene trees file (set of newick trees, one line per tree) are consistent with each observed gene tree, given the assignment of samples to species. Note that passing Brownie's output to 'grep Match' will return only the relevant results. For very big trees, it may be better to set usefileregex=yes so that the grep line is stored in a file (good if you get the error message 'regular expression too big')";
 				PrintMessage();
 				finishexecuting=false;
 			}
@@ -12783,6 +12784,15 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 				}
 				else {
 					returnmatches=true;
+				}
+			}		
+			else if (token.Abbreviation("Usefileregex") ) {
+				nxsstring yesnomatches=GetFileName(token);
+				if (yesnomatches[0] == 'n') {
+					usefileregex=false;
+				}
+				else {
+					usefileregex=true;
 				}
 			}		
 			else if( token.Abbreviation("Simulatedtrees") ) {
@@ -12911,6 +12921,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 						PrintMessage();
 						for (int chosentreenum=0; chosentreenum<inObservedTrees.GetNumTrees(); chosentreenum++) { //loop over all the observed gene trees
 							nxsstring grepstring="";
+							nxsstring grepfilestring="";
 							nxsstring grepstringreturnmatch="";
 							int numberintraspecificcherries=0;
 							Tree CurrentGeneTreeTreeFmt=inObservedTrees.GetIthTree(chosentreenum);
@@ -12968,6 +12979,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 										grepstringreturnmatch+=" | grep \"";
 										grepstring+=additionalregex;
 										grepstringreturnmatch+=additionalregex;
+										grepfilestring+=additionalregex;
 										grepstring+="\"";
 										grepstringreturnmatch+="\"";
 									}
@@ -12982,7 +12994,17 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							nxsstring finalsystemcall="cat tmp_newick.nwk";*/
 							nxsstring finalsystemcall="cat ";
 							finalsystemcall+=simtreefile;
-							finalsystemcall+=grepstring;
+							if (!usefileregex) {
+								finalsystemcall+=grepstring;
+							}
+							else {
+								nxsstring grepregex="tmp_grepregex.txt";
+								finalsystemcall+=" | grep -c -f tmp_grepregex.txt";
+								ofstream grepregexf;
+								grepregexf.open(grepregex.c_str(), ios::out | ios::app );
+								grepregexf<<grepfilestring;
+								grepregexf.close();
+							}
 							nxsstring msinputfile="tmp_mscount.txt";
 							finalsystemcall+=" > ";
 							finalsystemcall+=msinputfile;
@@ -13028,6 +13050,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							}
 							if (!debugmode) {
 								system("rm tmp_mscount.txt");
+								system("rm tmp_grepregex.txt");
 							}
 						}
 				
