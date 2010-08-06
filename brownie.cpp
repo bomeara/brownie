@@ -17541,6 +17541,177 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 				if (breaknum==breaksperbranch) { //at the rootmost interval
 					i=atoi(((currentnode->GetAnc())->GetLabel()).c_str()); //The label has the last state
 					if (debugmode) {
+						(*Tptr).Update();
+						(*Tptr).SetPathLengths();
+						cout << endl << "Postorder traversal of tree" << endl;
+						cout << "Node Length     Label                           Type" << endl;
+						cout << "----------------------------------------------------" << endl;
+						int count = 0;
+						NodeIterator <Node> n ((*Tptr).GetRoot());
+						Node *q = n.begin();
+						Node *a=n.begin();
+						Node *p=n.begin();
+						Node *b=n.begin();
+						Node *mrca=n.begin();
+						nxsstring listofchanges="\n\nList of changes";
+						bool notfirstleaf=false;
+						while (q)
+						{
+							count++;
+							cout << setiosflags(ios::right) << setw(4) << count					// arbitrary counter
+								<< " " << setw(8) << q->GetEdgeLength() 							// edge length
+								<< " " << setw(32) << setiosflags(ios::left) << q->GetLabel()	// node label
+								;
+							if (q->IsLeaf())
+							{
+								cout << " [LEAF]";
+								if (q->IsMarked()) {
+									cout <<" Node is marked\n\tModelCategorySize: ";
+								}
+								else {
+									cout <<" Node not marked\n\tModelCategorySize: ";
+								}
+								vector<double> modelcatoutput(q->GetModelCategory());
+								cout<<"( ";
+								for (int i=0;i<modelcatoutput.size();i++) {
+									cout<<modelcatoutput[i]<<" ";
+								}
+								cout<<") "<<endl;
+								vector<int> stateordervector(q->GetStateOrder()); 
+								vector<double> statetimesvector(q->GetStateTimes());
+								cout<<"\tStateOrder: ( ";
+								for (int i=0;i<stateordervector.size();i++) {
+									cout<<stateordervector[i]<<" ";
+									if (i>0) {
+										listofchanges+="\nchange ";
+										listofchanges+=stateordervector[i-1];
+										listofchanges+=" -> ";
+										listofchanges+=stateordervector[i];
+										double timeofchange=(q->GetPathLength())-(q->GetEdgeLength());
+										for (int j=0; j<i; j++) {
+											timeofchange+=statetimesvector[j];
+										}
+										listofchanges+=" at time above root of ";
+										listofchanges+=timeofchange;
+									}
+								}
+								cout<<") "<<endl;			
+								cout<<"\tStateTimes: ( ";
+								for (int i=0;i<statetimesvector.size();i++) {
+									cout<<statetimesvector[i]<<" ";
+								}
+								cout<<") "<<endl;			
+								
+								
+								//gsl_vector modelcatoutput(q->GetModelCategory());
+								//cout<<modelcatoutput->size;
+								cout<<"\t length from root="<<q->GetPathLength();
+								cout<<endl<<" length of edge="<<q->GetEdgeLength();
+								float pathlength=0;
+								a=q;
+								if(notfirstleaf) {
+									//  cout<<"Get MRCA of "<< q->GetLabel()<<" and "<<p->GetLabel()<<endl;
+									bool mrcanotfound=true;
+									while (a->GetAnc() && mrcanotfound) {
+										a=a->GetAnc();
+										b=p;
+										while (b->GetAnc() && mrcanotfound) {
+											b=b->GetAnc();
+											if (a==b) {
+												mrca=a;
+												mrcanotfound=false;
+												while(mrca->GetAnc()) {
+													pathlength+=mrca->GetEdgeLength();
+													//         cout<<"Edge length: "<<mrca->GetEdgeLength()<<" Total: "<<pathlength<<endl;
+													mrca=mrca->GetAnc();
+												}
+											}
+										}
+									}
+								}
+								notfirstleaf=true;
+								p=q;
+								//  cout<<"Root to MRCA length="<<pathlength<<endl;
+								//    while (aanc != Root && mrcanotfound) {
+								//        banc=b;
+								//        aanc=aanc->GetAnc();
+								//       while (banc != Root && mrcanotfound) {
+								//           banc=banc->GetAnc();
+								//          if (aanc == banc) {
+								//              mrcaptr=aanc;
+								//               mrcanotfound=false;
+								//           }
+								//        }
+								//    }
+								//    return mrcaptr;
+				
+				
+								//a=q;
+								//cout<<endl<<"interim path length 1: "<<pathlength<<endl;
+								//while (a->GetAnc()) {
+								//   r=a->GetAnc();
+								//  pathlength+=r->GetEdgeLength();
+								// cout<<"interim: "<<pathlength<<" and edge "<<r->GetEdgeLength()<<endl;
+								// a=r;
+								//}
+								//cout<<endl<<"Total length="<<pathlength<<endl;
+							}
+							else
+							{
+								cout << " [INTERNAL]";
+								if (q->IsMarked()) {
+									cout <<" Node is marked  ModelCategorySize: ";
+								}
+								else {
+									cout <<" Node not marked  ModelCategorySize: ";
+								}
+								vector<double> modelcatoutput(q->GetModelCategory());
+								cout<<"( ";
+								for (int i=0;i<modelcatoutput.size();i++) {
+									cout<<modelcatoutput[i]<<" ";
+								}
+								cout<<") "<<endl;
+								vector<int> stateordervector(q->GetStateOrder()); 
+								vector<double> statetimesvector(q->GetStateTimes());
+								cout<<"\tStateOrder: ( ";
+								for (int i=0;i<stateordervector.size();i++) {
+									cout<<stateordervector[i]<<" ";
+									if (i>0) {
+										listofchanges+="\nchange ";
+										listofchanges+=stateordervector[i-1];
+										listofchanges+=" -> ";
+										listofchanges+=stateordervector[i];
+										double timeofchange=(q->GetPathLength())-(q->GetEdgeLength());
+										for (int j=0; j<i; j++) {
+											timeofchange+=statetimesvector[j];
+										}
+										listofchanges+=" at time above root of ";
+										listofchanges+=timeofchange;
+									}					
+								}
+								cout<<") "<<endl;			
+								cout<<"\tStateTimes: ( ";
+								for (int i=0;i<statetimesvector.size();i++) {
+									cout<<statetimesvector[i]<<" ";
+								}
+								cout<<") "<<endl;	
+								//gsl_vector *modelcatoutput;
+								//modelcatoutput=gsl_vector_calloc(q->GetModelCategory());
+								//gsl_vector modelcatoutput(q->GetModelCategory());
+								//cout<<modelcatoutput->size;
+								cout<<" length from root="<<q->GetPathLength();
+								cout<<endl<<" length of edge="<<q->GetEdgeLength();
+							}
+							cout << endl;
+							q = n.next();
+						}
+						cout << "----------------------------------------------------" << endl;
+						message=listofchanges;
+						PrintMessage();
+
+
+
+
 						cout<<endl<<"currentnode "<<currentnode<<" currentnode->GetAnc() "<<currentnode->GetAnc()<<" ((currentnode->GetAnc())->GetLabel()) "<<((currentnode->GetAnc())->GetLabel())<<endl;
 					}
 				}
