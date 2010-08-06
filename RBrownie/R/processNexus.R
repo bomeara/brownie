@@ -228,7 +228,7 @@ read.characters2 <- function(finput,blockname="characters2")
 	tmptext = read.nexus.block(txt=rawtext,block=blockname)
 	tmptext = c("BEGIN CHARACTERS;",tmptext,"END;")
 	writeLines(c(tmphead,tmptaxa,tmptext),con=tmpfile)
-	data2.part = readNexus(tmpfile,type="data")
+	data2.part = readNexus(tmpfile,type="data",levels.uniform=F)
 	rownames(data2.part) <- checkLabel(rownames(data2.part))
 	return(data2.part)
 }

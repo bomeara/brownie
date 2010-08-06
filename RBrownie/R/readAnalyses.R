@@ -9,6 +9,7 @@
 #
 read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 {
+	
 	rettab = character(0)
 	if(!is.null(txt))
 	{
@@ -30,23 +31,35 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	
 	headercol=1
 	headers = strsplit(rettab[headercol],colsep)[[1]]
+	header.tokens <- strsplit(rettab[headercol],'\t')[[1]]
+	all.tokens = header.tokens
 	datacols= integer(0) # put out all data columns
 	count = 1
 	for (line in rettab)
 	{
-		if(line != rettab[headercol]){
+		# must be a header part:
+		if(substr(line,1,37) != substr(rettab[headercol],1,37)){
 			datacols = c(datacols,count)
+		} else {
+			tmp.tokens <- strsplit(line,'\t')[[1]]
+			all.tokens = union(header.tokens,tmp.tokens)
 		}
 		count = count + 1
 	}
-	dfout = data.frame(matrix(NA,nrow=length(datacols),ncol=length(headers)))
-	colnames(dfout) <- headers
+	#dfout = data.frame(matrix(NA,nrow=length(datacols),ncol=length(all.tokens)))
+	dfout = data.frame(matrix(NA,nrow=0,ncol=length(all.tokens)))
+	colnames(dfout) <- all.tokens
+	
+	datahead = strsplit(rettab[(datacols-1)],'\t')
 	datasep = strsplit(rettab[datacols],'\t')
 	if(length(datasep)!=0)
 	{
 		for(jj in seq(length(datasep)))
 		{
-			dfout[jj,] = datasep[[jj]] 
+			tmpdf = data.frame(matrix(datasep[[jj]],nrow=1),stringsAsFactors=F)
+			names(tmpdf) <- datahead[[jj]]
+			#dfout[jj,] = datasep[[jj]]
+			dfout = merge(dfout,tmpdf,all=T) 
 		}
 	} else {
 		warning("No information could be retrieved from analyis. Brownie might not have run properly.")
@@ -93,6 +106,7 @@ read.discrete.output <- function(filename,txt=NULL,...)
 	ret = read.analysis.output(txt=output)
 	return(ret)
 }
+
 
 # Read continuous test output
 read.continuous.output <- function(filename,txt=NULL,...)
@@ -237,16 +251,83 @@ summary.ratetest <- function(ratedf,txt=NULL,short=FALSE)
 
 
 
-
-summary.discrete <- function()
+summary.cont <- function(contdf,txt=NULL,short=FALSE)
 {
+	cat("Summary of ratetest results:")
+	bootstrapped=FALSE
+	# convert text into data.frame
+	if(!is.null(txt))
+	{
+		contdf = read.continuous.output(txt=scan.textout(txt))
+	}
+	
+	# validation
+	if(is.null(contdf$Tree) || is.null(contdf$Char) || is.null(contdf$Model) || is.null(contdf$AICc))
+		stop("Could not find Trees or Char columns in the ratedf dataframe.\nAvailable columns are:",headers)
+	
+	umodels = unique(contdf$Model)		
+	utrees = unique(contdf$Tree)
+	uchars = unique(contdf$Char)
+	
+	for(char in uchars)
+	{
+		cat("--------------------------------------------\n")
+		cat("Character",char,"model comparison ")
+		cat("( using trees",min(utrees),"to",min(utrees),")\n\n")
+		mods = character(0)
+		aiccs = numeric(0)
+		aics = numeric(0)
+		
+		for(mod in umodels)
+		{
+			rowinds = which(contdf$Char == char & contdf$Model==mod)
+			aicc = contdf$AICc[rowinds]
+			aic = contdf$AIC[rowinds]
+			mods = append(mods,rep(mod,length(rowinds)))
+			aiccs = append(aiccs,aicc)
+			aics = append(aics,aic)
+		}
+
+		aiccsplit = split(aiccs,mods)
+		aiccdiff = matrix(NA,nrow=length(aiccsplit),ncol=length(aiccsplit))
+		rownames(aiccdiff) = sprintf("%s",names(aiccsplit))
+		colnames(aiccdiff) =  sprintf("%s",names(aiccsplit))
+		aiccdiff.names = outer(rownames(aiccdiff),colnames(aiccdiff),function(x,y) paste(x,y,sep="-"))
+		
+		aicsplit = split(aics,mods)
+		aicdiff = matrix(NA,nrow=length(aicsplit),ncol=length(aicsplit))
+		rownames(aicdiff) = sprintf("%s",names(aicsplit))
+		colnames(aicdiff) =  sprintf("%s",names(aicsplit))
+		aicdiff.names = outer(rownames(aicdiff),colnames(aicdiff) ,function(x,y) paste(x,y,sep="-"))
+		
+		cat("Average AICc values:\n")
+		print(sapply(aiccsplit,mean))
+		cat("\nAverage AIC values:\n")
+		print(sapply(aicsplit,mean))
+		cat("\n")
+		for(i in seq(length(aiccsplit))){
+			for(j in seq(from=i,to=length(aiccsplit))){
+				aiccdiff[i,j] = mean(aiccsplit[[i]] - aiccsplit[[j]])
+				aicdiff[i,j] = mean(aicsplit[[i]] - aicsplit[[j]])
+			}
+		}
+		
+		ut=upper.tri(aicdiff)
+		cat("Average AIC differences:\n")
+		print(aicdiff.names[ut])
+		print(aicdiff[ut])
+		
+		cat("Average AICc differences:\n")
+		print(aiccdiff.names[ut])
+		print(aiccdiff[ut])	
+		cat("--------------------------------------------\n\n")
+		
+	}
 	
 }
 
 
-
-
-summary.cont <- function()
+summary.discrete <- function()
 {
 	
 }

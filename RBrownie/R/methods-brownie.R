@@ -166,7 +166,10 @@ setMethod("clearCommands",signature(x="list"),
 
 hasCommands <- function(x)
 {
-	if(!is(x,'brownie'))
+	if(!is.list(x))
+		x = list(x)
+	
+	if(!is(x[[1]],'brownie'))
 		return(FALSE)
 	
 	return((length(commands(x))!=0))

@@ -41,7 +41,7 @@ AC_SUBST([LDFLAGS],[" brownie_src/libBrownie.a  ${LIBS} ${RCPP_LIB} "])
 dnl to work on macports, add -nostdlib
 
 dnl DEBUGGING BLOCK
-echo "STD libs=$LIBS"
+echo "AC libs=$LIBS"
 echo "RCPP_LIB= $RCPP_LIB"
 echo "RCPP_FLAGS= $RCPP_FLAGS"
 echo "C++ compiler = $CXX"

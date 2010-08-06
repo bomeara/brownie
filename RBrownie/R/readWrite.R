@@ -27,7 +27,7 @@ readBrownie<-function(fname)
 		
 		# this function should read in character data
 		# wrap in list to make it compatible with read.nexus.simmap output
-		phy.part = readNexus(fname)
+		phy.part = readNexus(fname,levels.uniform=F)
 		if(!is.list(phy.part))
 		{
 			phy.part = list(phy.part)
@@ -188,20 +188,9 @@ readBrownie<-function(fname)
 #
 .write.characters.block <- function(xdf,blockname="CHARACTERS",dtype,missing.char="?")
 {	
+	# set up state labels:
 	use.state.labels=F
-	# make sure that disc data level are the same across columns:
-	levs <- function(xdf)
-	{
-		retbool = TRUE
-		if(ncol(xdf)==1)
-			return(TRUE)
-		
-		samelevs = levels(xdf[,1])
-		for(i in seq(from=2,to=ncol(xdf)))
-			retbool && all(samelevs == levels(xdf[,i]))
-		
-		retbool
-	}
+	state.labels=character(0)
 	
 	# For disc data, figure out what the symbols should be 
 	discover.symbols<-function(dat,zero.based=T)
@@ -242,7 +231,22 @@ readBrownie<-function(fname)
 		return(dat)
 	}
 	
-	all.levels.similar = levs(xdf)
+	# generate state labels:
+	make.state.labels <- function(dat)
+	{
+		cnames = colnames(dat)
+		outlabs = character(ncol(dat))
+		for(ii in seq(ncol(dat)))
+		{
+			# order by
+			snames = unique(as.character(dat[,ii])[order(as.integer(dat[,ii]))])
+			outlabs[ii] = sprintf("%d %s / %s",ii,cnames[ii],paste(snames,collapse=" "))
+		}
+		
+		return(outlabs)
+	}
+	
+	
 	if(!is.data.frame(xdf))
 		stop("Internal function .write.characters.block needs a data.frame as the first argument")
 	
@@ -250,13 +254,14 @@ readBrownie<-function(fname)
 	header.title = paste("TITLE ",blockname,"_matrix;",sep="")
 	header.dims = sprintf("DIMENSIONS NTAX=%d NCHAR=%d;",nrow(xdf),ncol(xdf))
 	header.format = sprintf("FORMAT DATATYPE=%s MISSING=%s",ifelse(dtype==contData(),"CONTINUOUS","STANDARD"),missing.char)   # TODO: add GAP, SYMBOLS 
-	if(dtype == discData() && all.levels.similar){
+	if(dtype == discData()){
 		# This check is any of the levels are NOT integers
 		# if they are integers, then it is assumed that they do not 
 		# need to be writen as state labels
 		#
 		use.state.labels = any(is.na(as.integer(levels(xdf[,1]))))
 		if(use.state.labels){
+			state.labels = make.state.labels(xdf)
 			xdf = convert.to.int(xdf) # this does the zero-based conversion
 		}
 		header.format = sprintf("%s SYMBOLS=\"%s\";",header.format,paste(discover.symbols(xdf),collapse=" "))
@@ -265,7 +270,7 @@ readBrownie<-function(fname)
 	}
 	
 	if(use.state.labels){
-		header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
+		header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(state.labels,collapse=","))
 	}else{
 		header.labels = sprintf("CHARSTATELABELS\n\t%s;", paste(paste(seq(ncol(xdf)),colnames(xdf)),collapse=","))
 	}

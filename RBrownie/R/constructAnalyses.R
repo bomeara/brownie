@@ -12,7 +12,6 @@
 
 
 
-
 # Method to do ancestral state reconstruction in brownie
 #
 # return  
@@ -34,6 +33,32 @@ run.analysis <- function(filename)
 	filename = paste("'",filename,"'",sep="")
 	
 	return( .Call("doAnalysis",filename,PACKAGE="RBrownie") )
+}
+
+# Run a brownie file as it is.  If you just want to see if brownie can
+# execute the file (without crashing), set debugging to TRUE.
+#
+run.asis <- function(brobj,brfile=NULL,logfile=NULL,debugging=F)
+{
+	if(!debugging && !hasCommands(brobj))
+	{
+		warning("This brownie object has no commands")
+		return(list(textout=character(0),treesout=character(0)))
+	}
+	if(is.null(brfile))
+		brfile=tempfile()
+	
+	if(!is.null(logfile))
+	{
+		brobj = addStartLog(brobj,file=logfile,filereplace=T)
+		brobj = addEndLog(brobj)
+	}
+	
+	writeBrownie(brobj,brfile)
+	
+	outtext = run.analysis(brfile)
+	
+	return(outtext)
 }
 
 
