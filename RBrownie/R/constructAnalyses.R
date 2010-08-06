@@ -398,7 +398,7 @@ addNonCensored <- function(obj,
 			newcmd = addcmd.binary(newcmd,"Append",FALSE)
 			newcmd = addcmd.binary(newcmd,"Replace",TRUE)		
 		} else {
-			newcmd = addcmd.literal(newcmd,"file","''")
+			#newcmd = addcmd.literal(newcmd,"file","''")
 		}
 	}
 
