@@ -34,6 +34,7 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	header.tokens <- strsplit(rettab[headercol],'\t')[[1]]
 	all.tokens = header.tokens
 	datacols= integer(0) # put out all data columns
+	headercols=headercol
 	count = 1
 	for (line in rettab)
 	{
@@ -41,6 +42,7 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 		if(substr(line,1,37) != substr(rettab[headercol],1,37)){
 			datacols = c(datacols,count)
 		} else {
+			headercols = c(headercols,count)
 			tmp.tokens <- strsplit(line,'\t')[[1]]
 			all.tokens = union(header.tokens,tmp.tokens)
 		}
@@ -50,14 +52,19 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	dfout = data.frame(matrix(NA,nrow=0,ncol=length(all.tokens)))
 	colnames(dfout) <- all.tokens
 	
-	datahead = strsplit(rettab[(datacols-1)],'\t')
+	datahead = strsplit(rettab[headercols],'\t')
 	datasep = strsplit(rettab[datacols],'\t')
+	isone = (length(datahead)==1)
 	if(length(datasep)!=0)
 	{
 		for(jj in seq(length(datasep)))
 		{
 			tmpdf = data.frame(matrix(datasep[[jj]],nrow=1),stringsAsFactors=F)
-			names(tmpdf) <- datahead[[jj]]
+			if(isone){
+				names(tmpdf) <- datahead[[1]]
+			} else {
+				names(tmpdf) <- datahead[[jj]]
+			}
 			#dfout[jj,] = datasep[[jj]]
 			dfout = merge(dfout,tmpdf,all=T) 
 		}
@@ -124,6 +131,35 @@ read.continuous.output <- function(filename,txt=NULL,...)
 	tablines = grep(tabpattern,output)
 	if(length(tablines)!=0)
 	{
+		output = output[tablines]
+	} else {
+		stop("Failed to find any output that could be coersed into a table\nOUTPUT:\n",output)
+	}
+	
+	ret = read.analysis.output(txt=output)
+	
+	return(ret)
+}
+
+# Read ratetest test output
+read.ratetest.output <- function(filename,txt=NULL,...)
+{
+	
+	# The first line with tabs is the header:
+	tabpattern="\t"
+	output=character(0)
+	if(!is.null(txt))
+	{
+		output = txt
+	} else {
+		output = scan(filename,what="character",sep="\n",strip.white=T)
+	}
+	
+	tablines = grep(tabpattern,output)
+	nontablines = setdiff(seq(length(output)),tablines)	
+	if(length(tablines)!=0)
+	{
+		nontabs = output[nontablines]
 		output = output[tablines]
 	} else {
 		stop("Failed to find any output that could be coersed into a table\nOUTPUT:\n",output)
