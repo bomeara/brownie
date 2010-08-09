@@ -17728,18 +17728,33 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 					errormsg+=j;
 					errormsg+=" which is greater than the expected max of ";
 					errormsg+=(discretecharacters->GetObsNumStates(discretechosenchar));
+					errormsg+=" currentnode = ";
+					errormsg+=static_cast<ostringstream*>( &(ostringstream() << currentnode) )->str();
+					errormsg+=" breaknum = ";
+					errormsg+=breaknum;
+					errormsg+=" i = ";
+					errormsg+=i;
+					errormsg+=" ";
 		          throw XNexus( errormsg);
 				}
 				if (j<0) {
 					errormsg="Found a reconstructed state of ";
 					errormsg+=j;
 					errormsg+=" which is less than the expected min of 0";
+					errormsg+=" currentnode = ";
+					errormsg+=static_cast<ostringstream*>( &(ostringstream() << currentnode) )->str();
+					errormsg+=" breaknum = ";
+					errormsg+=breaknum;
+					errormsg+=" i = ";
+					errormsg+=i;
+					errormsg+=" ";
 		          throw XNexus( errormsg);
 				}
 				
 				//stateordervector.push_back(j);
 				//statetimesvector.push_back(eachsegmentlength);
 				if (debugmode) {
+					cout<<endl<<"currentnode "<<currentnode;
 					cout<<endl<<"breaksperbranch "<<breaksperbranch;
 					cout<<endl<<"breaknum "<<breaknum;
 					cout<<endl<<"i "<<i;
