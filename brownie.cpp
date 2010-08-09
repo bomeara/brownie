@@ -13201,7 +13201,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
             // int count = 0;
             NodeIterator <Node> n (t.GetRoot());
             Node *q = n.begin();
-            Node *anc = n.begin();
+            Node *anc = q;
             // Node *a=n.begin();
             // Node *p=n.begin();
             //Node *b=n.begin();
@@ -13679,10 +13679,10 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
         int count = 0;
         NodeIterator <Node> n (t.GetRoot());
         Node *q = n.begin();
-        Node *a=n.begin();
-        Node *p=n.begin();
-        Node *b=n.begin();
-        Node *mrca=n.begin();
+        Node *a=q;
+        Node *p=q;
+        Node *b=q;
+        Node *mrca=q;
 		nxsstring listofchanges="\n\nList of changes";
         bool notfirstleaf=false;
         while (q)
@@ -17384,7 +17384,7 @@ void BROWNIE::S_discretegeneral(const gsl_rng * r, void *xp, double step_size)
 //rate is lower than the 1->0 rate, for example, this will allow most of the branch to be reconstructed as having state 0).
 NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMatrix, gsl_vector * ancestralstatevector, int breaksperbranch) {
 	double lnL=0.0;
-	double L=0;
+	Superdouble L=0;
 	map<Node*, vector<vector<double> > > Lvector; //need vector of vectors to deal with breaks per branch
 	map<Node*, vector<vector<int> > > Cvector; // gives C vector, as in Pupko et al algorithm
 	//Tree T=intrees.GetIthTree(chosentree-1);
@@ -17449,10 +17449,10 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 			for (int breaknum=0;breaknum<(breaksperbranch+1);breaknum++) { //Break nums are numbered from the tip down
 				if (breaknum==0) { //means we're at the node of degree>2
 					for(int i=0;i<ancestralstatevector->size;i++) {
-						double bestProb=0.0;
+						Superdouble bestProb=0.0;
 						int bestJ=-1;
 						for(int j=0;j<ancestralstatevector->size;j++) {
-							double  currentProb=(gsl_matrix_get(Pmatrix,i,j));
+							Superdouble  currentProb=(gsl_matrix_get(Pmatrix,i,j));
 							NodePtr descnode=currentnode->GetChild();
 							while (descnode!=NULL) { 
 								currentProb*=((Lvector[descnode])[breaksperbranch][j]); //Get the likelihood of state j at the earliest examined node on each of the descendant branches
@@ -17469,10 +17469,10 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 				}
 				else { //at one of the degree two nodes on this "edge"
 					for(int i=0;i<ancestralstatevector->size;i++) {
-						double bestProb=0.0;
+						Superdouble bestProb=0.0;
 						int bestJ=-1;
 						for(int j=0;j<ancestralstatevector->size;j++) {
-							double  currentProb=(gsl_matrix_get(Pmatrix,i,j))*((Lvector[currentnode])[breaknum-1][j]); //Modify Pupko algorithm 2a: Lz(i)=maxj Pij(tz) x Lx(j)
+							Superdouble  currentProb=(gsl_matrix_get(Pmatrix,i,j))*((Lvector[currentnode])[breaknum-1][j]); //Modify Pupko algorithm 2a: Lz(i)=maxj Pij(tz) x Lx(j)
 							if (currentProb>bestProb) {
 								bestProb=currentProb;
 								bestJ=j;
@@ -17485,7 +17485,7 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 			}
 		}
 		else { //hooray! at root
-			double bestProb=0.0;
+			Superdouble bestProb=0.0;
 			int bestK=-1;
 			for(int k=0;k<ancestralstatevector->size;k++) {
 				double currentProb=gsl_vector_get(ancestralstatevector,k);
@@ -17549,10 +17549,10 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 						int count = 0;
 						NodeIterator <Node> n ((*Tptr).GetRoot());
 						Node *q = n.begin();
-						Node *a=n.begin();
-						Node *p=n.begin();
-						Node *b=n.begin();
-						Node *mrca=n.begin();
+						Node *a=q;
+						Node *p=q;
+						Node *b=q;
+						Node *mrca=q;
 						nxsstring listofchanges="\n\nList of changes";
 						bool notfirstleaf=false;
 						while (q)
@@ -17561,9 +17561,12 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 							cout << setiosflags(ios::right) << setw(4) << count					// arbitrary counter
 								<< " " << setw(8) << q->GetEdgeLength() 							// edge length
 								<< " " << setw(32) << setiosflags(ios::left) << q->GetLabel()	// node label
+								<<endl<< " \tN leaves = "<<(*Tptr).GetNumLeaves()<<" N internal = "<<(*Tptr).GetNumInternals()<< " N nodes = "<<(*Tptr).GetNumNodes()<<endl<<"\t"
 								;
+							cout<<"address: "<<q<<endl<<"\t";
 							if (q->IsLeaf())
 							{
+								cout<<"ancestor: "<<q->GetAnc()<<endl<<"\t";
 								cout << " [LEAF]";
 								if (q->IsMarked()) {
 									cout <<" Node is marked\n\tModelCategorySize: ";
@@ -17658,6 +17661,10 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 							}
 							else
 							{
+								if (q->GetPathLength() > 0) {
+									cout<<"ancestor: "<<q->GetAnc()<<endl<<"\t";
+									cout<<"child: "<<q->GetChild()<<endl<<"\t";
+								}
 								cout << " [INTERNAL]";
 								if (q->IsMarked()) {
 									cout <<" Node is marked  ModelCategorySize: ";
