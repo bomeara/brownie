@@ -13,7 +13,7 @@ phyextPlot <- function(x,states,states.col,
 						datapart=1,
 						plot.subnodes=T,
 						plot.points=T,
-						line.widths, ... )
+						line.widths,line.types, ... )
 {
 
 	# plot base phylogeny using phylobase functions:
@@ -23,8 +23,9 @@ phyextPlot <- function(x,states,states.col,
 	posi = phyloXXYY(gtree)
 	grid.newpage()
 	pushViewport(viewport(layout=grid.layout(nrow=1, ncol=1), name="base"))
-	pushViewport(viewport(layout.pos.col=1, name="plot1"))	
-	treePlot(gtree, newpage=FALSE, ...)
+	pushViewport(viewport(layout.pos.col=1, name="plot1"))
+		
+	treePlot(gtree, newpage=FALSE,...)
 
 	if(hasTipData(junk) || hasNodeData(junk))
 	{
@@ -43,6 +44,13 @@ phyextPlot <- function(x,states,states.col,
 				stop("line.widths need to be the same length as states")
 		}
 		
+		if(missing(line.types)){
+			line.types = rep(1,length(states))
+		} else {
+			if(length(states) != length(line.types))
+				stop("line.types need to be the same length as states")
+		}
+				
 		seekViewport("tree")
 		
 		eord = edges(gtree)[posi$eorder,] # this is the order used
@@ -52,8 +60,8 @@ phyextPlot <- function(x,states,states.col,
 			datamap = unlist(lapply(datamap, function(i) ifelse(length(i)==0,1,i[1])))
 		
 		# replot edges:
-		grid.segments(posi$segs$h0x,posi$segs$h0y, posi$segs$h1x,posi$segs$h1y,gp=gpar(col=states.col[datamap],lwd=line.widths[datamap]))
-		grid.segments(posi$segs$v0x,posi$segs$v0y, posi$segs$v1x,posi$segs$v1y,gp=gpar(col=states.col[datamap],lwd=line.widths[datamap]))
+		grid.segments(posi$segs$h0x,posi$segs$h0y, posi$segs$h1x,posi$segs$h1y,gp=gpar(col=states.col[datamap],lwd=line.widths[datamap],lty=line.types[datamap]))
+		grid.segments(posi$segs$v0x,posi$segs$v0y, posi$segs$v1x,posi$segs$v1y,gp=gpar(col=states.col[datamap],lwd=line.widths[datamap],lty=line.types[datamap]))
 		if(plot.points) grid.points(posi$xx,posi$yy,pch=20,gp=gpar(col=states.col[datamap],cex=0.5))
 		
 		
@@ -88,11 +96,10 @@ phyextPlot <- function(x,states,states.col,
 			subposi.vx1 = posi$segs$v1x[posi.inds]
 			
 			# plot subnodes:
-			grid.segments(subposi.x0,subposi.y0,subposi.x1,subposi.y1,gp=gpar(col=states.col[submapping],lwd=line.widths[submapping]))
-			grid.segments(subposi.vx0,subposi.vy0,subposi.vx1,subposi.vy1,gp=gpar(col=states.col[submapping],lwd=line.widths[submapping]))
+			grid.segments(subposi.x0,subposi.y0,subposi.x1,subposi.y1,gp=gpar(col=states.col[submapping],lwd=line.widths[submapping],lty=line.types[submapping]))
+			grid.segments(subposi.vx0,subposi.vy0,subposi.vx1,subposi.vy1,gp=gpar(col=states.col[submapping],lwd=line.widths[submapping],lty=line.types[submapping]))
 			if(plot.points) grid.points(subposi.x1,subposi.y1,pch=20,gp=gpar(col=states.col[submapping],cex=0.5))
 			
-				
 		}
 		
 		upViewport(2)
@@ -110,44 +117,26 @@ plot.taxaset <- function(x,taxind,taxcol="red",taxlwd=1,excol="grey",exlwd=1,bla
 {
 	if(hasTaxasets(x))
 	{
-		index = integer(0)
-		if(is.character(taxind)){
-			index = which(tdata(x,'tip')==taxind)
-			if(length(index) == 0)
-				index = which(tdata(x,'tip')==taxset.rename(taxind))
-			
-			if(length(index) == 0)
-				stop("Could not find taxaset called: ",taxind,"\n These are available:",taxasets(x))
-		} else {
-			if(taxind <= length(taxasets(x))){
-				index = which(colnames(tdata(x,'tip')) == colnames(taxasets(x))[taxind])
-			}else{
-				stop("Index ",taxind," is out of range.")
-			}
-		}
+		index = taxind.to.dataind(x=x,taxind=taxind)
 		
 		# Rename internal nodes:
 		cat("Renaming internal nodes (might take a while if there are a lot of taxa):\n")
 		###########################
 		taxmrca = integer(0)
 		taxnames = taxa.charvect(x,taxind)
-		top = MRCA(x,taxnames)
+		top = unname(MRCA(x,taxnames))
 		if(!areTaxaMono(x,taxind)){
 			taxout = setdiff(names(descendants(x,top)),taxnames)
-			taxmrca = ancestor(x,MRCA(x,taxout))
+			taxmrca = unname(ancestor(x,MRCA(x,taxout)))
 		}
 		
-		# this could be improved by reordering:
-		for(i in seq(length(taxnames)))
-		{
-			for(j in seq(from=i,to=length(taxnames)))
-			{
-				#print(taxnames[i])
-				taxmrca = c(taxmrca,MRCA(x,c(taxnames[i],taxnames[j])))
-			}
-		}
-		taxmrca = unique(taxmrca)
-		taxmrca = taxmrca[-which(taxmrca==top)]
+		taxinds = taxaname.to.taxind(x,taxnames)
+		lambdaS = function(nodetwo,tree,nodeone) shortestPath(tree,nodeone,nodetwo)
+		taxmrca = c(taxmrca,unique(unlist(sapply(taxinds,lambdaS,x,top))))
+		taxmrca = c(taxmrca,taxinds)
+
+		if(top %in% taxmrca)
+			taxmrca = taxmrca[-which(taxmrca==top)]
 		tdata(x)[,index][is.na(tdata(x)[,index])] = 0
 		tdata(x)[,index][taxmrca] = 1 
 		#####################
@@ -168,8 +157,75 @@ plot.taxaset <- function(x,taxind,taxcol="red",taxlwd=1,excol="grey",exlwd=1,bla
 	}
 }
 
-
-plot.censored <- function()
+#
+#
+plot.censored <- function(x,taxind,
+							taxcol="red",
+							taxlwd=1,
+							excol="grey",
+							exlwd=1,
+							rmlty=3,
+							...)
 {
+	if(hasTaxasets(x))
+	{
+		showcut=F
+		index = taxind.to.dataind(x=x,taxind=taxind)
+		
+		# Rename internal nodes:
+		cat("Renaming internal nodes (might take a while if there are a lot of taxa):\n")
+		###########################
+		taxmrca = integer(0)
+		taxnames = taxa.charvect(x,taxind)
+		top = unname(MRCA(x,taxnames))
+		if(areTaxaPara(x,taxind)){
+			
+			# TODO: make sure subtop/other top covers the range of missing nodes.
+			taxout = setdiff(names(descendants(x,top)),taxnames)
+			taxout.mrca = MRCA(x,taxout)
+			taxmrca = ancestor(x,taxout.mrca)
+			subtop = taxmrca
+			other.top = setdiff(children(x,taxmrca),taxout.mrca)  # large monophyly
+			showcut=T
+			
+		}
+				
+		taxinds = taxaname.to.taxind(x,taxnames)
+		lambdaS = function(nodetwo,tree,nodeone) shortestPath(tree,nodeone,nodetwo)
+		taxmrca = c(taxmrca,unique(unlist(sapply(taxinds,lambdaS,x,top))))
+		taxmrca = c(taxmrca,taxinds)
+
+		if(top %in% taxmrca)
+			taxmrca = taxmrca[-which(taxmrca==top)]
+		
+		tdata(x)[,index][is.na(tdata(x)[,index])] = 0
+		tdata(x)[,index][taxmrca] = 1 
+		#####################
+		
+		nodecutcol=par("bg")
+		if(nodecutcol=="transparent") nodecutcol="white"
+		
+		if(showcut)
+		{
+			tdata(x)[,index][subtop] = -1
+			tdata(x)[,index][other.top] = -1
+			tdata(x)[,index][taxout.mrca] = -1
+		}
+
+		phyextPlot(x,states=c(0,1,-1),
+					states.col=c(excol,taxcol,nodecutcol),
+					datapart=index,
+					plot.subnodes=F,
+					line.widths=c(exlwd,taxlwd,1),
+					line.types=c(1,1,rmlty),
+					plot.points=F,
+					edge.color=excol,...)
+		
+		grid.text(paste("Taxaset:",sprintf('%s',taxaset.names(junk)[taxind])),
+					x=unit(2, "mm"), y=unit(1, "npc") - unit(2, "mm"),
+           			just=c("left", "top"))
+	} else {
+		warning("Tree x does not contain taxasets (is it a brownie object?).")
+	}
 }
 

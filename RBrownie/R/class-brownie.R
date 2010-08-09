@@ -108,7 +108,6 @@ checkDataTypes <- function(dtypes)
 	if(!is(obj[[1]],"brownie"))
 		stop("Processed object needs to be of class brownie")
 	
-	
 	for(aline in block.txt)
 	{
 		tokens = strsplit(aline,"\\s")[[1]]
@@ -176,8 +175,8 @@ checkDataTypes <- function(dtypes)
 						warnings("Stipping underscores (because phylobase does).")
 					
 					# assume that phylobase will remove underscore characters
-					if(!simbool)
-						taxinds = gsub("_","",taxinds)
+					#if(!simbool)
+					#	taxinds = gsub("_","",taxinds)
 					
 					taxaI[,1] = sapply(tipLabels(obj[[tind]]),function(i) ifelse(i %in% taxinds,1,0),simplify=T)
 				} else {

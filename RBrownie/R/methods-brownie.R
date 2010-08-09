@@ -400,6 +400,40 @@ setReplaceMethod("taxasets",signature(x="list"),
 })
 
 
+#
+taxaname.to.taxind <- function(x,taxnames)
+{
+	taxinds = integer(length(taxnames))
+	for(ii in seq(length(taxnames)))
+	{
+		taxinds[ii] = which(tipLabels(x) == taxnames[ii])
+	}
+	return(taxinds)
+}
+
+
+#
+taxind.to.dataind <- function(x,taxind)
+{
+	index = integer(0)
+	if(is.character(taxind)){
+		index = which(tdata(x,'tip')==taxind)
+		if(length(index) == 0)
+			index = which(tdata(x,'tip')==taxset.rename(taxind))
+		
+		if(length(index) == 0)
+			stop("Could not find taxaset called: ",taxind,"\n These are available:",taxasets(x))
+	} else {
+		if(taxind <= length(taxasets(x))){
+			index = which(colnames(tdata(x,'tip')) == colnames(taxasets(x))[taxind])
+		}else{
+			stop("Index ",taxind," is out of range.")
+		}
+	}
+	return(index)
+}
+
+
 # get taxaset names
 taxaset.names <- function(x)
 {
@@ -452,6 +486,7 @@ taxa.charvect <- function(x,taxind,append.internal=TRUE)
 
 	return(tipvect)
 }
+
 
 # Internal:
 # Is a character vector of taxa monophyletic on phylogeny x?
