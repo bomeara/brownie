@@ -1,0 +1,13 @@
+#! /bin/sh
+
+echo "Removing files...."
+rm -f config.log config.status configure confdefs.h
+cd ./src
+rm -f Makevars
+rm -f *.o
+rm -f *.so
+rm -f *.dll
+cd .brownie_src/
+rm -f *.o
+rm -f *.a
+
