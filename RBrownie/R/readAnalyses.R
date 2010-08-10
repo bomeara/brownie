@@ -167,6 +167,26 @@ read.ratetest.output <- function(filename,txt=NULL,...)
 	
 	ret = read.analysis.output(txt=output)
 	
+	# check for taxaset names:
+	# (only if the two have the same length)
+	taxlines = grep("^Taxset",nontabs,value=T)
+	if(length(taxlines)!=0)
+	{
+		retplus = data.frame(matrix(NA,nrow=nrow(ret),ncol=0),stringsAsFactors=F)
+		taxasetnames = unlist(lapply(strsplit(taxlines,'='),tail,1))
+		for(jj in seq(length(taxasetnames)))
+			retplus = cbind(retplus,rep(taxasetnames[jj],length(taxasetnames)),stringsAsFactors=F)
+		names(retplus) <- paste("taxset",seq(length(taxasetnames)),sep="_")
+		ret = cbind(ret,retplus)
+	}
+	
+	# final processing:
+	# find significance codes column and rename it:
+	oldnames = colnames(ret)
+	gg = grep("chosen model",oldnames)
+	if(length(gg) != 0) oldnames[gg] = "sigcodes"
+	colnames(ret) <- oldnames
+	
 	return(ret)
 }
 
@@ -255,9 +275,9 @@ summaryRatetest <- function(ratedf,txt=NULL,short=FALSE)
 			cat("\n====================================================\n\n")
 			cat("Tree =",tcgrid[ii,1],", character =",tcgrid[ii,2],"\n")
 			cat("----------------------------\n\n")
-			cat("Results for the inverse of the taxaset specified (NOT):\n")
+			cat("Results for taxset",ratedf$taxset_1[ii],":\n")
 			cat(sprintf("Anc state = %14.6f\nRate = %14.6f\n-lnL = %14.6f\n\n",ratedf$anc_1[ii],ratedf$rate_1[ii],ratedf$' -lnL_1'[ii]))
-			cat("Results for the taxaset specified:\n")
+			cat("Results for taxset",ratedf$taxset_2[ii],":\n")
 			cat(sprintf("Anc state = %14.6f\nRate = %14.6f\n-lnL = %14.6f\n\n",ratedf$anc_2[ii],ratedf$rate_2[ii],ratedf$' -lnL_2'[ii]))
 			cat("----------------------------\n\n")
 			cat("Single rate support (model A) vs. Multiple rate support (model B)\n\n")
@@ -277,8 +297,8 @@ summaryRatetest <- function(ratedf,txt=NULL,short=FALSE)
 	for(ii in seq(nrow(tcgrid)))
 	{
 		rowind = which(ratedf$Tree == tcgrid[ii,1] & ratedf$Char == tcgrid[ii,2])
-		# assume it's the last column:
-		vals = ratedf[,ncol(ratedf)][ii]
+		#vals = ratedf[,ncol(ratedf)][ii]
+		vals = ratedf$sigcodes[ii]
 		vals = strsplit(vals,"")[[1]]
 		cat(sprintf("%d\t%d\t%s\t%s\t%s\t%s\n",ratedf$Tree[ii],ratedf$Char[ii],vals[1],vals[2],vals[3],ifelse(bootstrapped,vals[4],"")))
 	}

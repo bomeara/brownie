@@ -225,7 +225,7 @@ runCensored <- function(brobj,brfile=NULL,file=NULL,...)
 	writeBrownie(brobj,brfile)	
 	outtext = run.analysis(brfile)
 	
-	outdat = read.continuous.output(txt=scan.textout(outtext$textout))
+	outdat = read.ratetest.output(txt=scan.textout(outtext$textout))
 	
 	return( outdat )
 	
