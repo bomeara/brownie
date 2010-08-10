@@ -1,4 +1,4 @@
-rm -f config.log config.status configure confdefs.h
+rm -f config.log config.status confdefs.h config.h
 rm -rf autom4te.cache
 cd ./src/brownie_src/
 rm -f *.o
