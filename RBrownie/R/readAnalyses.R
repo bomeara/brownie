@@ -299,7 +299,7 @@ summary.cont <- function(contdf,txt=NULL,short=FALSE)
 	
 	# validation
 	if(is.null(contdf$Tree) || is.null(contdf$Char) || is.null(contdf$Model) || is.null(contdf$AICc))
-		stop("Could not find Trees or Char columns in the ratedf dataframe.\nAvailable columns are:",headers)
+		stop("Could not find Trees or Char columns in the ratedf dataframe.\nAvailable columns are:",colnames(contdf))
 	
 	umodels = unique(contdf$Model)		
 	utrees = unique(contdf$Tree)

@@ -627,7 +627,7 @@ write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 		    }
 		}
 		n <- length(newphy$tip.label)
-		STRING <- if (output.tree.names) paste(tree.names, "(", sep = "") else "("
+		STRING <- if (output.tree.names) paste("ERROR!", "(", sep = "") else "("
 		br <- which(newphy$edge[, 1] == n + 1)
 		for (j in br) {
 		    desc <- newphy$edge[j, 2]

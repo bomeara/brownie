@@ -149,7 +149,7 @@ plot.taxaset <- function(x,taxind,taxcol="red",taxlwd=1,excol="grey",exlwd=1,bla
 			tdata(x)[,index][top] = -1
 			phyextPlot(x,states=c(0,1,-1),states.col=c(excol,taxcol,nodecutcol),datapart=index,plot.subnodes=F,line.widths=c(exlwd,taxlwd,1),plot.points=F,...)
 		}
-		grid.text(paste("Taxaset:",sprintf('%s',taxaset.names(junk)[taxind])),
+		grid.text(paste("Taxaset:",sprintf('%s',taxaset.names(x)[taxind])),
 					x=unit(2, "mm"), y=unit(1, "npc") - unit(2, "mm"),
            			just=c("left", "top"))
 	} else {
@@ -221,7 +221,7 @@ plot.censored <- function(x,taxind,
 					plot.points=F,
 					edge.color=excol,...)
 		
-		grid.text(paste("Taxaset:",sprintf('%s',taxaset.names(junk)[taxind])),
+		grid.text(paste("Taxaset:",sprintf('%s',taxaset.names(x)[taxind])),
 					x=unit(2, "mm"), y=unit(1, "npc") - unit(2, "mm"),
            			just=c("left", "top"))
 	} else {

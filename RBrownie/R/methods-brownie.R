@@ -192,7 +192,7 @@ setMethod("removeCommands", signature(x="brownie",index="numeric"),
 setMethod("removeCommands", signature(x="brownie",index="character"),
 	function(x,index){
 		
-		cmdnames = unname(sapply(commands(shit), function(i) read.brownie.string(i)$command ))
+		cmdnames = unname(sapply(commands(x), function(i) read.brownie.string(i)$command ))
 		indices = which(tolower(cmdnames) == tolower(index))
 		if(length(indices)>0)
 			return(removeCommands(x,indices))
@@ -411,7 +411,6 @@ taxaname.to.taxind <- function(x,taxnames)
 	return(taxinds)
 }
 
-
 #
 taxind.to.dataind <- function(x,taxind)
 {
@@ -419,7 +418,7 @@ taxind.to.dataind <- function(x,taxind)
 	if(is.character(taxind)){
 		index = which(tdata(x,'tip')==taxind)
 		if(length(index) == 0)
-			index = which(tdata(x,'tip')==taxset.rename(taxind))
+			index = which(tdata(x,'tip')==taxaset.rename(taxind))
 		
 		if(length(index) == 0)
 			stop("Could not find taxaset called: ",taxind,"\n These are available:",taxasets(x))

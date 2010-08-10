@@ -186,7 +186,7 @@ brownie.tvtypes <- function(with.desc=F)
 #			get the option names and another to get the validate
 #			functions:
 #			
-brownie.options <- function(with.decs=F, with.vals=F)
+brownie.options <- function(with.desc=F, with.vals=F)
 {
 	
 	brownie_option_options = c(
@@ -211,7 +211,7 @@ brownie.options <- function(with.decs=F, with.vals=F)
 		checkval.yesno,
 		checkval.integer,
 		checkval.integer,
-		checkval.model,
+		checkval.model.continuous,
 		checkval.dummy,
 		checkval.yesno,
 		checkval.yesno
