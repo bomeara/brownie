@@ -12755,7 +12755,8 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
         bool finishexecuting=true;
         bool returnmatches=false;
         bool usefileregex=false;
-        bool usestepwise=true;
+        bool usestepwise=false;
+        bool useperl=true;
       	citationarray[3]=true;
      	nxsstring observedtreefile;
      	nxsstring simtreefile;
@@ -12794,6 +12795,15 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 				}
 				else {
 					usefileregex=true;
+				}
+			}		
+			else if (token.Abbreviation("USEPerl") ) {
+				nxsstring yesnomatches=GetFileName(token);
+				if (yesnomatches[0] == 'n') {
+					useperl=false;
+				}
+				else {
+					useperl=true;
 				}
 			}		
 			else if (token.Abbreviation("USEStepwise") ) {
@@ -12907,16 +12917,29 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 						for (int currentspecies=0; currentspecies<numspecies; currentspecies++) {
 							int samplecountthisspecies=0;
 							nxsstring labelregex="\\(";
+							if (useperl) {
+								labelregex="(";
+							}
 							for (int currentsample=0; currentsample<numsamples; currentsample++) {
 								if (sampleslist[ samplesvector[currentsample] ]==speciesvector[currentspecies]) {
 									samplecountthisspecies++;
 									if (samplecountthisspecies>1) {
-									   labelregex+="\\|";
+										if (!useperl) {
+									   		labelregex+="\\|";
+									   }
+									   else {
+									   	labelregex+="|";
+									   }
 									}
 									labelregex+=samplesvector[currentsample];
 								}
 							}
-							labelregex+="\\):[0-9]*.[0-9]*"; //ms exports brlen, too
+							if (useperl) {
+								labelregex+=")\\:[0-9]+[\.]*[0-9]*"; //ms exports brlen, too
+							}
+							else {
+								labelregex+="\\):[0-9]*.[0-9]*"; //ms exports brlen, too
+							}
 							labelswithinspecies.push_back(labelregex);
 							previoustotal+=samplecountthisspecies;
 							numberofpermutations*=gsl_sf_fact(samplecountthisspecies);
@@ -12930,6 +12953,15 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 						message="\nGrep match results\n\tTree\tNumber of matches";
 						PrintMessage();
 						for (int chosentreenum=0; chosentreenum<inObservedTrees.GetNumTrees(); chosentreenum++) { //loop over all the observed gene trees
+							nxsstring perlstring="#!/usr/bin/perl";
+							perlstring+="\nuse diagnostics;\nuse strict;\nopen(IN,'";
+							perlstring+=simtreefile;
+							perlstring+="');\nmy $matchcount=0;\nforeach my $inputline (<IN>) {\nchomp $inputline;\n my $valid=1;";
+							message="\nDoing tree ";
+							message+=chosentreenum+1;
+							message+=" of ";
+							message+=inObservedTrees.GetNumTrees();
+							PrintMessage();
 							nxsstring grepstring="";
 							nxsstring grepfilestring="";
 							nxsstring grepstringreturnmatch="";
@@ -12969,6 +13001,21 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 									}
 									cur->SetLabel(greplabel); //gets regex for tip labels
 								}
+								else if (useperl){
+									nxsstring leftchild=(cur->GetChild())->GetLabel();
+									nxsstring rightchild=((cur->GetChild())->GetSibling())->GetLabel();
+									nxsstring newregex=""; //We're going to want (\(L,R\)|\(R,L\)):brlen
+									newregex+="(\\(";
+									newregex+=leftchild;
+									newregex+="\,";
+									newregex+=rightchild;
+									newregex+="\\)|\\(";
+									newregex+=rightchild;
+									newregex+="\,";
+									newregex+=leftchild;
+									newregex+="\\))\\:[0-9]+[\.]*[0-9]*";
+									cur->SetLabel(newregex);
+								}
 								else {
 									nxsstring combinedstring="";
 									nxsstring leftchild=(cur->GetChild())->GetLabel();
@@ -12977,7 +13024,12 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 									additionalregex+=leftchild;
 									additionalregex+=",";
 									additionalregex+=rightchild;
-									additionalregex+="\\|";
+									if (useperl) {
+										additionalregex+="|";
+									}
+									else {
+										additionalregex+="\\|";
+									}
 									additionalregex+=rightchild;
 									additionalregex+=",";
 									additionalregex+=leftchild;
@@ -12998,6 +13050,18 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 										grepstringreturnmatch+="\"";
 										grepstepwise+=" | grep -c ';'";
 									}
+									if (useperl) {
+									   perlstring+="\n\tif ($valid==1 && $inputline!~m/";
+									   nxsstring prunedregex=additionalregex;
+									/*	cout<<"*"<<flush;
+									   char todelete='\\' ; //We do not want to escape things in the regex stored internally in perl
+									   while (prunedregex.find(todelete)!=string::npos) {
+										  string::size_type pos=prunedregex.find(todelete);
+										  prunedregex.erase(pos,1);
+										} */
+									   perlstring+=prunedregex;
+									   perlstring+="/i) { $valid=0; }";
+									}
 									cur->SetLabel(additionalregex);
 								}
 								cur = n.next();
@@ -13009,37 +13073,66 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							nxsstring finalsystemcall="cat tmp_newick.nwk";*/
 							nxsstring finalsystemcall="cat ";
 							finalsystemcall+=simtreefile;
-							if (!usefileregex) {
-								if (!usestepwise) {
-									finalsystemcall+=grepstring;
-								}
-								else {
-									finalsystemcall+=grepstepwise;
-								}
+							nxsstring msinputfile="tmp_mscount.txt";
+							if (useperl) {
+								nxsstring finalperlregex = (CurrentGeneTreeTreeFmt.GetRoot() )->GetLabel();
+								perlstring+="\n\tif ($valid==1 && $inputline!~m/";
+								perlstring+=finalperlregex;
+			 				   perlstring+="/i) { $valid=0; }";
+								perlstring+="\n\t$matchcount+=$valid;\n}\nclose IN;\nopen(OUT,'>";
+								perlstring+=msinputfile;
+								perlstring+="');\nprint OUT $matchcount;\nclose OUT;";
+//								cout<<endl<<perlstring<<endl;
+								nxsstring perlscript="tmp_perlcount.pl";
+								ofstream perlout;
+								perlout.open( perlscript.c_str(), ios::out | ios::trunc );
+								perlout<<perlstring;
+								perlout.close();	
+								//finalsystemcall="perl -pe 's/\\\\//g' < tmp_perlcount.pl > tmp_perlcountNEW.pl; mv tmp_perlcountNew.pl tmp_perlcount.pl; perl tmp_perlcount.pl";
+								finalsystemcall="perl tmp_perlcount.pl";
 							}
 							else {
-								nxsstring grepregex="tmp_grepregex.txt";
-								finalsystemcall+=" | grep -c -f tmp_grepregex.txt";
-								ofstream grepregexf;
-								grepregexf.open(grepregex.c_str(), ios::out | ios::app );
-								grepregexf<<grepfilestring;
-								grepregexf.close();
-							}
-							nxsstring msinputfile="tmp_mscount.txt";
-							finalsystemcall+=" > ";
-							finalsystemcall+=msinputfile;
-							//system("rm mscount.txt");
-							int returncode=system(finalsystemcall.c_str());
-							if (debugmode) {
-								if (!usestepwise) {
-									cout<<"grep line is "<<endl<<grepstring<<endl;
+								if (!usefileregex) {
+									if (!usestepwise) {
+										finalsystemcall+=grepstring;
+									}
+									else {
+										finalsystemcall+=grepstepwise;
+									}
 								}
 								else {
+									nxsstring grepregex="tmp_grepregex.txt";
+									finalsystemcall+=" | grep -c -f tmp_grepregex.txt";
+									ofstream grepregexf;
+									grepregexf.open(grepregex.c_str(), ios::out | ios::app );
+									grepregexf<<grepfilestring;
+									grepregexf.close();
+								}
+								finalsystemcall+=" > ";
+								finalsystemcall+=msinputfile;
+							}
+							//system("rm mscount.txt");
+							if (debugmode) {
+								cout<<"finalsystemcall.c_str() = \n"<<finalsystemcall.c_str()<<endl;
+								if (useperl) {
+									nxsstring copyperl="cp tmp_perlcount.pl tmp_perlcount";
+									copyperl+=chosentreenum+1;
+									copyperl+=".pl";
+									system(copyperl.c_str()); 
+								}
+							}
+							int returncode=system(finalsystemcall.c_str());
+							if (debugmode) {
+								if (!usestepwise && !useperl) {
+									cout<<"grep line is "<<endl<<grepstring<<endl;
+								}
+								else if (!useperl) {
 									cout<<"grep line is "<<endl<<grepstepwise<<endl;
 
 								}
 								cout<<"return code is "<<returncode<<" (divided by 256, is "<<returncode/256<<")"<<endl;
 							}
+						
 							ifstream msin;
 							msin.open( msinputfile.c_str(), ios::binary | ios::in );
 							if (msin) {
@@ -13076,8 +13169,11 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							}
 							if (!debugmode) {
 								system("rm tmp_mscount.txt");
-								if (usefileregex) {
+								if (usefileregex && !useperl) {
 									system("rm tmp_grepregex.txt");
+								}
+								if (useperl) {
+									system("rm tmp_perlcount.pl");
 								}
 							}
 						}
