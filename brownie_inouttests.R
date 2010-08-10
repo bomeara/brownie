@@ -11,10 +11,10 @@ plot(junkrun$trees[[1]])
 junk = readBrownie("parrot.nex")
 junkrun=runNonCensored(junk,brfile="cont_junk.txt",models=brownie.models.continuous()[1:3],treeloop=T,charloop=T)
 junkrun
-sum.cont(junkrun)
+summaryCont(junkrun)
 
 # Censored ("ratetest")
 junk = readBrownie("parrot.nex")
 junkrun = runCensored(junk,taxset="intrajoint",reps=1000,charloop=T)
-sum.ratetest(junkrun)
+summaryRatetest(junkrun)
 

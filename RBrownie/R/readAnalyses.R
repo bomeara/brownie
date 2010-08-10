@@ -219,7 +219,7 @@ scan.treesout <- function(output)
 # 
 #-----------------------------------------------------
 
-sum.ratetest <- function(ratedf,txt=NULL,short=FALSE)
+summaryRatetest <- function(ratedf,txt=NULL,short=FALSE)
 {
 	cat("Summary of ratetest results:")
 	bootstrapped=FALSE
@@ -287,7 +287,7 @@ sum.ratetest <- function(ratedf,txt=NULL,short=FALSE)
 
 
 
-sum.cont <- function(contdf,txt=NULL,short=FALSE)
+summaryCont <- function(contdf,txt=NULL,short=FALSE)
 {
 	cat("Summary of ratetest results:")
 	bootstrapped=FALSE
@@ -363,7 +363,7 @@ sum.cont <- function(contdf,txt=NULL,short=FALSE)
 }
 
 
-sum.discrete <- function()
+summaryDiscrete <- function()
 {
 	
 }
