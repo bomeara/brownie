@@ -1,2 +1,2 @@
-PKG_CPPFLAGS=@CPPFLAGS@ -Ibrownie_src/TreeLib -Ibrownie_src/ncl-2.0/src -Ibrownie_src/TreeLib/gport  -fno-bounds-check
+PKG_CPPFLAGS=@CPPFLAGS@ -Ibrownie_src/TreeLib -Ibrownie_src/ncl-2.0/src -Ibrownie_src/TreeLib/gport
 PKG_LIBS=@LDFLAGS@
