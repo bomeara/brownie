@@ -5,18 +5,19 @@
 #--------------------------------------------------
 
 ## Valid 'Datatypes':
-#
-# for checking datatypes (to be used with 'data' slot)
-brownie.datatypes <-function()
-{
-	brownie_datatype_options = c("taxset","cont","discrete","undef")
-	return(brownie_datatype_options)
-}
+# (for use with @datatypes slot)
 
+# datatypes:
 discData <- function() { return("discrete") }
 contData <- function() { return("cont") }
 taxaData <- function() { return("taxset") }
 genericData <- function() { return("undef") }
+
+brownie.datatypes <-function()
+{
+	brownie_datatype_options = c(taxaData(),contData(),discData(),genericData())
+	return(brownie_datatype_options)
+}
 
 # convert between datatypes:
 # helper functions for addData
