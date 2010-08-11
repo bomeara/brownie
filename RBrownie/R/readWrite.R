@@ -404,19 +404,28 @@ setMethod("writeBrownie", signature(x="list"),
 		# IF windows, convert to windows path:
 		# (brownie crashes otherwise)
 		#
+# 		if(.Platform$OS.type=="windows")
+# 		{
+# 			tmpconvert = tempfile()
+# 			file = gsub("\\\\","/",file)
+# 			tmpconvert = gsub("\\\\","/",tmpconvert )
+# 			sysstr = paste("tr -d '\\015' < ", file, " > ", tmpconvert)
+# 			shell(sysstr)
+# 			success = success && file.copy(tmpconvert,file,overwrite=TRUE)
+# 			if(!success)
+# 				stop("Failed to convert line endings on this Windows machine")
+# 			
+# 			unlink(tmpconvert)
+# 		} 
+
+		# alternative
 		if(.Platform$OS.type=="windows")
 		{
-			tmpconvert = tempfile()
 			file = gsub("\\\\","/",file)
-			tmpconvert = gsub("\\\\","/",tmpconvert )
-			sysstr = paste("tr -d '\\015' < ", file, " > ", tmpconvert)
-			shell(sysstr)
-			success = success && file.copy(tmpconvert,file,overwrite=TRUE)
-			if(!success)
-				stop("Failed to convert line endings on this Windows machine")
-			
-			unlink(tmpconvert)
+			strs = readLines(file)
+			writeLines(strs,con=file,sep="\r")
 		} 
+		
 		
 		# delete temporary files:			
 		unlink(tmp1)

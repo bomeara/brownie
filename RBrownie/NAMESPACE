@@ -17,7 +17,6 @@ exportMethods(phyext,brownie)
 #----------------------------------------------------------------------
 
 # test functions:
-#export(rcpp_hello_world,"read.brownie")
-
+exportPattern("^[^\\.]")
 
 
