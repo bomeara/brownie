@@ -13029,6 +13029,8 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							finalsystemcall+=simtreefile;
 							nxsstring msinputfile="tmp_mscount.txt";
 							if (useperl) {
+								//We're going to export a perl file, use it to find all the clades, and compare them.
+								//Monumentally stupid? Perhaps, but it does work on vary large trees where grep chokes.
 							   nxsstring perlscript="#!/usr/bin/perl -w";
 							   perlscript+="\n";
 							   perlscript+="#compareclades.pl";
