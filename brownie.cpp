@@ -12934,12 +12934,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 									labelregex+=samplesvector[currentsample];
 								}
 							}
-							if (useperl) {
-								labelregex+=")\\:[0-9]+[\.]*[0-9]*"; //ms exports brlen, too
-							}
-							else {
-								labelregex+="\\):[0-9]*.[0-9]*"; //ms exports brlen, too
-							}
+							labelregex+="\\):[0-9]*.[0-9]*"; //ms exports brlen, too
 							labelswithinspecies.push_back(labelregex);
 							previoustotal+=samplecountthisspecies;
 							numberofpermutations*=gsl_sf_fact(samplecountthisspecies);
@@ -12953,15 +12948,6 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 						message="\nGrep match results\n\tTree\tNumber of matches";
 						PrintMessage();
 						for (int chosentreenum=0; chosentreenum<inObservedTrees.GetNumTrees(); chosentreenum++) { //loop over all the observed gene trees
-							nxsstring perlstring="#!/usr/bin/perl";
-							perlstring+="\nuse diagnostics;\nuse strict;\nopen(IN,'";
-							perlstring+=simtreefile;
-							perlstring+="');\nmy $matchcount=0;\nforeach my $inputline (<IN>) {\nchomp $inputline;\n my $valid=1;";
-							message="\nDoing tree ";
-							message+=chosentreenum+1;
-							message+=" of ";
-							message+=inObservedTrees.GetNumTrees();
-							PrintMessage();
 							nxsstring grepstring="";
 							nxsstring grepfilestring="";
 							nxsstring grepstringreturnmatch="";
@@ -13001,21 +12987,6 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 									}
 									cur->SetLabel(greplabel); //gets regex for tip labels
 								}
-								else if (useperl){
-									nxsstring leftchild=(cur->GetChild())->GetLabel();
-									nxsstring rightchild=((cur->GetChild())->GetSibling())->GetLabel();
-									nxsstring newregex=""; //We're going to want (\(L,R\)|\(R,L\)):brlen
-									newregex+="(\\(";
-									newregex+=leftchild;
-									newregex+="\,";
-									newregex+=rightchild;
-									newregex+="\\)|\\(";
-									newregex+=rightchild;
-									newregex+="\,";
-									newregex+=leftchild;
-									newregex+="\\))\\:[0-9]+[\.]*[0-9]*";
-									cur->SetLabel(newregex);
-								}
 								else {
 									nxsstring combinedstring="";
 									nxsstring leftchild=(cur->GetChild())->GetLabel();
@@ -13024,12 +12995,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 									additionalregex+=leftchild;
 									additionalregex+=",";
 									additionalregex+=rightchild;
-									if (useperl) {
-										additionalregex+="|";
-									}
-									else {
-										additionalregex+="\\|";
-									}
+									additionalregex+="\\|";
 									additionalregex+=rightchild;
 									additionalregex+=",";
 									additionalregex+=leftchild;
@@ -13050,18 +13016,6 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 										grepstringreturnmatch+="\"";
 										grepstepwise+=" | grep -c ';'";
 									}
-									if (useperl) {
-									   perlstring+="\n\tif ($valid==1 && $inputline!~m/";
-									   nxsstring prunedregex=additionalregex;
-									/*	cout<<"*"<<flush;
-									   char todelete='\\' ; //We do not want to escape things in the regex stored internally in perl
-									   while (prunedregex.find(todelete)!=string::npos) {
-										  string::size_type pos=prunedregex.find(todelete);
-										  prunedregex.erase(pos,1);
-										} */
-									   perlstring+=prunedregex;
-									   perlstring+="/i) { $valid=0; }";
-									}
 									cur->SetLabel(additionalregex);
 								}
 								cur = n.next();
@@ -13075,21 +13029,208 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							finalsystemcall+=simtreefile;
 							nxsstring msinputfile="tmp_mscount.txt";
 							if (useperl) {
-								nxsstring finalperlregex = (CurrentGeneTreeTreeFmt.GetRoot() )->GetLabel();
-								perlstring+="\n\tif ($valid==1 && $inputline!~m/";
-								perlstring+=finalperlregex;
-			 				   perlstring+="/i) { $valid=0; }";
-								perlstring+="\n\t$matchcount+=$valid;\n}\nclose IN;\nopen(OUT,'>";
-								perlstring+=msinputfile;
-								perlstring+="');\nprint OUT $matchcount;\nclose OUT;";
-//								cout<<endl<<perlstring<<endl;
-								nxsstring perlscript="tmp_perlcount.pl";
+							   nxsstring perlscript="#!/usr/bin/perl -w";
+							   perlscript+="\n";
+							   perlscript+="#compareclades.pl";
+							   perlscript+="\n";
+							   perlscript+="#Brian OMeara, 11 August 2010";
+							   perlscript+="\n";
+							   perlscript+="#http://www.brianomeara.info";
+							   perlscript+="\n";
+							   perlscript+="#released under GPL2";
+							   perlscript+="\n";
+							   perlscript+="use diagnostics;";
+							   perlscript+="\n";
+							   perlscript+="use strict;";
+							   perlscript+="\n";
+							   perlscript+="my $assignmentfile=\"a\";";
+							   perlscript+="\n";
+							   perlscript+="my $observedfile=\"o\";";
+							   perlscript+="\n";
+							   perlscript+="my $simulatedfile=\"s\";";
+							   perlscript+="\n";
+							   perlscript+="my $countsim=0;";
+							   perlscript+="\n";
+							   perlscript+="if ($#ARGV<1) {";
+							   perlscript+="\n";
+							   perlscript+="	print \"Usage: perl compareclades.pl -aAssignment.txt -oObserved.txt -sSimulated.txt [-c]\\n\\nThis script counts how many times each tree in the observed file occurs in the simulated file, taking into account the many-to-one mapping of samples to species.\\n\\nAssignments are given in a tab-delimited file with a column of species letters (A, B,....) and a column of corresponding sample numbers (1, 2, ...). The observed and simulated trees are lists of newick trees with sample numbers, not names. The optional -c argument just gives the count of each tree in the simulated trees file (after making samples from the same species equivalent: ((1,2),3) and ((3,1),2) are the same if samples 1 and 3 are from species A and sample 2 is from species B: the clades in each tree are thus A-B and A-A-B\\n\";";
+							   perlscript+="\n";
+							   perlscript+="}";
+							   perlscript+="\n";
+							   perlscript+="else {";
+							   perlscript+="\n";
+							   perlscript+="	for (my $i = 0; $i <= $#ARGV; $i++) {";
+							   perlscript+="\n";
+							   perlscript+="		if ($ARGV[$i] =~ /-a([\\w\\.]+)/) {";
+							   perlscript+="\n";
+							   perlscript+="			$assignmentfile=$1;";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="		elsif ($ARGV[$i] =~ /-o([\\w\\.]+)/) {";
+							   perlscript+="\n";
+							   perlscript+="			$observedfile=$1;";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="		elsif ($ARGV[$i] =~ /-s([\\w\\.]+)/) {";
+							   perlscript+="\n";
+							   perlscript+="			$simulatedfile=$1;";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="		elsif ($ARGV[$i] =~ /-c/) {";
+							   perlscript+="\n";
+							   perlscript+="			$countsim=1;";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="	}";
+							   perlscript+="\n";
+							   perlscript+="	";
+							   perlscript+="\n";
+							   perlscript+="	open(OBS,\"$observedfile\");";
+							   perlscript+="\n";
+							   perlscript+="	open(SIM,\"$simulatedfile\");";
+							   perlscript+="\n";
+							   perlscript+="	open(ASSIGN,\"$assignmentfile\");";
+							   perlscript+="\n";
+							   perlscript+="	my %assignments=();";
+							   perlscript+="\n";
+							   perlscript+="	foreach my $inline (<ASSIGN>) {";
+							   perlscript+="\n";
+							   perlscript+="		chomp $inline;";
+							   perlscript+="\n";
+							   perlscript+="		my @args=split(/\\s+/,$inline);";
+							   perlscript+="\n";
+							   perlscript+="		$assignments{ $args[1] } = $args[0];";
+							   perlscript+="\n";
+							   perlscript+="	}";
+							   perlscript+="\n";
+							   perlscript+="	close ASSIGN;";
+							   perlscript+="\n";
+							   perlscript+="	";
+							   perlscript+="\n";
+							   perlscript+="	my %simtreescount;";
+							   perlscript+="\n";
+							   perlscript+="	";
+							   perlscript+="\n";
+							   perlscript+="	foreach my $inline (<SIM>) {";
+							   perlscript+="\n";
+							   perlscript+="		chomp $inline;";
+							   perlscript+="\n";
+							   perlscript+="		my $clades=returnclades($inline, %assignments);";
+							   perlscript+="\n";
+							   perlscript+="		$simtreescount{$clades}++;";
+							   perlscript+="\n";
+							   perlscript+="	}";
+							   perlscript+="\n";
+							   perlscript+="	";
+							   perlscript+="\n";
+							   perlscript+="	if ($countsim==1) {";
+							   perlscript+="\n";
+							   perlscript+="		print \"Count\\tTree\\n\";";
+							   perlscript+="\n";
+							   perlscript+="		foreach my $clade (sort { $simtreescount{$b} <=> $simtreescount{$a} } keys %simtreescount) {";
+							   perlscript+="\n";
+							   perlscript+="			print \"$simtreescount{$clade}\\t$clade\\n\";";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="	}";
+							   perlscript+="\n";
+							   perlscript+="	else {";
+							   perlscript+="\n";
+							   perlscript+="		my $obstreecount=0;";
+							   perlscript+="\n";
+							   perlscript+="		foreach my $inline (<OBS>) {";
+							   perlscript+="\n";
+							   perlscript+="			chomp $inline;";
+							   perlscript+="\n";
+							   perlscript+="			$obstreecount++;";
+							   perlscript+="\n";
+							   perlscript+="		#	print \"Now working on observed tree $obstreecount\\n\";";
+							   perlscript+="\n";
+							   perlscript+="			my $clades=returnclades($inline, %assignments);";
+							   perlscript+="\n";
+							   perlscript+="		#	print \"\\t$clades\\n\";";
+							   perlscript+="\n";
+							   perlscript+="			my $matchcount=0;";
+							   perlscript+="\n";
+							   perlscript+="			if (exists($simtreescount{$clades})) {";
+							   perlscript+="\n";
+							   perlscript+="				$matchcount=$simtreescount{$clades};";
+							   perlscript+="\n";
+							   perlscript+="			}";
+							   perlscript+="\n";
+							   perlscript+="			print \"$matchcount\";";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="	}";
+							   perlscript+="\n";
+							   perlscript+="	";
+							   perlscript+="\n";
+							   perlscript+="	sub returnclades {";
+							   perlscript+="\n";
+							   perlscript+="		my ($intree, %localassignments) = @_;";
+							   perlscript+="\n";
+							   perlscript+="		my @cladearray=();";
+							   perlscript+="\n";
+							   perlscript+="		$intree=~s/:\\d+\\.?\\d*e?\\-?\\d*//ig; #remove branch length (regex from Olaf Bininda-Emonds partitionmetric.pl script)";
+							   perlscript+="\n";
+							   perlscript+="		while ($intree=~m/(\\([\\w\\,]+\\))/) {";
+							   perlscript+="\n";
+							   perlscript+="			my $matchstring=$1;";
+							   perlscript+="\n";
+							   perlscript+="			my $innermatch=\"\";";
+							   perlscript+="\n";
+							   perlscript+="			if ($matchstring=~m/\\(([\\w\\,]+)\\)/) {";
+							   perlscript+="\n";
+							   perlscript+="				$innermatch=$1;";
+							   perlscript+="\n";
+							   perlscript+="			}";
+							   perlscript+="\n";
+							   perlscript+="			my @splitinner=split(/\\,/,$innermatch);";
+							   perlscript+="\n";
+							   perlscript+="			my @renamedinner=();";
+							   perlscript+="\n";
+							   perlscript+="			foreach my $taxon (@splitinner) {";
+							   perlscript+="\n";
+							   perlscript+="				push(@renamedinner,$assignments{ $taxon });";
+							   perlscript+="\n";
+							   perlscript+="			}";
+							   perlscript+="\n";
+							   perlscript+="			@renamedinner = sort(@renamedinner);";
+							   perlscript+="\n";
+							   perlscript+="			push(@cladearray,join(\"-\",@renamedinner));";
+							   perlscript+="\n";
+							   perlscript+="			$intree=~s/\\($innermatch\\)/$innermatch/;";
+							   perlscript+="\n";
+							   perlscript+="		}";
+							   perlscript+="\n";
+							   perlscript+="		@cladearray=sort(@cladearray);";
+							   perlscript+="\n";
+							   perlscript+="		my $clades=join(\"|\",@cladearray);";
+							   perlscript+="\n";
+							   perlscript+="		return $clades;";
+							   perlscript+="\n";
+							   perlscript+="	}";
+							   perlscript+="\n";
+							   perlscript+="}";								
 								ofstream perlout;
-								perlout.open( perlscript.c_str(), ios::out | ios::trunc );
-								perlout<<perlstring;
+								perlout.open( "tmp_perlcount.pl", ios::out | ios::trunc );
+								perlout<<perlscript;
 								perlout.close();	
-								//finalsystemcall="perl -pe 's/\\\\//g' < tmp_perlcount.pl > tmp_perlcountNEW.pl; mv tmp_perlcountNew.pl tmp_perlcount.pl; perl tmp_perlcount.pl";
-								finalsystemcall="perl tmp_perlcount.pl";
+								//finalsystemcall=\"perl -pe 's/\\\\\\\\//g' < tmp_perlcount.pl > tmp_perlcountNEW.pl; mv tmp_perlcountNew.pl tmp_perlcount.pl; perl tmp_perlcount.pl";
+								finalsystemcall="perl tmp_perlcount.pl -s";
+								finalsystemcall+=simtreefile;
+								finalsystemcall+=" -a";
+								finalsystemcall+=assignmentfile;
+								finalsystemcall+=" -o";
+								finalsystemcall+=observedtreefile;
+								finalsystemcall+=" > ";
+								finalsystemcall+=msinputfile;
 							}
 							else {
 								if (!usefileregex) {
@@ -13125,10 +13266,6 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 							if (debugmode) {
 								if (!usestepwise && !useperl) {
 									cout<<"grep line is "<<endl<<grepstring<<endl;
-								}
-								else if (!useperl) {
-									cout<<"grep line is "<<endl<<grepstepwise<<endl;
-
 								}
 								cout<<"return code is "<<returncode<<" (divided by 256, is "<<returncode/256<<")"<<endl;
 							}
