@@ -17641,6 +17641,8 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 	double lnL=0.0;
 	Superdouble L=0;
 	map<Node*, vector<vector<double> > > Lvector; //need vector of vectors to deal with breaks per branch
+	map<Node*, vector<vector<double> > > LogLvector; //need vector of vectors to deal with breaks per branch
+
 	map<Node*, vector<vector<int> > > Cvector; // gives C vector, as in Pupko et al algorithm
 	//Tree T=intrees.GetIthTree(chosentree-1);
 	Tree *Tptr=&(intrees.Trees[chosentree-1]);
@@ -17659,10 +17661,11 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 				vector<double> tempdouble;
 				vector<int> tempint;
 				for(int statepos=0;statepos<ancestralstatevector->size;statepos++) {
-					tempdouble.push_back(0.0);
+					tempdouble.push_back(-1.0); //We're just initializing vectors with nonsense values
 					tempint.push_back(0);
 				}
 				(Lvector[currentnode]).push_back(tempdouble);
+				(LogLvector[currentnode]).push_back(tempdouble);
 				(Cvector[currentnode]).push_back(tempint);
 			}
 			for (int breaknum=0;breaknum<(breaksperbranch+1);breaknum++) { //Break nums are numbered from the tip down
@@ -17671,21 +17674,29 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 					for(int i=0;i<ancestralstatevector->size;i++) {
 						(Cvector[currentnode])[breaknum][i]=statenumber; //we always must end up with the observed state
 						(Lvector[currentnode])[breaknum][i]=(gsl_matrix_get(Pmatrix,i,statenumber));
+						(LogLvector[currentnode])[breaknum][i]=log((gsl_matrix_get(Pmatrix,i,statenumber)));
 					}
 				}
 				else { //at one of the degree two nodes on this "edge"
 					for(int i=0;i<ancestralstatevector->size;i++) {
-						double bestProb=0.0;
+						Superdouble bestProb=0.0;
+						Superdouble bestLogProb=GSL_NEGINF;
 						int bestJ=-1;
 						for(int j=0;j<ancestralstatevector->size;j++) {
-							double  currentProb=(gsl_matrix_get(Pmatrix,i,j))*((Lvector[currentnode])[breaknum-1][j]); //Modify Pupko algorithm 2a: Lz(i)=maxj Pij(tz) x Lx(j)
-							if (currentProb>bestProb) {
-								bestProb=currentProb;
+							Superdouble  currentProb=(gsl_matrix_get(Pmatrix,i,j))*((Lvector[currentnode])[breaknum-1][j]); //Modify Pupko algorithm 2a: Lz(i)=maxj Pij(tz) x Lx(j)
+							Superdouble  logCurrentProb=log((gsl_matrix_get(Pmatrix,i,j))) + ((LogLvector[currentnode])[breaknum-1][j]);
+							if (debugmode) {
+								cout<<"breaks: currentProb = "<<currentProb<<" log(currentProb) = "<<log(currentProb)<<" logCurrentProb = "<<logCurrentProb<<endl;
+							}
+							if (logCurrentProb>bestLogProb) {
+								bestLogProb=logCurrentProb;
 								bestJ=j;
 							}
+							
 						}
 						(Cvector[currentnode])[breaknum][i]=bestJ;
-						(Lvector[currentnode])[breaknum][i]=bestProb;
+						(Lvector[currentnode])[breaknum][i]=exp(bestLogProb);
+						(LogLvector[currentnode])[breaknum][i]=bestLogProb;
 					}
 				}
 			}
@@ -17695,68 +17706,96 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 				vector<double> tempdouble;
 				vector<int> tempint;
 				for(int statepos=0;statepos<ancestralstatevector->size;statepos++) {
-					tempdouble.push_back(0.0);
+					tempdouble.push_back(-1.0);
 					tempint.push_back(0);
 				}
 				(Lvector[currentnode]).push_back(tempdouble);
+				(LogLvector[currentnode]).push_back(tempdouble);
 				(Cvector[currentnode]).push_back(tempint);
 			}
 			for (int breaknum=0;breaknum<(breaksperbranch+1);breaknum++) { //Break nums are numbered from the tip down
 				if (breaknum==0) { //means we're at the node of degree>2
 					for(int i=0;i<ancestralstatevector->size;i++) {
 						Superdouble bestProb=0.0;
+						Superdouble bestLogProb=GSL_NEGINF;
 						int bestJ=-1;
 						for(int j=0;j<ancestralstatevector->size;j++) {
 							Superdouble  currentProb=(gsl_matrix_get(Pmatrix,i,j));
+							Superdouble  logCurrentProb=log(gsl_matrix_get(Pmatrix,i,j));
 							NodePtr descnode=currentnode->GetChild();
 							while (descnode!=NULL) { 
 								currentProb*=((Lvector[descnode])[breaksperbranch][j]); //Get the likelihood of state j at the earliest examined node on each of the descendant branches
+								logCurrentProb+=((LogLvector[descnode])[breaksperbranch][j]); //Get the likelihood of state j at the earliest examined node on each of the descendant branches
 								descnode=descnode->GetSibling(); //we're going to look at all descendant subtrees (even in case of polytomies)
 							}
-							if (currentProb>bestProb) {
-								bestProb=currentProb;
+							if (logCurrentProb>bestLogProb) {
+								bestLogProb=logCurrentProb;
 								bestJ=j;
 							}
+							if (debugmode) {
+								cout<<"internal: currentProb = "<<currentProb<<" log(currentProb) = "<<log(currentProb)<<" logCurrentProb = "<<logCurrentProb<<endl;
+							}
+
 						}
 						(Cvector[currentnode])[breaknum][i]=bestJ;
-						(Lvector[currentnode])[breaknum][i]=bestProb;
+						(Lvector[currentnode])[breaknum][i]=exp(bestLogProb);
+						(LogLvector[currentnode])[breaknum][i]=bestLogProb;
+						if(debugmode) {
+							cout<<endl<<"(Lvector[currentnode])[breaknum][i]="<<(Lvector[currentnode])[breaknum][i]<<" = "<<bestProb;
+						}
 					}
 				}
 				else { //at one of the degree two nodes on this "edge"
 					for(int i=0;i<ancestralstatevector->size;i++) {
 						Superdouble bestProb=0.0;
+						Superdouble bestLogProb=GSL_NEGINF;
 						int bestJ=-1;
 						for(int j=0;j<ancestralstatevector->size;j++) {
 							Superdouble  currentProb=(gsl_matrix_get(Pmatrix,i,j))*((Lvector[currentnode])[breaknum-1][j]); //Modify Pupko algorithm 2a: Lz(i)=maxj Pij(tz) x Lx(j)
-							if (currentProb>bestProb) {
-								bestProb=currentProb;
+							Superdouble  logCurrentProb=log((gsl_matrix_get(Pmatrix,i,j))) + ((LogLvector[currentnode])[breaknum-1][j]);
+							if (logCurrentProb>bestLogProb) {
+								bestLogProb=logCurrentProb;
 								bestJ=j;
 							}
 						}
 						(Cvector[currentnode])[breaknum][i]=bestJ;
-						(Lvector[currentnode])[breaknum][i]=bestProb;
+						(Lvector[currentnode])[breaknum][i]=exp(bestLogProb);
+						(LogLvector[currentnode])[breaknum][i]=bestLogProb;
+						if(debugmode) {
+							cout<<endl<<"(Lvector[currentnode])[breaknum][i]="<<(Lvector[currentnode])[breaknum][i]<<" = "<<bestProb;
+						}
+
 					}
 				}
 			}
 		}
 		else { //hooray! at root
 			Superdouble bestProb=0.0;
+			Superdouble bestLogProb=GSL_NEGINF;
 			int bestK=-1;
 			for(int k=0;k<ancestralstatevector->size;k++) {
 				double currentProb=gsl_vector_get(ancestralstatevector,k);
+				Superdouble logCurrentProb=log(gsl_vector_get(ancestralstatevector,k));
 				NodePtr descnode=currentnode->GetChild();
 				while (descnode!=NULL) { 
+ 					if (debugmode) {
+ 						cout<<endl<<"\tCurrentProb="<<currentProb<<" and then multiply by "<<((Lvector[descnode])[breaksperbranch][k]);
+ 					}
 					currentProb*=((Lvector[descnode])[breaksperbranch][k]); //Get the likelihood of state j at the earliest examined node on each of the descendant branches
+					logCurrentProb+=((LogLvector[descnode])[breaksperbranch][k]); //Get the likelihood of state j at the earliest examined node on each of the descendant branches
 					descnode=descnode->GetSibling(); //we're going to look at all descendant subtrees (even in case of polytomies)
 				}
-				if (currentProb>bestProb) {
-					bestProb=currentProb;
+				if (debugmode) {
+					cout<<"root: currentProb = "<<currentProb<<" log(currentProb) = "<<log(currentProb)<<" logCurrentProb = "<<logCurrentProb<<endl;
+				}
+				if (logCurrentProb>bestLogProb) {
+					bestLogProb=logCurrentProb;
 					bestK=k;
 				}
 			}
-			//message="LnLikelihood of this reconstruction is ";
-			//message+=log(bestProb);
-			//PrintMessage();
+			message="LnLikelihood of this reconstruction is ";
+			message+=bestLogProb;
+			PrintMessage();
 			nxsstring AncStateLabel="";
 			AncStateLabel+=bestK;
 			currentnode->SetLabel(AncStateLabel);
