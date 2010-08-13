@@ -53,7 +53,7 @@ J.Conrad Stack
 \examples{
 # run Censored ratetest
 data(parrot)
-brownierun = runCensored(parrot,taxset="intrajoint",reps=1000,charloop=T)
+brownierun = runCensored(parrot,taxset="intrajoint",reps=1000,charloop=TRUE)
 summaryRatetest(brownierun)
 
 }

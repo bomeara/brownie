@@ -55,7 +55,7 @@ J. Conrad Stack
 \examples{
 data(parrot)
 ptmp = clearCommands(parrot)
-ptmp = addStartLog(ptmp,file="BrownieLog.txt",filereplace=T)
+ptmp = addStartLog(ptmp,file="BrownieLog.txt",filereplace=TRUE)
 commands(ptmp)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

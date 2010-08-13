@@ -8,7 +8,7 @@ Add Noncensored rate test command to brownie object
 This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to run a non-censored ratetest.
 }
 \usage{
-addNonCensored(obj, file = NULL, taxset = character(0), treeloop = FALSE, charloop = FALSE, fileappend = FALSE, filereplace = FALSE, usetempfile = FALSE, ...)
+addOpt(obj, file = NULL, taxset = character(0), treeloop = FALSE, charloop = FALSE, usetempfile = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -25,12 +25,6 @@ Should the analysis loop across the trees?  To use a specific tree then run the 
 }
   \item{charloop}{
 Should the analysis loop across characters?  To use a specific character then run the addChoose(char=<CHARNUM>) before this command.
-}
-  \item{fileappend}{
-If the output file exists, appends to it rather than overwrites it. Turned on by default.
-}
-  \item{filereplace}{
-If set to yes, if the output file already exists it will be quietly replaced.
 }
   \item{usetempfile}{
 Should a tempfile be written to (instead of file).  Not currently used.
@@ -64,9 +58,9 @@ J. Conrad Stack
 data(parrot)
 ptmp = clearCommands(parrot)
 ptmp <- addModel(ptmp,"BM1")
-ptmp <- addOpt(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=T,charloop=T,taxset="all",filereplace=T)
+ptmp <- addOpt(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=TRUE,charloop=TRUE,taxset="all")
 ptmp <- addModel(ptmp,"BMS")
-ptmp <- addOpt(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=T,charloop=T,taxset="all",fileappend=T,filereplace=F)
+ptmp <- addOpt(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=TRUE,charloop=TRUE,taxset="all")
 commands(ptmp)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

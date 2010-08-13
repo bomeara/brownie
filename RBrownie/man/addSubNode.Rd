@@ -54,58 +54,9 @@ a data.frame object which mimics the structure of the the data slot.  It contain
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (x, anc, dec, position, dataf) 
-{
-    if (!is(x, "phylo4d_ext")) {
-        warning("x is not an extended phylo4d object")
-        return(x)
-    }
-    eind = .edge.index(x, anc, dec)
-    if (is.na(eind)) 
-        stop("Failure to find edge from ", anc, " to ", dec, 
-            "\n")
-    elen = edgeLength(x)[eind]
-    if (elen == 0) 
-        stop("Cannot place subnode on a zero length branch")
-    if (position > elen) 
-        stop("Position: ", position, ", is greater than branch length: ", 
-            elen, "\n")
-    newdf = getEmptyDataFrame(x)
-    if (is.data.frame(dataf)) {
-        if (all(names(dataf) == names(newdf))) 
-            newdf = rbind(newdf, dataf)
-    }
-    else {
-        if (ncol(newdf) == length(dataf)) {
-            newdf[1, ] <- dataf
-        }
-        else {
-            newdf[1, ] <- rep(NA, ncol(newdf))
-            ndf = names(dataf)
-            count = 1
-            for (nm in ndf) {
-                nmind = which(names(newdf) == nm)
-                if (!is.null(nmind) && length(nmind) != 0) 
-                  newdf[1, nmind] = dataf[count]
-                count = count + 1
-            }
-        }
-    }
-    x@subnode.id = append(x@subnode.id, as.integer(nTips(x) + 
-        nNodes(x) + nSubNodes(x) + 1))
-    x@subnode.data = rbind(x@subnode.data, newdf)
-    x@subnode.branch = rbind(x@subnode.branch, edges(x)[eind, 
-        ])
-    x@subnode.pos = rbind(x@subnode.pos, rep(position, 2))
-    return(x)
-  }
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+\keyword{ methods }

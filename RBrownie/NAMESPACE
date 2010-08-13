@@ -1,6 +1,7 @@
 #----------------------------------------------------------------------
 useDynLib(RBrownie)
 exportPattern("^[[:alpha:]]+")
+#exportPattern("^[^(\\.|addcmd)]")
 importClassesFrom( Rcpp, "C++ObjectS3", "C++Object", "C++Class", "Module" )
 #----------------------------------------------------------------------
 
@@ -17,6 +18,5 @@ exportMethods(phyext,brownie)
 #----------------------------------------------------------------------
 
 # test functions:
-exportPattern("^[^\\.]")
 
 

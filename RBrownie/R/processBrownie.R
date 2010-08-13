@@ -59,30 +59,7 @@ is.contData <- function(dat)
 ## Valid Brownie Commands:
 #
 #
-brownie.commands <- function(with.desc=F)
-{
-	
-	brownie_cmd_options = c(
-		"cont",
-		"ratetest",
-		"discrete",
-		"model",
-		"choose"
-	)
-	
-	brownie_cmd_description = c(
-		"Non-censored rate test",
-		"Censored rate test",
-		"Discrete ancestral state reconstruction",
-		"Specifying model type",
-		"Specify with (tree|...) to use"
-	)
-	
-	if(with.desc)
-		brownie_cmd_options = cbind(brownie_cmd_options,brownie_cmd_description)
-	
-	return(brownie_cmd_options)
-}
+
 
 
 ## Valid brownie models
@@ -181,54 +158,6 @@ brownie.tvtypes <- function(with.desc=F)
 	return(brownie_freqs_options)
 }
 
-## Valid Brownie options (used with cmds)
-#
-#	Note: 	this will usually need to be called twice; once to 
-#			get the option names and another to get the validate
-#			functions:
-#			
-brownie.options <- function(with.desc=F, with.vals=F)
-{
-	
-	brownie_option_options = c(
-		"taxset",
-		"treeloop",
-		"charloop",
-		"reps",
-		"tree",
-		"type",
-		"file",
-		"append",
-		"replace"
-	)
-	
-	brownie_option_description = c(
-		rep("",brownie_option_options)
-	)
-	
-	brownie_option_validate = c(
-		checkval.dummy,
-		checkval.yesno,
-		checkval.yesno,
-		checkval.integer,
-		checkval.integer,
-		checkval.model.continuous,
-		checkval.dummy,
-		checkval.yesno,
-		checkval.yesno
-	)
-	
-	if(with.desc)
-		brownie_option_options = cbind(brownie_option_options,brownie_option_description)
-	
-	# if this, then only return the function list
-	if(with.vals){
-		names(brownie_option_validate)<-brownie_option_options
-		brownie_option_options<-brownie_option_validate
-	}
-	
-	return(brownie_option_options)
-}
 
 
 # check option values:

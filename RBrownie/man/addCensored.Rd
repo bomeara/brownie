@@ -60,50 +60,7 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (obj, file = NULL, reps = 0, taxset = character(0), 
-    treeloop = FALSE, charloop = FALSE, quiet = FALSE, usetempfile = FALSE, 
-    ...) 
-{
-    if (!is.list(obj)) {
-        obj = list(obj)
-    }
-    newcmd = list(command = NULL, options = matrix(NA, ncol = 2, 
-        nrow = 0))
-    newcmd$command = "ratetest"
-    if (length(taxset) != 0 && is.character(taxset)) 
-        for (jj in seq(length(taxset))) newcmd = addcmd.taxaset(obj[[1]], 
-            newcmd, taxset[jj])
-    newcmd = addcmd.literal(newcmd, "reps", as.character(reps))
-    newcmd = addcmd.binary(newcmd, "treeloop", treeloop)
-    newcmd = addcmd.binary(newcmd, "charloop", charloop)
-    newcmd = addcmd.binary(newcmd, "quiet", quiet)
-    if (!usetempfile && !is.null(file) && is.character(file)) {
-        newcmd = addcmd.literal(newcmd, "file", file[1])
-    }
-    else {
-        if (usetempfile) {
-            newcmd = addcmd.literal(newcmd, "file", tempfile())
-        }
-        else {
-        }
-    }
-    if (length(taxset) != 0) 
-        for (jj in seq(length(taxset))) if (!all(sapply(obj, 
-            areTaxaMono, taxset[jj]))) 
-            warning("In some trees the taxaset,", taxset[jj], 
-                ", does not form a monophyletic clade.  Might want to remove those trees before running this analysis")
-    for (ii in seq(length(obj))) {
-        commands(obj[[ii]], add = T) <- write.brownie.string(newcmd)
-    }
-    if (length(obj) == 1) 
-        obj = obj[[1]]
-    return(obj)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

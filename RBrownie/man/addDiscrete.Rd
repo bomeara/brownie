@@ -107,7 +107,7 @@ Usage: Discrete [model=] [freq=] [ratemat=] [statevector=] [treeloop=] [charloop
 \examples{
 data(geospiza_ext)
 brownierun=runDiscrete(geospiza_ext,brfile="disc_junk.txt",
-models=c("nonrev","nonrev"),freqs=c("unif","equilib"),reconstruct=T)
+models=c("nonrev","nonrev"),freqs=c("unif","equilib"),reconstruct=TRUE)
 brownierun
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

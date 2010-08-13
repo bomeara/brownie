@@ -64,9 +64,9 @@ J. Conrad Stack
 data(parrot)
 ptmp = clearCommands(parrot)
 ptmp <- addModel(ptmp,"BM1")
-ptmp <- addNonCensored(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=T,charloop=T,taxset="all",filereplace=T)
+ptmp <- addNonCensored(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=TRUE,charloop=TRUE,taxset="all",filereplace=TRUE)
 ptmp <- addModel(ptmp,"BMS")
-ptmp <- addNonCensored(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=T,charloop=T,taxset="all",fileappend=T,filereplace=F)
+ptmp <- addNonCensored(ptmp,file="parrotfish_feeingmodetest.txt",treeloop=TRUE,charloop=TRUE,taxset="all",fileappend=TRUE,filereplace=FALSE)
 commands(ptmp)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -70,7 +70,7 @@ is_valid_datatype_prob <- function(object)
 		return(FALSE)
 	
 	# if prob is represented as log(prob)
-	if(ln){
+	if(object@ln){
 		if(object@prob > 0.0)
 			retval = F
 	} else {
