@@ -43,7 +43,7 @@ J. Conrad Stack
 }
 \examples{
 testmat = matrix(c("","a",
-			"b",""), byrow=T,nrow=2)
+			"b",""), byrow=TRUE,nrow=2)
 bmat = write.brownie.matrix(testmat)
 data(geospiza_ext)
 geotmp = addDiscrete(geospiza_ext,model="USER",ratemat=bmat)
