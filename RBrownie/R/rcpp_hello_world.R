@@ -3,7 +3,7 @@ rcpp_hello_world <- function(){
 	.Call( "rcpp_hello_world", PACKAGE = "RBrownie" )
 }
 
-read.brownie <- function(filename)
+execute.brownie <- function(filename)
 {
 	# check argument for character string
 	if( !is.character(filename) && length(filename) == 1)

@@ -47,8 +47,7 @@ J.Conrad Stack
 
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
-\code{\link{summaryRatetest}},
-\code{\link{plot.ratetest}}
+\code{\link{summaryRatetest}}
 }
 \examples{
 # run Censored ratetest

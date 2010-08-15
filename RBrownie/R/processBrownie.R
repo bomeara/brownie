@@ -204,7 +204,7 @@ checkval.ratemat <- function(optstr,factvect)
 	# match these:
 	validtokens = length( grep("^([0-9A-Za-z]|[-+]?[0-9]\\d{0,2}(\\.\\d{1,10})?%?)$",tokens) )
 	
-	return( (length(validtokens) == numberneeded) )
+	return( (validtokens == numberneeded) )
 	
 }
 

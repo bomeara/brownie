@@ -84,10 +84,7 @@ From Brownie command-line manual:
 Usage: Discrete [model=] [freq=] [ratemat=] [statevector=] [treeloop=] [charloop=] [allchar=] [variable=] [reconstruct=] [breaknum=] [file=] [append=] [replace=] [globalstates=]
 }
 \value{
-%%  If it is a LIST, use
-\item{stats}{The statistical output of the run}
-\item{trees}{The reconstructed trees (if reconstruct=T) for each model/freq combination}
-\item{cmds}{The commands, in brownie command-line format, which were used}
+The brownie object \code{obj} with a new command added.
 }
 \references{
 %% ~put references to the literature/web site here ~

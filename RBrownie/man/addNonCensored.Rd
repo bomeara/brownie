@@ -40,7 +40,7 @@ Not currently used.
 }
 }
 \details{
-Brownie uses simmap (v1.0) output format to read in ancestral character state reconstrutions.  These reconstructions can be used with the Non-censored rate test command as a means to address questions about whether certain character states influence the evolutionary rates (under different models of evolution)
+This is still a bit untested, but has been used successfully (and has been tested somewhat). Basically, parameters can be "painted" onto the branches of the tree. For example, you could paint most of the tree with one rate parameter, and just one clade (including half the branch leading up to it) with a different rate parameter. This "painting" can be done in one of two ways: 1) loading a file in SIMMAP (Bollback, 2006) format with the numbers 0-9 mapped on the tree, or 2) reconstructing states of a discrete trait down the tree (next section). Unlike programs like OUCH (Butler and King, 2004), which paints Ornstein-Uhlenbeck regimes on entire branches, Brownie can handle branches where the first 24% has one regime, the next 15% has another regime, and the remaining part has a third regime. The painted parameters can be different Brownian motion rate parameters or different OU means (more models are coming soon).
 }
 \value{
 Returns the original object (obj) with CONTinuous command added.

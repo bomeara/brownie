@@ -38,8 +38,6 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{taxasets}},
-\code{\link{taxasets<-}}
 }
 \examples{
 data(parrot)
