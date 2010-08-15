@@ -78,5 +78,11 @@ Class \code{"\linkS4class{phylo4}"}, by class "phylo4d_ext", distance 3.
 }
 \examples{
 showClass("brownie")
+
+
+# remove commands:
+data(geospiza_ext)
+commands(geospiza_ext)
+commands(removeCommands(geospiza_ext,"discrete"))
 }
 \keyword{classes}
