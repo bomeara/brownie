@@ -15,7 +15,7 @@
 \alias{writeBrownie,brownie-method}
 
 \title{Class "brownie" ~~~ }
-\description{	 ~~ A concise (1-5 lines) description of what the class is.  ~~}
+\description{ Brownie class }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("brownie", ...)} or by calls to brownie()
 
@@ -24,6 +24,7 @@ The 'brownie' S4 object builds off of the phylo4d_ext class, itself chiefly desi
 For that reason it supports subnodes (via phylo4d_ext) which are subnodes placed between nodes on a phylogenetic tree (and currently written out in SIMMAP v1.0 format).  It supports three different datatypes: taxasets (binary columns in the data slot which indicate membership in a taxaset with a value of 1), discrete data (data which you would want to represent as factors), and continuous data (numeric data).  It supports "commands", which are the actual text strings that are fed into the brownie core instructing it to carry out certain actions.  
 
 RBrownie does not use a proprietary class to house multiple phylogenetic trees (which will be commonly needed).  Instead multiple brownie objects are put into a list and most of the functions below are also defined for the 'list' class.  Each brownie entry in the list contains the same information differing only in the which phylogenetic tree it contains.  Adding a taxaset or clearing the commands of a list of brownie object will therefore change every object in the list.  The hope is to fix this data redundancy in the future.
+
 }
 \section{Slots}{
   \describe{
@@ -66,7 +67,14 @@ Class \code{"\linkS4class{phylo4}"}, by class "phylo4d_ext", distance 3.
     \item{rmdata}{\code{signature(x = "brownie", index = "numeric")}: remove the data given the index }
     \item{taxasets}{\code{signature(x = "brownie")}: display taxasets }
     \item{taxasets<-}{\code{signature(x = "brownie")}: This function adds a taxaset.  Taxaset names are appended with the string TAXASET_.  This is one way brownie can tell if a certain column in the data slot is a taxaset. }
-    \item{writeBrownie}{\code{signature(x = "brownie")}: Write this object to a file. }
+    \item{writeBrownie}{\code{signature(x = "brownie")}: 
+ This function writes out brownie objects (or lists of such) to a nexus file, which is slightly tailored so that it is compatible with the brownie core or the brownie command-line program.  It is used internally by RBrownie to write brownie objects to temporary file, which are then executed by the brownie core. 
+
+Brownie object are mainly translated as standard NEXUS files with a few important exceptions.  First, the TREES block can contain newick tree strings which are in SIMMAP (v1.0 or v1.1) format.  The discrete and continuous data in the \code{data} slot are separated into two different blocks:  CHARACTERS and CHARACTERS2.  Any taxasets that exists are written to an ASSUMPTIONS block and anything in the \code{commands} slot is written within a BROWNIE block.
+	
+This function is still relatively untested and if any errors are returned please submit then to the author, who would greatly appreciate it. 
+ 
+    }
 	 }
 }
 \references{ ~put references to the literature/web site here ~ }
