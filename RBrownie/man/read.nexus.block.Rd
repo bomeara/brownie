@@ -50,48 +50,7 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (finput, txt = NULL, block, rm.comments = F, silent = F) 
-{
-    if (!is.null(txt)) {
-        rawtext = txt
-    }
-    else {
-        if (!file.exists(finput)) 
-            stop("Assuming finput is a file and could not find it")
-        rawtext = scan(finput, what = character(0), strip.white = T, 
-            sep = "\n", quiet = silent)
-    }
-    inds = .get.nexus.block.inds(blockname = block, text = rawtext)
-    if (length(inds) == 0) {
-        if (!silent) 
-            warning(paste("This file has", block, "no block"))
-        return(character(0))
-    }
-    rawtext = rawtext[(inds[1] + 1):(inds[2] - 1)]
-    if (rm.comments) {
-        comment.starts = grep("^\\[", rawtext)
-        comment.ending = grep("\\]$", rawtext)
-        if (length(comment.starts) == length(comment.ending)) {
-            comment.pairs = cbind(comment.starts, comment.ending)
-        }
-        else {
-            comment.pairs = cbind(character(0), character(0))
-        }
-        if (nrow(comment.pairs) > 0) {
-            for (pair in seq(nrow(comment.pairs))) {
-                print(pair)
-                rawtext = rawtext[-(comment.pairs[pair, 1]:comment.pairs[pair, 
-                  2])]
-            }
-        }
-    }
-    return(rawtext)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

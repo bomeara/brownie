@@ -34,7 +34,7 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	header.tokens <- strsplit(rettab[headercol],'\t')[[1]]
 	all.tokens = header.tokens
 	datacols= integer(0) # put out all data columns
-	headercols=headercol
+	headercols=integer(0)
 	count = 1
 	for (line in rettab)
 	{
