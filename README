@@ -1,0 +1,9 @@
+Instructions on how to compile the R package: 
+---------------------------------------------
+1.) run ./build_r (unix / mac) or ./build_r.win (windows)  
+	- this copies files into the correct places and will try to compile RBrownie as a binary package.  Errors will be noted
+
+2.) run R CMD INSTALL RBrownie_<version>.(zip|tgz|tar.gz) (windows,mac,unix respectively)
+	- This will install the package assuming that the first step completed with no errors
+
+Email stack@psu.edu with any questions / comments.  Thanks!
