@@ -1,5 +1,6 @@
 \name{phyext-methods}
 \docType{methods}
+\alias{phyext}
 \alias{phyext-methods}
 \alias{phyext,character-method}
 \alias{phyext,list-method}

@@ -1,5 +1,6 @@
 \name{hasTaxasets-methods}
 \docType{methods}
+\alias{hasTaxasets}
 \alias{hasTaxasets-methods}
 \alias{hasTaxasets,ANY-method}
 \alias{hasTaxasets,list-method}

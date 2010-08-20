@@ -2,17 +2,35 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{brownie-class}
-\alias{clearCommands,brownie-method}
+\alias{brownie}
+\alias{commands}
+\alias{commands<-}
 \alias{commands,brownie-method}
+\alias{commands,list-method}
 \alias{commands<-,brownie-method}
+\alias{commands<-,list-method}
+\alias{datatypes}
+\alias{datatypes<-}
 \alias{datatypes,brownie-method}
+\alias{datatypes,list-method}
 \alias{datatypes<-,brownie-method}
+\alias{datatypes<-,list-method}
+\alias{removeCommands}
+\alias{removeCommands,list,ANY-method}
 \alias{removeCommands,brownie,numeric-method}
 \alias{removeCommands,brownie,character-method}
 \alias{rmdata,brownie,numeric-method}
+\alias{taxasets}
+\alias{taxasets,phylo4d-method}
 \alias{taxasets,brownie-method}
+\alias{taxasets,list-method}
+\alias{taxasets<-}
 \alias{taxasets<-,brownie-method}
+\alias{taxasets<-,list-method}
+\alias{taxasets<-,phylo4d-method}
+\alias{writeBrownie}
 \alias{writeBrownie,brownie-method}
+\alias{writeBrownie,list-method}
 
 \title{Class "brownie" ~~~ }
 \description{ Brownie class }

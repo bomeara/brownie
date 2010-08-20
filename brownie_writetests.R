@@ -53,6 +53,6 @@ cat("\n\nStarting execution tests....",file=outfile,append=T)
 for(ff in nexfiles)
 {
 	cat(ff,"\n",file=outfile,append=T)
-	read.brownie(paste(ff,".tmp",sep=""))
+	execute.brownie(paste(ff,".tmp",sep=""))
 }
 

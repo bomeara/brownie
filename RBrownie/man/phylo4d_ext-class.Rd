@@ -2,17 +2,40 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{phylo4d_ext-class}
+\alias{hasSubNodes}
 \alias{hasSubNodes,phylo4d_ext-method}
+\alias{hasSubNodes,phylo-method}
+\alias{hasSubNodes,phylo4-method}
+\alias{hasWeight}
 \alias{hasWeight,phylo4d_ext-method}
+\alias{hasWeight,list-method}
 \alias{plot,phylo4d_ext,missing-method}
+\alias{rmdata}
 \alias{rmdata,phylo4d_ext,numeric-method}
+\alias{rmdata,phylo4d,numeric-method}
+\alias{rmdata,phylo4d,character-method}
+\alias{rmdata,list,ANY-method}
+\alias{snbranch}
 \alias{snbranch,phylo4d_ext-method}
+\alias{snbranch,list-method}
+\alias{sndata}
 \alias{sndata,phylo4d_ext-method}
+\alias{sndata,list-method}
+\alias{sndata<-}
 \alias{sndata<-,phylo4d_ext-method}
+\alias{sndata<-,list-method}
+\alias{snid}
 \alias{snid,phylo4d_ext-method}
+\alias{snid,list-method}
+\alias{snposition}
 \alias{snposition,phylo4d_ext-method}
+\alias{snposition,list-method}
+\alias{weight}
 \alias{weight,phylo4d_ext-method}
+\alias{weight,list-method}
+\alias{weight<-}
 \alias{weight<-,phylo4d_ext-method}
+\alias{weight<-,list-method}
 
 \title{Class "phylo4d_ext" ~~~ }
 \description{ This class extends phylo4d in adding support for subnodes (not singletons) and tree weights.  }
