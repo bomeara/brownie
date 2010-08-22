@@ -1,0 +1,77 @@
+\documentclass{article}
+
+\usepackage{natbib}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=red,bookmarks=true]{hyperref}
+
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\cov}{cov}
+
+%\VignettePackage{RBrownie}
+%\VignetteIndexEntry{Getting started with RBrownie}
+
+\begin{document}
+
+<<meta,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+meta <- packageDescription("RBrownie")
+@
+
+\title{Getting started with RBrownie (Version \Sexpr{meta$Version})}
+\author{J. Conrad Stack}
+\maketitle
+
+\section{Introduction}
+
+The \verb@RBrownie@ package has been constructed around the program \href{http://www.brianomeara.info/brownie/}{\underline{Brownie}} written by Brian O'Meara and essentially it exposes the functionality of Brownie 2.0 (the C++ version) to R users via the \verb@Rcpp@ package.  On the front-end, \verb@RBrownie@ extends many \verb@phylobase@ classes and methods.
+
+Brownie itself is a program for analyzing rates of continuous character evolution and looking for substantial rate differences in different parts of a tree using likelihood ratio tests and Akaike Information Criterion (AIC) statistics. It also implements many other methods for examining trait evolution and methods for doing species delimitation.  These functions are described (or will be) in further vignettes and can also be accessed through the R help system.
+
+\section{Prerequisites}
+
+Brownie uses the \href{www.gnu.org/software/gsl/}{Gnu Science Library}.  This needs to be installed on which ever operating system you have install and needs to be exposed to the C++ build environment (don't worry about the technical details here).  Below are some rough guidelines to help you get GSL installed.
+
+\subsection{Unix and Mac OS}
+\begin{itemize}
+\item Acquire \texttt{gcc} (This will often come installed on the operating system).  This is most easily done through a package manager, for example: \texttt{sudo apt-get install build-essential}.  If you are using Mac OSX then you will need to download \href{http://developer.apple.com/technologies/xcode.html}{Xcode} from the apple developer's website - which is free.
+\item Use package manager to download the GSL: \texttt{sudo apt-get install libgsl0-dev}.  Note: it is important to install the package with the \texttt{-dev} extension, this version includes all the necessary headers.  If this works, then you are finished.
+\item Alternatively, if no package manager is available then download the GSL source code manually - see the "Downloading GSL" section on \url{http://www.gnu.org/software/gsl/}.
+\item Open up a terminal window (Application -> Utilities on Mac OSX) and follow the instructions to build the GSL from source (see INSTALL file).  This step usually consists of navigating to the GSL source directory and then executing \texttt{./configure}, \texttt{make}, and \texttt{make install}.  Don't worry if the configure and make commands take a while to execute and output some cryptic compiler jargon onto your screne, as long as they both finish without an showing an error you should be fine.  Now you have the GSL installed!
+\item Mac OS 10.6 users take note that \verb@R@ and gcc by default build for 64-bit architectures.  If you want to build and install a 32-bit version then use a configure command similar to this: \texttt{./configure CFLAGS="-arch i386"}.
+\end{itemize}
+
+\subsection{Windows}
+
+It is a bit trickier to compile the GSL from source on Windows, so pre-compiled binary files should be downloaded and installed instead.  There are a few versions floating around, but the one by Gordon Taft is highly recommended and is available as a windows installer at \url{http://gordon-taft.net/SciencePack.html}.  
+
+
+\section{Easy Installation}
+
+By far the easiest way to install \verb@RBrownie@ is to download it from CRAN through R:
+
+<<AutoInstall, eval=false>>=
+install.packages("RBrownie", repos = "http://lib.stat.cmu.edu/R/CRAN/")
+@
+
+where the \texttt{repos} argument is a CRAN mirror (see \url{http://cran.r-project.org/mirrors.html} for list of mirrors).  This will also tell you whether or not you need to download other R packages that RBrownie relies on.
+
+\section{Manual Installation}
+
+To install the bleeding edge RBrownie source code, you need to download it from it's subversion repository, build it using a special build script, and then manually install it.  The whole process typed out on the command line should look something like this: 
+\begin{enumerate}
+\item \texttt{svn checkout \url{http://brownie.googlecode.com/svn/branches/brownie_jcs} brownie\_new}
+\item \texttt{cd brownie\_new}
+\item \texttt{.$\backslash$build\_r (or .$\backslash$build\_r.win on Windows)}  Windows users note: You will need to manually configure the RBrownie/configure.win file to point to the Gnu Science Library on your system.  The current configure.win uses the environmental variable \texttt{BSP\_HOME} to indicate the base directory where GSL is installed.  Either set that environmental variable yourself or replace instances of \texttt{BSP\_HOME} in configure.win with the directory path.
+\item \texttt{R CMD INSTALL RBrownie\_\Sexpr{meta$Version}.[zip|tar.gz|tgz]}  Note: file ending depends on operating system.
+\end{enumerate}
+
+\section{Last Thoughts}
+That should be it!  Once you have RBrownie compiled and installed, check out the other vignettes (which are acting as examples/tutorials) for more on how to actually perform the phylogenetic analyses, plot the results, etc.
+
+And if you have any trouble or find problems with this guide, don't hesitate to email the author at \href{mailto:stack@psu.edu}{stack@psu.edu}.  
+\end{document}
+
