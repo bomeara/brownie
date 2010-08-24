@@ -1,0 +1,54 @@
+\documentclass{article}
+
+\usepackage{natbib}
+\usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage[utf8]{inputenc}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=red,bookmarks=true]{hyperref}
+
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\cov}{cov}
+
+%\VignettePackage{RBrownie}
+%\VignetteIndexEntry{RBrownie User's Guide}
+
+\begin{document}
+
+<<meta,include=FALSE,echo=FALSE>>=
+options(keep.source = TRUE, width = 60)
+meta <- packageDescription("RBrownie")
+@
+
+\title{RBrownie User's Guide (Version \Sexpr{meta$Version})}
+\author{J. Conrad Stack with credit due to others(1)}
+\maketitle
+
+\section{Brief Introduction to Brownie}
+
+\verb@RBrownie@ is an R package which is constructed around the C++ command-line program \href{http://www.brianomeara.info/brownie}{Brownie} (available \href{code.google.com/p/brownie}{here}) designed by Brian O'Meara to estimate and compare rates and means of character evolution in different parts of a phylogeny \citep*{brau}.  More specifically, the original Brownie function was a censored rate test under Brownian motion, which allows the comparison of the rates of evolution (under brownian motion) across two monophyletic sister-clades or between a monophyletic and paraphyletic clade.  This analysis allows you to answer questions about differences in the evolutionary rate of two distinct clades (e.g. large subspecies vs. small subspecies).
+
+As Brownie has grown, more, related analyses have been added.  Now you can perform non-censored ratetests and discrete character reconstructions.  The former allows you to compare the rates (Brownian motion model) or means (Ornstein-Uhlenbeck model) of evolution in different character states that are mapped (or painted) onto the phylogeny.  For example, say you had a tree with binary characters mapped onto it branches indicating whether or not ancestors along that branch were thought to have or not have a certain trait and you also had morphological data for all the taxa present in the tree (the tips).  Using a model-testing approach, Brownie allows to you statistically assess whether or not that binary trait might have significantly influence the rate of evolution of the morphological characteristic measured (or set of morphological characteristics).  Brownie also performs discrete ancestral state evolution (maximum likelihood approach), in order to get the branch-annotated trees which are used in non-censored rate tests.  
+
+Examples of the sort of analyses available in \verb@RBrownie@ are shown and described in detail below, so don't worry if this does not make sense yet.  There is also a fairly technical explaination of the data types found in \verb@RBrownie@ which it uses to handle, manipulate, and visualize phylogenetic data and test results and instructions on how to create your own custom analyses.
+
+
+
+\begin{thebibliography}{}
+
+\bibitem[Bodega Phylogenetics Wiki (2010)]{phylo}
+Price, S., Wainwright, P. (2010). Testing for different rates of continuous trait evolution using likelihood. (http://bodegaphylo.wikispot.org/Morphological\_Diversification\_and\_Rates\_of\_Evolution)
+
+
+\bibitem[O'Meara, et al.(2006)]{brau}
+O'Meara, B. C., Ane, C., Sanderson, M. J. and Wainwright, P. C. (2006). 
+\newblock Testing for different rates of continuous trait evolution using likelihood. 
+\newblock In \emph{Evolution}, 60 ,922--933.
+
+
+\end{thebibliography}
+
+
+
+\end{document}
