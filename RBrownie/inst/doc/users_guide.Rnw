@@ -33,7 +33,24 @@ As Brownie has grown, more, related analyses have been added.  Now you can perfo
 
 Examples of the sort of analyses available in \verb@RBrownie@ are shown and described in detail below, so don't worry if this does not make sense yet.  There is also a fairly technical explaination of the data types found in \verb@RBrownie@ which it uses to handle, manipulate, and visualize phylogenetic data and test results and instructions on how to create your own custom analyses.
 
+\subsection{How to run}
 
+Over it's lifetime Brownie has evolved from a MATLAB module into a command-line executable available to anyone.  In it's current iteration, Brownie 2.0, is available in \href{http://code.google.com/p/brownie/downloads/list}{executable form} for Macintosh operating systems and as \href{http://code.google.com/p/brownie/downloads/list}{source code} which can be installed onto most other operating systems using gcc and the GSL.  
+
+\subsection{Input / Output}
+
+The brownie command-line program is very similar in look, feel, and structure to command-line PAUP*.  It reads NEXUS-formatted files including, like PAUP*, a special (optional) nexus block, 'BROWNIE', which holds a list of the commands to be executed by the program itself.  This is noteworthy because \verb@RBrownie@ reads and writes these specialized nexus files and any files that \verb@RBrownie@ outputs should be directly executable by the Brownie command-line program.
+
+\subsection{More information}
+
+Brownie has a large number of function in addition to the rate tests described above that we encourage you to check out.  This will allow you to exploit all the useful functions Brownie (and by extension \verb@RBrownie@) have to offer.  the manual for Brownie can be found \href{http://www.brianomeara.info/brownie/manual}{here}.
+
+
+\section{RBrownie}
+
+It was mentioned before that RBrownie is an R shell for the brownie program described above.  This is indeed the case.  Using the \verb@Rcpp@ package, RBrownie links R with the exact same Brownie code that is used in the Brownie command line program.  It simply builds brownie as a static library and automates the piping and execution of strings that would normally be entered at the Brownie programs command line.  This is the reason that the \texttt{brownie} S4 class has a slots for "commands" (more on this later).  At it's heart, RBrownie simply takes all the information from a \texttt{brownie} object, writes it to a file, and then executes it using Brownie.  
+
+Of course the process of reading / writing specially formatted nexus files., RBrownie extends R's already rich phylogenetic toolkit with a number of data structures and methods to support 
 
 \begin{thebibliography}{}
 
