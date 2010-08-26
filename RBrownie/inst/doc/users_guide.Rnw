@@ -50,7 +50,44 @@ Brownie has a large number of function in addition to the rate tests described a
 
 It was mentioned before that RBrownie is an R shell for the brownie program described above.  This is indeed the case.  Using the \verb@Rcpp@ package, RBrownie links R with the exact same Brownie code that is used in the Brownie command line program.  It simply builds brownie as a static library and automates the piping and execution of strings that would normally be entered at the Brownie programs command line.  This is the reason that the \texttt{brownie} S4 class has a slots for "commands" (more on this later).  At it's heart, RBrownie simply takes all the information from a \texttt{brownie} object, writes it to a file, and then executes it using Brownie.  
 
-Of course the process of reading / writing specially formatted nexus files., RBrownie extends R's already rich phylogenetic toolkit with a number of data structures and methods to support 
+Of course to be able to process specially formatted nexus files and manipulate their contents from within R, RBrownie had to extend R's already rich phylogenetic toolkit with a number of data structures and methods.  It literally extends a number of classes and methods from \verb@phylobase@, an R package, it could be said, on which RBrownie is based.  Loading the RBrownie package should show you a list of all the packages on which it is based.
+
+<<LoadIn, eval=false,echo=true>>=
+require(RBrownie)
+@
+
+\subsection{Reading nexus files}
+
+Nexus files can be read into R using a number of packages. \verb@ape@ and \verb@phylobase@ both include the functionality to read in tree and sequence data, while phylobase also reads CHARACTERS blocks.  For more information on the options presented by these too packages, check out their documentation files:
+
+<<HelpNexus, eval=false,echo=true>>=
+?read.nexus 		# ape
+?read.nexus.data  	# ape
+?readNexus  		# phylobase
+@
+
+However, Brownie uses nexus blocks beyond those supported by \verb@ape@ and \verb@phylobase@ and so \verb@RBrownie@ extends the methods from these two packages to accomadate.  For example, Brownie uses an ASSUMPTIONS block to define subsets of the taxa which can be used in its various rate tests.  It also uses a BROWNIE block to store a list of brownie commands to be run automatically if the file is "executed" within the Brownie environment (this is similar to how PAUP* executes files).  So, RBrownie has it's own functions for reading and writing nexus files with these special blocks, \texttt{readBrownie} and \texttt{writeBrownie}.
+
+To illustrate how they work we'll use the parrot dataset which is included with RBrownie (NOTE: you need to have write access to the directory you are in to run this example).
+
+<<InOutDemo, eval=false,echo=true>>=
+data(parrot)  
+writeBrownie(parrot,file="parrotdata.nex")
+newparrot = readBrownie("parrotdata.nex")
+@
+
+The two objects \texttt{parrot} and \texttt{newparrot} should be indentical.  It would also be instructive to open the parrotdata.nex file to see how RBrownie writes ASSUMPTIONS blocks, but this isn't necessary.  You may have noticed that \texttt{parrot} and \texttt{newparrot} are both of class \texttt{list}.  
+
+<<HelpNexus, eval=false,echo=true>>=
+class(parrot)
+class(parrot[[1]])
+@
+
+This is because when multiple trees are found in a single nexus file, RBrownie represents them as a list of objects which all are of class \texttt{brownie} - these objects are discussed in the next section.  
+
+\subsection{Classes in RBrownie}
+
+
 
 \begin{thebibliography}{}
 
