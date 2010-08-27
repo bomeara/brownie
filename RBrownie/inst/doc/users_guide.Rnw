@@ -93,13 +93,100 @@ At it's core RBrownie is built around two major classes, \texttt{phylo4d\_ext} a
 phylo4d_slots = names(getSlots("phylo4d"))
 phylo4d_ext_slots = names(getSlots("phylo4d_ext"))
 brownie_slots = names(getSlots("brownie"))
-
 phylo4d_slots
-
 setdiff(phylo4d_ext_slots,phylo4d_slots)
-
 setdiff(brownie_slots,phylo4d_ext_slots)
 @
+
+\subsubsection{phylo4d\_ext class}
+
+This class (as implied by the name) is an extension of the \texttt{phylo4d} class from phylobase.  This base class holds a phylogenetic tree and a \texttt{data.frame} containing data for each node of the tree.  The code below shows how to construct a phylogenetic tree and add junk data to the tips of tree which in practice might represent morphological data for each of the taxa.
+
+<<PlotFigOne,fig=TRUE,echo=TRUE,keep.source=TRUE>>=
+require(phylobase)
+# generate a random coalescent tree with 10 tips
+ape_tree = rcoal(10)
+
+# convert tree from 'phylo' (ape) to 'phylo4' (phylobase) format
+phy_tree = as(ape_tree,"phylo4")
+
+# generate junk data for the tips
+sample_tipdata = runif(10)
+
+# combine the phylogenetic tree and the sample data
+phyd_tree = phylo4d(phy_tree,tip.data=sample_tipdata)
+plot(phyd_tree)
+@
+
+\texttt{phylo4d\_ext} adds to this class 'subnodes' and tree weights.  Subnodes are internal nodes mapped directly onto an existing branches and are conceptually similar to singleton nodes (but offer a bit more flexibility from a programming standpoint).  The \texttt{phylo4d\_ext} class was created mainly to handle SIMMAP-formatted nexus trees, but instances can be created from scratch as well.
+
+<<PlotFigTwo,fig=TRUE,echo=TRUE,keep.source=TRUE>>=
+require(RBrownie)
+ape_tree = rcoal(10)
+phy_tree = as(ape_tree,"phylo4")
+
+# create tip data
+# create binary data indicators for all nodes (including internal)
+sample_binarydata = data.frame(sample(c(0,1),19,replace=TRUE))
+names(sample_binarydata) <- "hasTrait"
+
+# subnodes
+sample_subnodedata = data.frame(sample(c(0,1),4,replace=TRUE))
+names(sample_subnodedata) <- "hasTrait"  # should be the same name as the parent data.frame
+sample_edges = sample(seq(nrow(edges(phy_tree))),4) # add subnodes to 4 random branches
+sample_positions = runif(4) # could positions for the subnodes along their branches (as a fraction of the overall branch length)
+
+# note that "extra" arguments (all.data) are passed on to the phylo4d constructor
+phyext_tree = phyext(phy_tree, 
+			snode.data=sample_subnodedata, 
+			snode.branch=edges(phy_tree)[sample_edges,], 
+			snode.pos=sample_positions,
+			all.data=sample_binarydata)
+
+# nodes, subnodes, and branches without the "trait" (state 0) are colored black
+# nodes, subnodes, and branches with the "trait" (state 1) are colored red
+plot(phyext_tree,states=c(0,1),states.col=c("black","red"))
+@
+
+In the plot above, the subnodes are clearly seen as dots on an existing branch.  This is usually used to indicate state changes along a branch, but because of the randomly generated data above you might see an entirely red branch with a red subnode or something similarly odd.  A better example might be seen in the parrot data set.
+
+<<PlotFigThree,fig=TRUE,echo=TRUE>>=
+require(RBrownie)
+data(parrot)
+plot(parrot[[1]])
+@
+
+Now the binary state data are represented by the default colors and a state change is clearly visible on the branch from the taxon Sparisoma\_chrysopterum.  In this case, state 0 and state 1 represent a life history trait of parrot fish, namely whether they scrape (0) or excavate (1) coral.  You can clearly see that, in this tree at least, that life history trait changes throughout the evolutionary history of the parrot fish at both internal nodes and along a branch at a subnode.  Brownie uses this state information, as we will see later, to address questions such as "Does coral excavating\/scraping limit morphological evolution in parrotfishes".  (For more information on this parrotfish example and data, see the the first reference below from which it was taken).
+
+Anyhow, to view subnode information these accessor functions are available.
+
+<<PhyextAcc,echo=TRUE,eval=FALSE>>=
+snid(phyext_tree)
+sndata(phyext_tree)
+snposition(phyext_tree)
+snbranch(phyext_tree)
+showSubNodes(phyext_tree)
+@
+
+And to add a new subnode manually, try this
+
+<<PhyextAcc,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+# place the node along the first branch
+ancestor.node = edges(phyext_tree)[1,1]
+descendant.node = edges(phyext_tree)[1,2]
+node.position = 0.5 # half way along the branch
+node.data = data.frame(1) # give it state = 1
+names(node.data) <- "hasTrait"
+
+phyext_tree = addSubNode(phyext_tree,
+				ancestor.node,
+				descendant.node,
+				node.position,
+				node.data)
+@
+
+
+\subsubsection{brownie class}
 
 
 \begin{thebibliography}{}
