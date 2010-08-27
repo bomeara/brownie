@@ -78,7 +78,10 @@ setMethod("phyext", "phylo4d",
 	if(missing(snode.pos) || is.null(snode.pos))
 		snode.pos = matrix(0,nrow=0,ncol=2)
 	
-		
+	# convert to matrix is it isn't already
+	if(is.numeric(snode.pos))
+		snode.pos = matrix(rep(snode.pos,2),ncol=2)
+	
 	# Convert any singletons into subnodes:
 	#
 	if(hasSingle(x))
