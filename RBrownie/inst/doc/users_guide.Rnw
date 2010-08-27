@@ -87,6 +87,19 @@ This is because when multiple trees are found in a single nexus file, RBrownie r
 
 \subsection{Classes in RBrownie}
 
+At it's core RBrownie is built around two major classes, \texttt{phylo4d\_ext} and \texttt{brownie}, which both extend \texttt{phylo4d} from phylobase.  In fact, \texttt{phylo4d\_ext} extends \texttt{phylo4d} and \texttt{brownie} extends \texttt{phylo4d\_ext}.  In non-computer-ese this mean that \texttt{phylo4d\_ext} adds a few new data containers (or "slots" as they are known in the S4 world) and \texttt{brownie} adds a few new data containers to \texttt{phylo4d\_ext}.  To illustrate this, look at the R code below, it shows the new slots that are added to \texttt{phylo4d\_ext}.
+
+<<SeeClasses, eval=false,echo=true>>=
+phylo4d_slots = names(getSlots("phylo4d"))
+phylo4d_ext_slots = names(getSlots("phylo4d_ext"))
+brownie_slots = names(getSlots("brownie"))
+
+phylo4d_slots
+
+setdiff(phylo4d_ext_slots,phylo4d_slots)
+
+setdiff(brownie_slots,phylo4d_ext_slots)
+@
 
 
 \begin{thebibliography}{}
