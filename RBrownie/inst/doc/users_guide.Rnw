@@ -185,6 +185,15 @@ phyext_tree = addSubNode(phyext_tree,
 				node.data)
 @
 
+You might notice that the subnode position is represented currently as a two-column matrix.  This is because, in a future version, the subnodes will float between two values representing our confidence on where the state change (and thus the subnode) might occur.  \texttt{weight} is another aspect of the \texttt{phylo4d\_ext} class that will be supported better in future versions.  
+
+Finally, subnodes will most be read in from SIMMAP-formatted nexus files and not added manually.  The SIMMAP format was created represent state mappings onto branches (subnodes) in nexus tree files and the standard has gone through a number of iterations.  Currently, only SIMMAP version 1.0 and 1.1 are supported by \verb@RBrownie@ - we are working to add support for others.  \verb@RBrownie@ has functions for reading and / writing in this format with functions similar to \verb@ape@'s \texttt{read.nexus} and \texttt{write.nexus} functions.  (NOTE: you need to have write access to the directory you are in to run this example).
+
+<<InOutDemoTwo, eval=false,echo=true>>=
+data(parrot)
+write.nexus.simmap(parrot,file="parrottmp.nex")
+newparrot = read.nexus.simmap("parrottmp.nex")
+@
 
 \subsubsection{brownie class}
 
