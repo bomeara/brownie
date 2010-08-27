@@ -39,7 +39,7 @@ Over it's lifetime Brownie has evolved from a MATLAB module into a command-line 
 
 \subsection{Input / Output}
 
-The Brownie command-line program is very similar in look, feel, and structure to command-line PAUP*.  It reads NEXUS-formatted files including, like PAUP*, a special (optional) nexus block (BROWNIE) which holds a list of the commands to be executed by the program itself.  We mention this because \verb@RBrownie@ reads and writes these specialized nexus files and any files which \verb@RBrownie@ outputs are directly executable by the Brownie command-line program.
+The Brownie command-line program is very similar in look, feel, and structure to command-line PAUP*.  It reads NEXUS-formatted files including, like PAUP*, a special, proprietary nexus block (BROWNIE) which holds a list of the commands to be executed by the program itself.  We mention this because \verb@RBrownie@ reads and writes these specialized nexus files and any files which \verb@RBrownie@ outputs are directly executable by the Brownie command-line program.
 
 \subsection{More information}
 
@@ -85,13 +85,14 @@ class(parrot)   	# list class
 class(parrot[[1]])  # brownie class
 @
 
-This is because when multiple trees are found in a single nexus file, RBrownie represents them as a list of objects which all are of class \texttt{brownie} - these are discussed in the next section.
+The list class (a very common class in R) is used when multiple trees are found in a single nexus file.  RBrownie represents them as a list of objects which all are of class \texttt{brownie} - these are discussed in the next section.  The \texttt{readNexus} function in phylobase has the same behavior.
 
 \subsection{Classes in RBrownie}
 
-At it's core RBrownie is built around two major classes, \texttt{phylo4d\_ext} and \texttt{brownie}, which both extend \texttt{phylo4d} from phylobase.  In fact, \texttt{phylo4d\_ext} extends \texttt{phylo4d} and \texttt{brownie} extends \texttt{phylo4d\_ext}.  In non-computer-ese this mean that \texttt{phylo4d\_ext} adds a few new data containers (or "slots" as they are known in the S4 world) and \texttt{brownie} adds a few new data containers to \texttt{phylo4d\_ext}.  To illustrate this, look at the R code below, it shows the new slots that are added to \texttt{phylo4d\_ext}.
+At it's core RBrownie is built around two major classes, \texttt{phylo4d\_ext} and \texttt{brownie}, which both extend \texttt{phylo4d} from phylobase.  In fact, \texttt{phylo4d\_ext} extends \texttt{phylo4d} and \texttt{brownie} in turn extends \texttt{phylo4d\_ext}.  In non-computer-ese this mean that \texttt{phylo4d\_ext} adds a few new data containers (or "slots" as they are known in the S4 world) to \texttt{brownie} and \texttt{brownie} adds a few new data containers to \texttt{phylo4d\_ext}.  To illustrate this, run the R code below, it shows the new slots that are added to \texttt{phylo4d}.
 
 <<SeeClasses, eval=false,echo=true>>=
+require(RBrownie)
 phylo4d_slots = names(getSlots("phylo4d"))
 phylo4d_ext_slots = names(getSlots("phylo4d_ext"))
 brownie_slots = names(getSlots("brownie"))
@@ -126,19 +127,29 @@ plot(phyd_tree)
 require(RBrownie)
 ape_tree = rcoal(10)
 phy_tree = as(ape_tree,"phylo4")
-
-# create tip data
+#
+### create tip data
+#
 # create binary data indicators for all nodes (including internal)
 sample_binarydata = data.frame(sample(c(0,1),19,replace=TRUE))
 names(sample_binarydata) <- "hasTrait"
-
-# subnodes
+#
+#
+### subnodes
 sample_subnodedata = data.frame(sample(c(0,1),4,replace=TRUE))
-names(sample_subnodedata) <- "hasTrait"  # should be the same name as the parent data.frame
-sample_edges = sample(seq(nrow(edges(phy_tree))),4) # add subnodes to 4 random branches
-sample_positions = runif(4) # could positions for the subnodes along their branches (as a fraction of the overall branch length)
+#
+# should be the same name as the parent data.frame
+names(sample_subnodedata) <- "hasTrait" 
+#
+# add subnodes to 4 random branches
+sample_edges = sample(seq(nrow(edges(phy_tree))),4) 
+#
+# could positions for the subnodes along their branches 
+# (as a fraction of the overall branch length)
+sample_positions = runif(4) 
 
-# note that "extra" arguments (all.data) are passed on to the phylo4d constructor
+# note that "extra" arguments (all.data) are passed 
+# on to the phylo4d constructor
 phyext_tree = phyext(phy_tree, 
 			snode.data=sample_subnodedata, 
 			snode.branch=edges(phy_tree)[sample_edges,], 
@@ -187,7 +198,7 @@ phyext_tree = addSubNode(phyext_tree,
 				node.data)
 @
 
-You might notice that the subnode position is represented currently as a two-column matrix.  This is because, in a future version, the subnodes will float between two values representing our confidence on where the state change (and thus the subnode) might occur.  \texttt{weight} is another aspect of the \texttt{phylo4d\_ext} class that will be supported better in future versions.  
+You might notice that the subnode position is represented currently as a two-column matrix.  In a future version, the subnodes will float between two values representing our confidence on where the state change (and thus the subnode) might occur.  \texttt{weight} is another aspect of the \texttt{phylo4d\_ext} class that will be supported better in future versions.  
 
 Finally, subnodes will most be read in from SIMMAP-formatted nexus files and not added manually.  The SIMMAP format was created represent state mappings onto branches (subnodes) in nexus tree files and the standard has gone through a number of iterations.  Currently, only SIMMAP version 1.0 and 1.1 are supported by \verb@RBrownie@ - we are working to add support for others.  \verb@RBrownie@ has functions for reading and / writing in this format with functions similar to \verb@ape@'s \texttt{read.nexus} and \texttt{write.nexus} functions.  (NOTE: you need to have write access to the directory you are in to run this example).
 
@@ -199,6 +210,103 @@ newparrot = read.nexus.simmap("parrottmp.nex")
 
 \subsubsection{brownie class}
 
+Many examples in the last section where the phylo4d\_ext class was explained used the parrot dataset included in RBrownie.  But, the parrot object is a list of \texttt{brownie} objects, right?  Yes, the \texttt{brownie} class extends the phylo4d\_ext class further (adding two new slots).  We can confirm that this is the case:
+
+<<InheritsOne, eval=false, echo=true>>=
+data(parrot)
+inherits(parrot[[1]],"phylo4d_ext")
+@
+
+\texttt{brownie} simply adds a few new slots to \texttt{phylo4d\_ext}.  The two classes were not combined into one larger class as we thought that the extended phylo4d class would hopefully have some use outside of RBrownie and furture development should reflect that. Moving on though, the two new slots are \texttt{commands}, to hold brownie text commands, and \texttt{datatypes}, which adds annotations to the \texttt{data} slot.
+
+First, the \texttt{commands} slot. It's purpose is to hold the text strings that will eventually be executed in Brownie itself.  That is, once the phylogenetic tree and any node data is loaded into the Brownie core, these commands are run.  They describe actions that the brownie core should take: analyses might need to be run on certain trees and not others, choose which models to use when model tests are done, etc.  A full list and description of all the commands can be found in the \href{http://www.brianomeara.info/brownie/manual}{Brownie manual}.  
+
+For all but the most advanced users however, these commands will be filled in automatically by some higher level functions (seen later on) which were designed to make it easy to set up and execute common analysis.  If you do find yourself needing to manipulate these commands, there are a number of accessor functions set up for you to do this
+
+<<BrownieExample,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
+require(RBrownie)
+data(geospiza_ext)
+commands(geospiza_ext)
+
+# Removal
+geo_none1 = clearCommands(geospiza_ext) # remove all commands
+geo_none2 = removeCommands(geospiza_ext,"discrete") # remove all 'discrete' commands
+geo_3 = removeCommands(geospiza_ext,1) # remove the first command
+
+# Addition
+geo_add = geospiza_ext
+commands(geo_add,add=TRUE) <- "choose t=1"   # add a command to the end of the vector
+commands(geo_add,add=TRUE,index=1) <- "choose c=1"  # add a command at a certain index
+commands(geo_add,replace=TRUE) <- "choose d=1"  # replace ALL commands with this one
+#
+geo_add = geospiza_ext
+# replace command at a certain index with this one
+commands(geo_add,add=TRUE,index=1,replace=TRUE) <- "choose d=1"  
+@
+
+Second, the \texttt{datatypes} slot.   \texttt{datatypes} is a character vector which contains a description of each column in the \texttt{data} slot.  RBrownie uses this information in order to write different parts of the \texttt{data} data.frame to different blocks in a nexus file.  For example, discrete and continuous data are treated differently in Brownie and each require their own nexus block (CHARACTERS and CHARACTERS2 are used).  Also, taxa sets are stored in the \texttt{data} slot as binary data (1 is taxon is in the set, 0 if not) and they are written to an ASSUMPTIONS nexus block.  To illustrate this, lets look at the data in parrot data set.  (NOTE: The \texttt{data} slot comes from phylobase, it's accessor functions also come from there.  \texttt{tdata} is an example)
+
+<<BrownieExample,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
+require(RBrownie)
+data(parrot)
+# How many columns are in the data.frame?
+ncol(tdata(parrot[[1]]))
+# What are their names?
+names(tdata(parrot[[1]]))
+# What are their types? 
+datatypes(parrot[[1]])
+@
+
+We can see here that this brownie object contains five columns in it's data.frame and they are of 3 different types.  The first \texttt{discrete}, indicates discrete data; the second and third \texttt{cont} indicate continuous data, and the forth and fifth \texttt{taxset} indicate a special binary data column showing which taxa are in a certain set of taxa.  
+
+There are handy ways to access these datatype strings when using them:
+<<BrownieExample,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+discData()
+contData()
+taxaData()
+genericData() # undefined data (shouldn't be used)
+brownie.datatypes() # show all
+@
+
+Adding new data to a \texttt{brownie} object is almost identical to how it is done in phylobase - the \texttt{addData} function is actually specified for class \texttt{brownie} - with the exception that you can specify which datatype you want to label it as.  For example:
+
+<<BrownieAddData,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
+
+require(RBrownie)
+data(parrot)
+
+# junk morphological data for tips
+junkcont = runif((nNodes(parrot[[1]])+1),-10,10)
+
+# junk discrete data for tips / nodes
+junkdisc = sample(letters[1:4], length(junkcont) + nNodes(parrot[[1]]),replace=TRUE)
+
+parrot_new = addData(parrot, tip.data=junkcont, known.types=contData())
+parrot_new = addData(parrot_new, all.data=junkdisc, known.types=discData())
+
+datatypes(parrot_new)
+@
+
+Now there are two new datatypes in the parrot data which we specified.  Also note how \texttt{addData} and \texttt{datatypes} can be called on list objects as well as brownie objects - the list variant of these functions actually adds the data to each object in that list.  RBrownie has a number of such convenient functions.
+
+Adding taxa set data is a bit different.  There is an accessor function in \verb@RBrownie@ called \texttt{taxasets} which gives the user access to all the data columns representing sets of taxa.  It can also be used to create new taxasets:
+
+<<BrownieAddTaxa,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+hasTaxasets(parrot) # see if there are any taxasets
+taxasets(parrot) # return taxasets as data.frame
+#
+# use binary data to indicate membership in a taxa set
+junktaxaset = sample(c(0,1),nTips(parrot[[1]]),replace=TRUE)
+taxasets(parrot,taxnames="Random_set") <- junktaxaset
+#
+# OR
+#
+# use taxa names to indicate membership in a taxa set
+all_sparisoma = grep("Sparisoma",tipLabels(parrot[[1]]),value=TRUE)
+taxasets(parrot,taxnames="sparisomas") <- all_sparisoma
+@
+
+And that is basically the \texttt{brownie} class which can be thought of as a specialization of generic phylogentic trees + data.  It would be instructive to take some of the examples above, where data is added to data contained within RBRownie, write it out to a file using \texttt{writeBrownie}, and look at how the different changes manifest in the nexus file itself.  
 
 \begin{thebibliography}{}
 

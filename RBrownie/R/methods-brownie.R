@@ -362,7 +362,7 @@ setReplaceMethod("taxasets", signature(x="phylo4d"),
 			colnames(value) <- taxnames
 					
 		cnames = colnames(value)
-		notlabeled = grep("^[^TAXSET_]",cnames)
+		notlabeled = grep("^[^T][^A][^X][^A][^S][^E][^T][^_]",cnames)
 		if(length(notlabeled) > 0){
 			cnames[notlabeled] = paste("TAXSET_",cnames[notlabeled],sep="")
 			colnames(value) <- cnames
