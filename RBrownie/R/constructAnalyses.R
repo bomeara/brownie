@@ -365,10 +365,9 @@ addNonCensored <- function(obj,
 	if(hasCommands(obj[[1]]))
 	{
 		cmds = commands(obj[[1]])
-		cat("New command being added after current ones:\n")
-		for(jj in seq(length(cmds)))
-			cat(cmds[jj],"\n")
-		
+		#cat("New command being added after current ones:\n")
+		#for(jj in seq(length(cmds)))
+		#	cat(cmds[jj],"\n")
 	}
 	
 	# setup new command object:

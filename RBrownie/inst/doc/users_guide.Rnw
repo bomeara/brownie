@@ -368,8 +368,47 @@ taxaset.names(parrot) # we want to look at 'intrajoint', so use taxind=2
 plot.censored(parrot[[2]],taxind=2)
 @
 
-
 \subsection{Non-Censored Rate Test}
+
+The non-censored rate test is similar to the original censored version, except that where exactly on the branch the state changes matters to the likelihood estimate.  Agian, describing the test in full is outside of the scope of this guide, but a \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesnoncensoredapproach}{full description} is available in the Brownie manual and \citep*{brau}.
+
+Brownie uses the 'cont' command to perform this test - let's look at an example where we will run and compare two different models of morphological evolution (in this case, the two models are based on brownian motion):
+
+<<ContOne,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
+require(RBrownie)
+data(parrot)
+par.new = clearCommands(parrot) # get rid of current commands
+par.new <- addModel(par.new,"BM1")
+par.new <- addNonCensored(par.new,treeloop=T,charloop=T,taxset="all",filereplace=T)
+par.new <- addModel(par.new,"BMS")
+par.new <- addNonCensored(par.new,treeloop=T,charloop=T,taxset="all",fileappend=T,filereplace=F)
+commands(par.new)
+@
+
+As you can see, in the non-censored case it is necessary to add more than one command - two for the two different models and two to instruct the Brownie core execute a Non-censored ratetest using which ever continuous evolution model is set.  Executing the whole bunch is similar to the censored test:
+
+<<ContTwo,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+# run the brownie objects as is and get the text 
+# output from the brownie core
+rawtxt = run.asis(par.new)$textout 
+rawtxt = scan.textout(rawtxt)  # process text output 
+test.results = read.continuous.output(txt=rawtxt)
+summaryCont(test.results)
+@
+
+\texttt{test.results} is again a data.frame with the log-likelihood and and AIC values calculated for each tree, character, and model used and \texttt{summaryCont} prints out the model comparisons for each character, averaging over all the trees used.  For more information about the test and how to interpret it, check out the Brownie manual and \citep*{phylo}.  
+
+Again, there is a more direct way to execute a non-censored rate test:
+
+<<RateTestThree,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+require(RBrownie)
+data(parrot)
+# brownie.models.continuous(T) will print out available models and descriptions
+test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],treeloop=T,charloop=T)
+summaryCont(test.results)
+@
+
+In the example above \texttt{runNonCensored} removes all commands currently in the \texttt{commands} slot and replaces them with the same commands we added earlier manually and executes the \texttt{brownie} list.
 
 \subsection{Discrete Ancestral State Reconstruction}
 
