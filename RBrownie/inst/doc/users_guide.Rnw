@@ -306,13 +306,68 @@ all_sparisoma = grep("Sparisoma",tipLabels(parrot[[1]]),value=TRUE)
 taxasets(parrot,taxnames="sparisomas") <- all_sparisoma
 @
 
+And you can plot a taxaset as well
+
+<<BrowniePlotTaxa,echo=TRUE,eval=TRUE,keep.source=TRUE,fig=TRUE>>=
+require(RBrownie)
+data(parrot)
+plot.taxaset(parrot[[3]],2) # plot the second taxaset
+@
+
+
 And that is the \texttt{brownie} class which can be thought of as a specialization of generic phylogentic trees + data.  It would be instructive to take some of the examples above, where data is added to data contained within RBRownie, write it out to a file using \texttt{writeBrownie}, and look at how the different changes manifest in the nexus file itself.  
 
 \section{Running Analyses}
 
 Now that you are familiar with the data structures in RBrownie, we can move on to using their methods effectively.  RBrownie includes a number of high-level functions to perform the most common evolutionary analyses (discussed in the first three subsections), but also exposes a number of lower-level functions making it easier for the user to tweak or customize the commands the will eventually be run on the Brownie core.
 
+RBrownie provides two general ways to run any of these analyses.  First, they can be run directly by calling one of the pre-packaged functions of the form \texttt{runTEST}.  These functions clear away anything currently in the commands block and run the \texttt{TEST} specified.  Alternatively, commands can be added to a \texttt{brownie} objects one by one using functions of the form \texttt{addTEST} or \texttt{addOPTION} and then all the commands in the brownie object can be executed using \texttt{run.asis}.  We'll see examples of all of these below.
+
 \subsection{Censored Rate Test}
+
+Briefly, the purpose of this test is to calculate and compare rate of continuous character evolution in different parts of a tree.  A \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesoriginalcensoredapproach}{detailed description} of this test is beyond the scope of this guide, but can be found in the Brownie manual.
+
+Brownie uses the 'ratetest' command to perform this test allowing the user to specify a number of optional parameters and so function RBrownie provides functions which add this command along with various options to the \texttt{commands} slot of a \texttt{brownie} object.  Let's look at an example:
+
+<<RateTestOne,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
+require(RBrownie)
+data(parrot)
+par.new = clearCommands(parrot) # empty the commands slot
+par.new = addCensored(par.new,reps=1000,taxset=taxaset.names(par.new)[2],charloop=TRUE)
+commands(par.new)
+@
+
+As you can see, the 'ratetest' command has been added to all the \texttt{brownie} objects in the parrot list.  Now that we have added this command, we can run the analysis manually:
+
+<<RateTestTwo,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+# run the brownie objects as is and get the text 
+# output from the brownie core
+rawtxt = run.asis(par.new)$textout 
+rawtxt = scan.textout(rawtxt)  # process text output 
+test.results = read.ratetest.output(txt=rawtxt) 
+summaryRatetest(test.results)
+@
+
+The last command, \texttt{summaryRatetest}, provides a summary of the ratetest results - it's a very handy command, providing a rough interpretation of the data in \texttt{test.results}.  Again, the reader is referred to the brownie manual for a more \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesoriginalcensoredapproach}{detailed description} of the data.frame and it's summary.  But getting back to RBrownie, there is a more straight-forward way to run this test than the manual method used above that adds commands and processes the text output automatically.  Here it is:
+
+<<RateTestThree,echo=TRUE,eval=FALSE,keep.source=FALSE>>=
+require(RBrownie)
+data(parrot)
+test.results = runCensored(parrot,taxset="intrajoint",reps=1000,charloop=T)
+summaryRatetest(test.results)
+@
+
+\subsubsection{Plots}
+
+In addition to the \texttt{summaryRatetest} function, there is also a specialized plotting function for visualizing which branches of a tree the ratetest command will remove (see the brownie manual for more information on this).  The branches to be removed are shown as dashed, the branches of the taxa in the taxaset 'intrajoint' are shown in red.
+
+<<RateTestFour,echo=TRUE,eval=TRUE,keep.source=TRUE,fig=TRUE>>=
+require(RBrownie)
+data(parrot)
+taxaset.names(parrot) # we want to look at 'intrajoint', so use taxind=2
+plot.censored(parrot[[2]],taxind=2)
+@
+
 
 \subsection{Non-Censored Rate Test}
 
@@ -324,7 +379,7 @@ Now that you are familiar with the data structures in RBrownie, we can move on t
 
 \section{Future development}
 
-If there is a feature you would like to see supported in either Brownie or RBrownie, please post a feature request to the \href{http://groups.google.com/group/brownie-users}{brownie-users google group}
+If there is a feature you would like to see supported in either Brownie or RBrownie, please post a feature request to the \href{http://groups.google.com/group/brownie-users}{brownie-users google group}.
 
 \begin{thebibliography}{}
 

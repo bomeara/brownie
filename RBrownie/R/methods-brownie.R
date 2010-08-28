@@ -421,7 +421,7 @@ taxind.to.dataind <- function(x,taxind)
 			index = which(tdata(x,'tip')==taxaset.rename(taxind))
 		
 		if(length(index) == 0)
-			stop("Could not find taxaset called: ",taxind,"\n These are available:",taxasets(x))
+			stop("Could not find taxaset called: ",taxind,"\n These are available:",taxaset.names(x))
 	} else {
 		if(taxind <= length(taxasets(x))){
 			index = which(colnames(tdata(x,'tip')) == colnames(taxasets(x))[taxind])
