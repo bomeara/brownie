@@ -306,7 +306,25 @@ all_sparisoma = grep("Sparisoma",tipLabels(parrot[[1]]),value=TRUE)
 taxasets(parrot,taxnames="sparisomas") <- all_sparisoma
 @
 
-And that is basically the \texttt{brownie} class which can be thought of as a specialization of generic phylogentic trees + data.  It would be instructive to take some of the examples above, where data is added to data contained within RBRownie, write it out to a file using \texttt{writeBrownie}, and look at how the different changes manifest in the nexus file itself.  
+And that is the \texttt{brownie} class which can be thought of as a specialization of generic phylogentic trees + data.  It would be instructive to take some of the examples above, where data is added to data contained within RBRownie, write it out to a file using \texttt{writeBrownie}, and look at how the different changes manifest in the nexus file itself.  
+
+\section{Running Analyses}
+
+Now that you are familiar with the data structures in RBrownie, we can move on to using their methods effectively.  RBrownie includes a number of high-level functions to perform the most common evolutionary analyses (discussed in the first three subsections), but also exposes a number of lower-level functions making it easier for the user to tweak or customize the commands the will eventually be run on the Brownie core.
+
+\subsection{Censored Rate Test}
+
+\subsection{Non-Censored Rate Test}
+
+\subsection{Discrete Ancestral State Reconstruction}
+
+\subsection{Custom Tests}
+
+\section{Advanced Plotting}
+
+\section{Future development}
+
+If there is a feature you would like to see supported in either Brownie or RBrownie, please post a feature request to the \href{http://groups.google.com/group/brownie-users}{brownie-users google group}
 
 \begin{thebibliography}{}
 
