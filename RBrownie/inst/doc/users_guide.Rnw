@@ -309,7 +309,7 @@ all_sparisoma = grep("Sparisoma",tipLabels(parrot[[1]]),value=TRUE)
 taxasets(parrot,taxnames="sparisomas") <- all_sparisoma
 @
 
-And you can plot a taxaset as well
+And you can plot a taxaset as well:
 
 <<BrowniePlotTaxa,echo=TRUE,eval=TRUE,keep.source=TRUE,fig=TRUE>>=
 require(RBrownie)
@@ -330,7 +330,7 @@ RBrownie provides two general ways to run any of these analyses.  First, they ca
 
 Briefly, the purpose of this test is to calculate and compare rate of continuous character evolution in different parts of a tree.  A \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesoriginalcensoredapproach}{detailed description} of this test is beyond the scope of this guide, but can be found in the Brownie manual.
 
-Brownie uses the 'ratetest' command to perform this test allowing the user to specify a number of optional parameters and so function RBrownie provides functions which add this command along with various options to the \texttt{commands} slot of a \texttt{brownie} object.  Let's look at an example:
+Brownie uses the 'ratetest' command to perform this test allowing the user to specify a number of optional parameters and so function RBrownie provides functions which add this command along with various options to the \texttt{commands} slot of a \texttt{brownie} object.  It requires the use of a \texttt{phylo4d\_ext} object as input (see the manual) - Let's look at an example:
 
 <<RateTestOne,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
 require(RBrownie)
@@ -374,7 +374,7 @@ plot.censored(parrot[[2]],taxind=2)
 
 \subsection{Non-Censored Rate Test}
 
-The non-censored rate test is similar to the original censored version, except that where exactly on the branch the state changes matters to the likelihood estimate.  Agian, describing the test in full is outside of the scope of this guide, but a \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesnoncensoredapproach}{full description} is available in the Brownie manual and \citep*{brau}.
+The non-censored rate test is similar to the original censored version, except that where exactly on the branch the state changes matters to the likelihood estimate.  Agian, describing the test in full is outside of the scope of this guide, but a \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesnoncensoredapproach}{full description} is available in the Brownie manual and \citep*{brau}.  
 
 Brownie uses the 'cont' command to perform this test - let's look at an example where we will run and compare two different models of morphological evolution (in this case, the two models are based on brownian motion):
 
@@ -384,10 +384,10 @@ data(parrot)
 par.new = clearCommands(parrot) # get rid of current commands
 par.new <- addModel(par.new,"BM1")
 par.new <- addNonCensored(par.new,treeloop=T,
-						charloop=T,taxset="all",filereplace=T)
+	charloop=T,taxset="all",filereplace=T)
 par.new <- addModel(par.new,"BMS")
 par.new <- addNonCensored(par.new,treeloop=T,
-						charloop=T,taxset="all",fileappend=T,filereplace=F)
+	charloop=T,taxset="all",fileappend=T,filereplace=F)
 commands(par.new)
 @
 
@@ -411,7 +411,7 @@ require(RBrownie)
 data(parrot)
 # brownie.models.continuous(T) will print out available models and descriptions
 test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],
-								treeloop=T,charloop=T)
+	treeloop=T,charloop=T)
 summaryCont(test.results)
 @
 
@@ -426,7 +426,7 @@ Some of the models tested return values that can be plotted on top of phylogenet
 require(RBrownie)
 data(parrot)
 test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],
-								treeloop=T,charloop=T)
+	treeloop=T,charloop=T)
 #
 # Plot the evo rates from the BMS model
 # use tree #1 and character #1
@@ -439,8 +439,8 @@ state.cols = c(1,2)
 line.widths = c(2,2)
 state.ratename = c("Rate_in_state_0","Rate_in_state_1")
 rowind = which(test.results$Tree==tree & 
-				test.results$Char==char & 
-				test.results$Model == modname)
+	test.results$Char==char & 
+	test.results$Model == modname)
 junkrow = test.results[rowind,]
 colinds = which(colnames(junkrow) %in% state.ratename)
 legends = paste(names(junkrow[colinds]),junkrow[colinds],sep=" = ")
@@ -464,17 +464,90 @@ for(ii in seq(length(states)))
 }
 @
 
-
-
 \subsection{Discrete Ancestral State Reconstruction}
+
+Brownie can do discrete character reconstructions about which more information can be found \href{http://www.brianomeara.info/brownie/manual\#Discretecharacterevolution}{here}.  Also check out the \texttt{addDiscrete} documentation.  
+
+Brownie uses the 'discrete' command to run these tests.  Unlike the Censored and Non-Censored rate tests, this command simply requires a phylogenetic tree (with no branch annotations) and discrete data at the tree tips.  Let's see an example using the geospiza\_ext dataset built into \verb@RBrownie@:
+
+<<DiscreteOne,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
+require(RBrownie)
+data(geospiza_ext)
+geoext=clearCommands(geospiza_ext)
+#
+# brownie.models.discrete(T), to see avail. models
+# brownie.freqs(T), to see avail. freq. models
+geoext=addDiscrete(geoext,
+	model="nonrev",
+	freq="unif",
+	reconstruct=T,
+	filereplace=T)
+geoext=addDiscrete(geoext,
+	model="nonrev",
+	freq="equilib",
+	reconstruct=T,
+	fileappend=T)
+commands(geoext)
+@
+
+At this point we have essentially re-created the geospiza\_ext object. Now we will manually run the analysis:
+<<DiscreteTwo,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+rawout = run.asis(geoext)
+@
+If we look at the \texttt{rawout} we will see that both list elements \texttt{textout} and \texttt{treesout} are non-null.  The \texttt{treesout} element includes the trees with reconstructed discrete values mapped on to either branches - in this case two model,freqs combinations were analyzed so two tree reconstructions are returned.  But first, process the text output using some familiar commands.
+
+<<DiscreteThree,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+rawtext = scan.textout(rawout$textout)  # process text output 
+test.results = read.discrete.output(txt=rawtext) 
+@
+
+And the trees can be retrieved like so:
+
+<<DiscreteFour,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
+# condition brownie output, by removing the ticks it adds
+treesout = gsub("'","",rawout$treesout) 
+#
+# retrieve phylo4d objects with subnodes as singletons
+tree1 = read.simmap(text=treesout[1]) 
+tree2 = read.simmap(text=treesout[2]) 
+#
+# Convert singletons to subnodes 
+# (and phylo4d objects to phylo4d_ext objects)
+tree1.ext = phyext(tree1)
+tree2.ext = phyext(tree2)
+#
+# Visualize the results:
+plot(tree1.ext)
+plot(tree2.ext)
+@
+
+Once more, there is a less round-about way to run this analysis:
+
+<<DiscreteFive,echo=TRUE,eval=TRUE,keep.source=TRUE,fig=TRUE>>=
+require(RBrownie)
+data(geospiza_ext)
+junkrun=runDiscrete(geospiza_ext,
+	models=c("nonrev","nonrev"),
+	freqs=c("unif","equilib"),
+	reconstruct=T)
+#
+# View the reconstruction results for the first tree:
+plot(junkrun$trees[[1]])
+@
 
 \subsection{Custom Tests}
 
-\section{Advanced Plotting}
+As shown above all of the \texttt{runTEST} commands can also be put together manually using \texttt{addTEST} and \texttt{addOPTION} commands.  There is an add command for most Brownie options and commands - to view the available options, see:
 
-\section{Future development}
+<<CustomOne,echo=TRUE,eval=FALSE>>=
+help.search("add",package="RBrownie")
+@
 
-If there is a feature you would like to see supported in either Brownie or RBrownie, please post a feature request to the \href{http://groups.google.com/group/brownie-users}{brownie-users google group}.
+\section{Final Thoughts}
+
+More work is currently in progress to have \verb@RBrownie@ support more branch annotation formats (those currently supported by Mesquite and BEAST) and work being done to support returning confidence intervals for rate tests and reconstructions.  Check back soon to see if there are any updates or more detailed tutorials.
+
+We are continually updating \verb@RBrownie@ and would love your feedback on how it can be improved. If there is a feature you would like to see supported in either Brownie or RBrownie, please post a feature request to the \href{http://groups.google.com/group/brownie-users}{brownie-users google group}.
 
 \begin{thebibliography}{}
 

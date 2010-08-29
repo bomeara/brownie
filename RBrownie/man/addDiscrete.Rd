@@ -8,7 +8,24 @@ Add Discrete character models and reconstructions to brownie object
 This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to run a discrete character reconstruction.
 }
 \usage{
-addDiscrete(obj, file = NULL, model = brownie.models.discrete()[1], model.state = NULL, ratemat = NULL, freq = brownie.freqs()[1], statevector = NULL, treeloop = FALSE, charloop = FALSE, allchar = FALSE, variable = FALSE, reconstruct = FALSE, breaknum = 0, fileappend = FALSE, filereplace = FALSE, globalstates = FALSE, usetempfile = FALSE, ...)
+addDiscrete(obj, 
+	file = NULL, 
+	model = brownie.models.discrete()[1], 
+	model.state = NULL, 
+	ratemat = NULL, 
+	freq = brownie.freqs()[1], 
+	statevector = NULL, 
+	treeloop = FALSE, 
+	charloop = FALSE, 
+	allchar = FALSE, 
+	variable = FALSE, 
+	reconstruct = FALSE, 
+	breaknum = 0, 
+	fileappend = FALSE, 
+	filereplace = FALSE, 
+	globalstates = FALSE, 
+	usetempfile = FALSE, 
+	...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
