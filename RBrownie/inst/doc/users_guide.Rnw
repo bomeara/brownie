@@ -235,9 +235,12 @@ geo_3 = removeCommands(geospiza_ext,1) # remove the first command
 
 # Addition
 geo_add = geospiza_ext
-commands(geo_add,add=TRUE) <- "choose t=1"   # add a command to the end of the vector
-commands(geo_add,add=TRUE,index=1) <- "choose c=1"  # add a command at a certain index
-commands(geo_add,replace=TRUE) <- "choose d=1"  # replace ALL commands with this one
+# add a command to the end of the vector
+commands(geo_add,add=TRUE) <- "choose t=1"   
+# add a command at a certain index
+commands(geo_add,add=TRUE,index=1) <- "choose c=1"  
+# replace ALL commands with this one
+commands(geo_add,replace=TRUE) <- "choose d=1"  
 #
 geo_add = geospiza_ext
 # replace command at a certain index with this one
@@ -333,7 +336,8 @@ Brownie uses the 'ratetest' command to perform this test allowing the user to sp
 require(RBrownie)
 data(parrot)
 par.new = clearCommands(parrot) # empty the commands slot
-par.new = addCensored(par.new,reps=1000,taxset=taxaset.names(par.new)[2],charloop=TRUE)
+par.new = addCensored(par.new,reps=1000,
+					  taxset=taxaset.names(par.new)[2],charloop=TRUE)
 commands(par.new)
 @
 
@@ -379,9 +383,11 @@ require(RBrownie)
 data(parrot)
 par.new = clearCommands(parrot) # get rid of current commands
 par.new <- addModel(par.new,"BM1")
-par.new <- addNonCensored(par.new,treeloop=T,charloop=T,taxset="all",filereplace=T)
+par.new <- addNonCensored(par.new,treeloop=T,
+						charloop=T,taxset="all",filereplace=T)
 par.new <- addModel(par.new,"BMS")
-par.new <- addNonCensored(par.new,treeloop=T,charloop=T,taxset="all",fileappend=T,filereplace=F)
+par.new <- addNonCensored(par.new,treeloop=T,
+						charloop=T,taxset="all",fileappend=T,filereplace=F)
 commands(par.new)
 @
 
@@ -404,11 +410,61 @@ Again, there is a more direct way to execute a non-censored rate test:
 require(RBrownie)
 data(parrot)
 # brownie.models.continuous(T) will print out available models and descriptions
-test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],treeloop=T,charloop=T)
+test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],
+								treeloop=T,charloop=T)
 summaryCont(test.results)
 @
 
-In the example above \texttt{runNonCensored} removes all commands currently in the \texttt{commands} slot and replaces them with the same commands we added earlier manually and executes the \texttt{brownie} list.
+In the example above \texttt{runNonCensored} removes all commands currently in the \texttt{commands} slot and replaces them with the same commands we added earlier manually and then executes the resulting \texttt{brownie} list (all within the function).  In returns the same data.frame.  
+
+\subsubsection{Plots}
+
+Some of the models tested return values that can be plotted on top of phylogenetic trees for easier visualization.  One such model is "BMS",  \textbf{B}rownian \textbf{m}otion with rate varying by state of the \textbf{s}tochastically.  It returns two different evolutionary rates, one for when the internal state is 0 and one is 1.  
+
+<<BrowniePlotNonCensored,echo=TRUE,eval=TRUE,keep.source=TRUE,fig=TRUE>>=
+# run non-censored rate test
+require(RBrownie)
+data(parrot)
+test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],
+								treeloop=T,charloop=T)
+#
+# Plot the evo rates from the BMS model
+# use tree #1 and character #1
+modname = "BMS"
+tree = 1
+char = 1
+x = parrot[[tree]]
+states = c(0,1)
+state.cols = c(1,2)
+line.widths = c(2,2)
+state.ratename = c("Rate_in_state_0","Rate_in_state_1")
+rowind = which(test.results$Tree==tree & 
+				test.results$Char==char & 
+				test.results$Model == modname)
+junkrow = test.results[rowind,]
+colinds = which(colnames(junkrow) %in% state.ratename)
+legends = paste(names(junkrow[colinds]),junkrow[colinds],sep=" = ")
+plot(x,states=states,states.col=state.cols,line.widths=line.widths,plot.points=T)
+#
+# Add jury-rigged legend
+fontsize=10
+boxSize = unit(fontsize, "points")
+for(ii in seq(length(states)))
+{
+	yoff = unit( ((ii-1)*fontsize)+ ifelse(ii==1,0,2) ,"points")
+	grid.text(legends[ii],
+	x=unit(2, "mm"),
+	y=unit(1, "npc") - unit(2, "mm") - yoff,
+	just=c("left", "top"),
+	gp=gpar(fontsize = fontsize))
+	grid.rect(x=unit(2, "mm") - boxSize,
+	y=unit(1, "npc") - unit(2, "mm") - boxSize - yoff,
+	width = boxSize, height = boxSize,
+	just = "bottom", gp = gpar(fill = state.cols[ii]))
+}
+@
+
+
 
 \subsection{Discrete Ancestral State Reconstruction}
 
