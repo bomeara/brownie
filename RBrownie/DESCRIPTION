@@ -13,4 +13,4 @@ LazyLoad: yes
 Depends: methods, Rcpp (>= 0.8.2), phylobase (>= 0.6.1), ape (>= 2.5)
 LinkingTo: Rcpp
 Packaged: 2010-05-25 02:01:02 UTC; administrator
-SystemRequirements: GNU make
+SystemRequirements: GNU make, GNU GSL (>= 1.10)

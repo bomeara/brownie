@@ -40,15 +40,15 @@ setMethod("brownie", "phylo4", function(x, annote=list()){
 	return(brownie(converted))
 })
 
-setMethod("brownie","phylo4d", function(x,known.types,annote=list()){
+setMethod("brownie","phylo4d", function(x,dataTypes,annote=list()){
 	
 	if(hasSingle(x))
 		x <- phyext(x)
 	
-	if(missing(known.types)){
+	if(missing(dataTypes)){
 		converted = new("brownie",x,datatypes=.guess.datatype(tdata(x)))
 	} else {
-		converted = new("brownie",x,datatypes=known.types)
+		converted = new("brownie",x,datatypes=dataTypes)
 	}
 	
 	# TODO: -check if datatypes match up with the @data slot, 
@@ -212,7 +212,7 @@ is.binary <- function(seqvec)
 	{
 		datatypes[sapply(seq(ndatcols),function(i) is.factor(datvals[,i]))] = discData()
 		datatypes[sapply(seq(ndatcols),function(i) is.numeric(datvals[,i]))] = contData()
-		datatypes[grep("TAXSET_",names(datvals))] = taxaData()
+		datatypes[grep("TAXSET_",names(datvals))] = taxData()
 	}
 	
 	return(datatypes)

@@ -31,7 +31,7 @@ setMethod("addData",signature(x="list"),
 
 # overload addData (addData the normal way, then guess it's datatype)
 setMethod("addData", signature(x="brownie"),
-	function(x,...,known.types=NULL) {
+	function(x,...,dataTypes=NULL) {
 		
 		ncols.prev = ncol(tdata(x))
 		dtypes.prev = datatypes(x)
@@ -46,11 +46,11 @@ setMethod("addData", signature(x="brownie"),
 		
 		newcols = seq(ncols.prev+1,ncols.now)
 		
-		if(missing(known.types) || is.null(known.types)){
-			known.types = .guess.datatype(tdata(x)[,newcols,drop=F])
+		if(missing(dataTypes) || is.null(dataTypes)){
+			dataTypes = .guess.datatype(tdata(x)[,newcols,drop=F])
 		} else {
-			if(length(known.types) != length(newcols))
-				warning("known.types does not match the number of new fields")
+			if(length(dataTypes) != length(newcols))
+				warning("dataTypes does not match the number of new fields")
 		
 			
 			# Added (7/26/2010)
@@ -60,16 +60,16 @@ setMethod("addData", signature(x="brownie"),
 			{
 				dat = tdata(x)[,newcols[ii],drop=T]
 				
-				if(known.types[ii] == contData() && !is.contData(dat))
+				if(dataTypes[ii] == contData() && !is.contData(dat))
 					tdata(x)[,newcols[ii]] <- as.contData(dat)
 				
-				if(known.types[ii] == discData() && !is.discData(dat))
+				if(dataTypes[ii] == discData() && !is.discData(dat))
 					tdata(x)[,newcols[ii]] <- as.discData(dat)
 				
 			}
 			
 		}
-		datatypes(x) <- c(dtypes.prev,known.types)
+		datatypes(x) <- c(dtypes.prev,dataTypes)
 		return(x)
 })
 
@@ -78,7 +78,7 @@ showBrownie <- function()
 {
 	cat("brownie class help:\n")
 	cat("-------------------------------\n")
-	cat("Show/Set datatypes: datatypes(brownieobj) <- c(contData(),discData(),taxaData())\n")
+	cat("Show/Set datatypes: datatypes(brownieobj) <- c(contData(),discData(),taxData())\n")
 	cat("Show/Set brownie commands: commands(brownieobj) <- c('cmd1','cmd2',....)\n")
 	cat("Show/Add taxa sets: taxasets(brownieobj) <- c('taxa1','taxa2',....) \n")
 	cat("Show/Add data columns: sndata(brownieobj,<column_index>) <- data.frame\n")
@@ -294,7 +294,7 @@ setMethod("taxasets", signature(x="brownie"),
 	retdat = data.frame(NULL)
 	dat = tdata(x,"tip")
 	
-	colinds = which(datatypes(x) == taxaData())
+	colinds = which(datatypes(x) == taxData())
 	if(length(colinds) > 0)
 		retdat = dat[,colinds,drop=F]
 	
@@ -370,7 +370,7 @@ setReplaceMethod("taxasets", signature(x="phylo4d"),
 
 		# ohh, this is a hack:
 		if(is(x,"brownie")){
-			x <- addData(x,value,known.types=taxaData())
+			x <- addData(x,value,dataTypes=taxData())
 		} else {
 			x <- addData(x,value)
 		}
@@ -386,7 +386,7 @@ setReplaceMethod("taxasets", signature(x="brownie"),
 		stop("Taxaset replacement method not available: package bug, email authors")
 	
 	x = getMethod("taxasets<-","phylo4d")(x,taxnames,value)
-	#datatypes(x) <- append(datatypes(x),taxaData()) # comments out after hack applied
+	#datatypes(x) <- append(datatypes(x),taxData()) # comments out after hack applied
 	
 	return(x)
 })

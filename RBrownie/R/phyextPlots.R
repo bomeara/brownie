@@ -120,7 +120,7 @@ plot.taxaset <- function(x,taxind,taxcol="red",taxlwd=1,excol="grey",exlwd=1,bla
 		index = taxind.to.dataind(x=x,taxind=taxind)
 		
 		# Rename internal nodes:
-		cat("Renaming internal nodes (might take a while if there are a lot of taxa):\n")
+		#cat("Renaming internal nodes (might take a while if there are a lot of taxa):\n")
 		###########################
 		taxmrca = integer(0)
 		taxnames = taxa.charvect(x,taxind)
@@ -173,7 +173,7 @@ plot.censored <- function(x,taxind,
 		index = taxind.to.dataind(x=x,taxind=taxind)
 		
 		# Rename internal nodes:
-		cat("Renaming internal nodes (might take a while if there are a lot of taxa):\n")
+		#cat("Renaming internal nodes (might take a while if there are a lot of taxa):\n")
 		###########################
 		taxmrca = integer(0)
 		taxnames = taxa.charvect(x,taxind)

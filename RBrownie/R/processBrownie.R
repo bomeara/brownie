@@ -10,12 +10,12 @@
 # datatypes:
 discData <- function() { return("discrete") }
 contData <- function() { return("cont") }
-taxaData <- function() { return("taxset") }
+taxData <- function() { return("taxset") }
 genericData <- function() { return("undef") }
 
 brownie.datatypes <-function()
 {
-	brownie_datatype_options = c(taxaData(),contData(),discData(),genericData())
+	brownie_datatype_options = c(taxData(),contData(),discData(),genericData())
 	return(brownie_datatype_options)
 }
 
