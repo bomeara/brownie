@@ -68,7 +68,7 @@ phyextPlot <- function(x,states,states.col,
 		# plot sub nodes:
 		if(hasSubNodes(junk) && plot.subnodes)
 		{
-			esub = edges(junk)[getSubNodeEdgeInds(junk),]
+			esub = matrix(edges(junk)[getSubNodeEdgeInds(junk),],ncol=2)
 			posi.inds = apply(esub,1,function(i) which(i[1] == eord[,1] & i[2] == eord[,2]))
 			subdata = getSubNodeData(junk,datapart)
 			submapping = sapply(subdata[,1],function(i) which(states == i))
@@ -81,7 +81,7 @@ phyextPlot <- function(x,states,states.col,
 			
 			# reorder (so that lines don't completely cover each other):
 			neword = order(rowMeans(subposi),decreasing=T)
-			subposi = subposi[neword,]
+			subposi = matrix(subposi[neword,],ncol=2)
 			submapping = submapping[neword]
 			posi.inds = posi.inds[neword]
 			

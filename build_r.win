@@ -20,7 +20,7 @@ rm -rdf `find ./RBrownie/src/brownie_src/ncl-2.0 -path "./*svn"`
 echo "done"
 
 echo "Building R package..."
-R CMD build RBrownie/ --binary
+R CMD build RBrownie/ --binary --no-vignettes
 echo "done"
 
 

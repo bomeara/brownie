@@ -27,19 +27,20 @@ meta <- packageDescription("RBrownie")
 
 \section{Introducing Brownie}
 
-\verb@RBrownie@ is an R package constructed around the C++ command-line program \href{http://www.brianomeara.info/brownie}{Brownie} (available \href{code.google.com/p/brownie}{here}) which was designed by Brian O'Meara in order to fascilitate the estimation and comparison of rates and means of character evolution over different parts of a phylogeny \citep*{brau}.  It it built on three primary analyses:  First, are censored rate tests under Brownian motion, which allow the comparison of the rates of evolution (under brownian motion) across two monophyletic sister-clades or between a monophyletic and paraphyletic clade.  This analysis allows you to answer questions about differences in the evolutionary rate of two distinct clades (e.g. large subspecies vs. small subspecies).  Second are non-censored ratetests, so called because they do not remove (censor) any branches of the phylogeny being tested.  This class of analyses allows you to compare the rates (Brownian motion model) or means (Ornstein-Uhlenbeck model) of evolution under different character states which are mapped onto the phylogeny.  For example, if you had a tree with binary characters mapped onto it branches indicating possession a certain trait and you also had morphological data for all the taxa present in the tree (the tips), then, using a model-testing approach, this analysis allows to you statistically assess whether or not that binary trait is associated with the significantly different rate of evolution of the morphological characteristic measured.  Lastly, Brownie performs discrete ancestral state evolution (maximum likelihood approach), which produces branch-annotated trees which can used in these non-censored rate tests.
+\verb@RBrownie@ is an R package constructed around the C++ command-line program \href{http://www.brianomeara.info/brownie}{Brownie} (available \href{code.google.com/p/brownie}{here}) which was designed by Brian O'Meara in order to fascilitate the estimation and comparison of rates and means of character evolution over different parts of a phylogeny \citep*{brau}.  It it built on three primary analyses:  First are censored rate tests under Brownian motion which allow for the comparison of the rates of evolution of morphological traits across two monophyletic sister-clades or between a monophyletic and paraphyletic clade.  This analysis allows you to answer questions about differences in the evolutionary rate of two distinct clades (e.g. large subspecies vs. small subspecies).  Second are non-censored ratetests, so called because they do not remove (censor) any branches of the phylogeny being tested.  This class of analyses allows you to compare the rates (Brownian motion model) or means (Ornstein-Uhlenbeck model) of evolution under different character states which are mapped onto the phylogeny.  For example, if you had a tree with binary characters mapped onto it branches indicating possession a certain trait and you also had morphological data for all the taxa present in the tree (the tips), then, using a model-testing approach, this analysis allows to you statistically assess whether or not that binary trait is associated with the significantly different rate of evolution of the morphological characteristic measured.  Lastly, Brownie performs discrete ancestral state evolution (maximum likelihood approach), which produces branch-annotated trees which can used in these non-censored rate tests.
 
-\verb@RBrownie@'s aim is to exposes all of Brownies capabilities to R users so that they can be used in conjuction with R's existing phylogenetic toolkit.  It provides users with easy ways to run common Brownie analyses and the flexibility to write more complex analyses if desired.  Below I give a short introduction to Brownie and RBrownie, discusses the main datatypes in RBrownie and how to use them, and then a number of examples of the sort of evolutionary analyses that can be completed in RBrownie, including visualizing and understanding the results.
+
+\verb@RBrownie@'s aim is to exposes all of Brownies capabilities to R users so that they can be used in conjuction with R's existing phylogenetic toolkit.  It provides users with easy ways to run common Brownie analyses and the flexibility to write more complex analyses if desired.  Below I give a short introduction to Brownie and \verb@RBrownie@, discusses the main datatypes in \verb@RBrownie@ and how to use them, and then a number of examples of the sort of evolutionary analyses that can be completed in \verb@RBrownie@, including visualizing and understanding the results.
 
 
 \subsection{More information}
 
-Brownie has a large number of functions in addition to the rate tests described above that we cannot describe in full here, but are worth looking into at least because they will help you better understand RBrownie's capabilities and will allow you to exploit all the useful functions \verb@RBrownie@) has to offer.  The manual for Brownie can be found \href{http://www.brianomeara.info/brownie/manual}{here}.
+Brownie has a large number of functions in addition to the rate tests described above that we cannot describe in full here, but are worth looking into at least because they will help you better understand \verb@RBrownie@'s capabilities and will allow you to exploit all the useful functions \verb@RBrownie@) has to offer.  The manual for Brownie can be found \href{http://www.brianomeara.info/brownie/manual}{here}.
 
 
 \section{Introducing RBrownie}
 
-It was mentioned before that RBrownie is an R wrapper for the Brownie program described briefly above. Using the \verb@Rcpp@ package, RBrownie links R with the exact same Brownie code that is used in the Brownie command line program.  In addition to providing a streamlined interface to Brownie's core functionality, RBrownie adds plotting and visualization functions which make working with the output data much more easy and flexible. 
+It was mentioned before that \verb@RBrownie@ is an R wrapper for the Brownie program described briefly above. Using the \verb@Rcpp@ package, \verb@RBrownie@ links R with the exact same Brownie code that is used in the Brownie command line program.  In addition to providing a streamlined interface to Brownie's core functionality, \verb@RBrownie@ adds plotting and visualization functions which make working with the output data much more easy and flexible. 
 
 Like PAUP*,Mesquite, and other phylogenetic programs, Brownie uses specially formatted nexuses files to load phylogenetic data into the program.  \verb@RBrownie@ adds functions and classes to help the user read, write, and manipulate these tailored nexus files, supplementing the more generic NEXUS read/write functions found in the \verb@ape@ and \verb@phylobase@ packages (see \texttt{ape:::read.nexus.data}, \texttt{ape:::write.nexus.data}, \texttt{phylobase:::writeNexus}).
 
@@ -49,7 +50,7 @@ To get started using the package (once it has been installed), type the followin
 require(RBrownie)
 @
 
-Note that the other packges on which RBrownie depends are listed. Now that we have the package loaded, we can look into how to load and/or manipulate our phylogenetic data in RBrownie.
+Note that the other packges on which \verb@RBrownie@ depends are listed. Now that we have the package loaded, we can look into how to load and/or manipulate our phylogenetic data in \verb@RBrownie@.
 
 \subsection{Reading nexus files}
 
@@ -61,9 +62,9 @@ Nexus files can be read into R using a number of packages. \verb@ape@ and \verb@
 ?readNexus  		# phylobase
 @
 
-However, Brownie uses nexus blocks beyond those supported by \verb@ape@ and \verb@phylobase@ and \verb@RBrownie@ extends the methods above to accomadate.  For example, Brownie uses an ASSUMPTIONS block to define subsets of the taxa which can be used in its various rate tests.  It also uses a BROWNIE block to store a list of brownie commands to be run automatically if the file is ``executed'' within the Brownie environment (this is similar to how PAUP* executes files).  So, RBrownie has its own functions for reading and writing nexus files with these special blocks, \texttt{readBrownie} and \texttt{writeBrownie}.
+However, Brownie uses nexus blocks beyond those supported by \verb@ape@ and \verb@phylobase@ and \verb@RBrownie@ extends the methods above to accomadate.  For example, Brownie uses an ASSUMPTIONS block to define subsets of the taxa which can be used in its various rate tests.  It also uses a BROWNIE block to store a list of brownie commands to be run automatically if the file is ``executed'' within the Brownie environment (this is similar to how PAUP* executes files).  So, \verb@RBrownie@ has its own functions for reading and writing nexus files with these special blocks, \texttt{readBrownie} and \texttt{writeBrownie}.
 
-To illustrate how they work we'll use the parrot dataset which is included with RBrownie (NOTE: you need to have write access to the directory you are in to run this example).
+To illustrate how they work we'll use the parrot dataset which is included with \verb@RBrownie@ (NOTE: you need to have write access to the directory you are in to run this example).
 
 <<InOutDemo, eval=false,echo=true>>=
 data(parrot)  
@@ -71,7 +72,7 @@ writeBrownie(parrot,file="parrotdata.nex")
 newparrot = readBrownie("parrotdata.nex")
 @
 
-The two objects \texttt{parrot} and \texttt{newparrot} should be indentical.  It would also be instructive to open the \texttt{parrotdata.nex} file to see how RBrownie writes ASSUMPTIONS blocks, but this isn't necessary.  You may have also noticed that \texttt{parrot} and \texttt{newparrot} are both of class \texttt{list}.  The list class (a very common class in R) is used when multiple trees are found in a single nexus file.  For example, if you openned \texttt{parrotdata.nex}, you would find 10 trees in the TREES block.  Each element in the \texttt{parrot} (and \texttt{newparrot}) list contains one of these trees and is of class \texttt{brownie}:
+The two objects \texttt{parrot} and \texttt{newparrot} should be indentical.  It would also be instructive to open the \texttt{parrotdata.nex} file to see how \verb@RBrownie@ writes ASSUMPTIONS blocks, but this isn't necessary.  You may have also noticed that \texttt{parrot} and \texttt{newparrot} are both of class \texttt{list}.  The list class (a very common class in R) is used when multiple trees are found in a single nexus file.  For example, if you opened \texttt{parrotdata.nex}, you would find 10 trees in the TREES block.  Each element in the \texttt{parrot} (and \texttt{newparrot}) list contains one of these trees and is of class \texttt{brownie}:
 
 <<HelpNexus, eval=false,echo=true,keep.source=true>>=
 class(parrot)   	# list class
@@ -86,9 +87,9 @@ class(parrot[[1]])  # brownie class representing the first tree in the list
 
 \subsection{Classes in RBrownie}
 
-At its core RBrownie is built around two major classes, \texttt{phylo4d\_ext} and \texttt{brownie}, which both extend \texttt{phylo4d} from phylobase.  In fact, \texttt{phylo4d\_ext} extends \texttt{phylo4d} and \texttt{brownie} in turn extends \texttt{phylo4d\_ext}.  In non-computer-ese this mean that \texttt{phylo4d\_ext} adds a few new data containers (or ``slots'' as they are known in the S4 world) to \texttt{phylo4d} and \texttt{brownie} adds a few new data containers to \texttt{phylo4d\_ext}.  To illustrate this, run the R code below, it shows the new slots that are added to \texttt{phylo4d}.
+At its core \verb@RBrownie@ is built around two major classes, \texttt{phylo4d\_ext} and \texttt{brownie}, which both extend \texttt{phylo4d} from phylobase.  In fact, \texttt{phylo4d\_ext} extends \texttt{phylo4d} and \texttt{brownie} in turn extends \texttt{phylo4d\_ext}.  In non-computer-ese this mean that \texttt{phylo4d\_ext} adds a few new data containers (or ``slots'' as they are known in the S4 world) to \texttt{phylo4d} and \texttt{brownie} adds a few new data containers to \texttt{phylo4d\_ext}.  To illustrate this run the R code below.  It shows which new slots have been added to \texttt{phylo4d}.
 
-<<SeeClasses, eval=false,echo=true,keep.source=true>>=
+<<SeeClasses, eval=true ,echo=true,keep.source=true>>=
 require(RBrownie,quietly=TRUE,warn.conflicts=FALSE)
 phylo4d_slots = names(getSlots("phylo4d"))
 phylo4d_ext_slots = names(getSlots("phylo4d_ext"))
@@ -108,19 +109,19 @@ This class (as implied by the name) is an extension of the \texttt{phylo4d} clas
 require(phylobase)
 # generate a random coalescent tree with 10 tips
 ape_tree = rcoal(10)
-
+#
 # convert tree from 'phylo' (ape) to 'phylo4' (phylobase) format
 phy_tree = as(ape_tree,"phylo4")
-
+#
 # generate junk data for the tips
 sample_tipdata = runif(10)
-
+#
 # combine the phylogenetic tree and the sample data
 phyd_tree = phylo4d(phy_tree,tip.data=sample_tipdata)
 plot(phyd_tree)
 @
 
-\texttt{phylo4d\_ext} adds to this class ``subnodes'' and tree weights.  Subnodes are internal nodes mapped directly onto an existing branches and are conceptually similar to singleton nodes (but offer a bit more flexibility from a programming standpoint).  The \texttt{phylo4d\_ext} class was created mainly to handle SIMMAP-formatted nexus trees, but instances can be created from scratch as well.  For example, the code below constructs a random coalescent tree like we did in the last section, but with binary data representing say the presence or absence of a life history trait and also with 4 subnodes along 4 different branches of the tree each representing either loss(0) or gain(1) of the trait along the branch.
+\texttt{phylo4d\_ext} adds to this class ``subnodes'' and tree weights.  Subnodes are internal nodes mapped directly onto an existing branches and are conceptually similar to singleton nodes (but offer a bit more flexibility from a programming standpoint).  The \texttt{phylo4d\_ext} class was created mainly to handle SIMMAP-formatted nexus trees, but instances can be created from scratch as well.  For example, the code below constructs a random coalescent tree like we did in the last section, but with binary data representing say the presence or absence of a life history trait and also with subnodes along different branches of the tree each representing either loss(0) or gain(1) of the trait along the branch.  
 
 <<PlotFigTwo,fig=TRUE,echo=TRUE,keep.source=TRUE>>=
 require(RBrownie)
@@ -165,7 +166,7 @@ names(sample_subnodedata) <- "hasTrait"
 # Position the subnodes along their respective branches
 # using the fraction of the overall branch length.  In 
 # this case, I'll put them near the middle of the branch.
-sample_positions = runif(n=4,min=0.25,max=0.75) 
+sample_positions = runif(n=length(tmpdata),min=0.25,max=0.75) 
 #
 # Create the phylo4d_ext object, which first creates 
 # a phylo4d object and then adds the subnodes to it.
@@ -222,7 +223,7 @@ phyext_tree = addSubNode(phyext_tree,
 
 \texttt{weight} is an aspect of the \texttt{phylo4d\_ext} class that will be supported better in future versions and will not be discussed here.  
 
-Finally, subnodes will most be read in from SIMMAP-formatted nexus files and not added manually.  The SIMMAP format was created represent state mappings onto branches (subnodes) in nexus tree files and the standard has gone through a number of iterations.  Currently, only SIMMAP version 1.0 and 1.1 are supported by \verb@RBrownie@ and we are working to add support for the latest version (1.5) which is used by Mesquite.  \verb@RBrownie@ can be used to read and write trees with subnodes in SIMMAP (vers 1.0, 1.1) format:  (NOTE: you need to have write access to the directory you are in to run this example).
+Finally, subnodes will most be read in from SIMMAP-formatted nexus files and not added manually.  The SIMMAP format was created represent state mappings onto branches (subnodes) in nexus tree files and the standard has gone through a number of iterations.  Currently, only SIMMAP version 1.0 and 1.1 are supported by \verb@RBrownie@ but we are working to add support for the latest version (1.5) which is used by Mesquite.  \verb@RBrownie@ can be used to read and write trees with subnodes in SIMMAP (vers 1.0, 1.1) format:  (NOTE: you need to have write access to the directory you are in to run this example).
 
 <<InOutDemoTwo, eval=false,echo=true>>=
 data(parrot)
@@ -240,13 +241,11 @@ class(parrot[[1]]) # brownie
 inherits(parrot[[1]],"phylo4d_ext") # TRUE
 @
 
-The two classes were not combined into one larger class as we thought that the extended phylo4d class would hopefully have some use outside of RBrownie and future development should reflect that. The two new slots which \texttt{brownie} adds to \texttt{phylo4d\_ext} are \texttt{commands}, to hold brownie text commands, and \texttt{datatypes}, which adds annotations to the \texttt{data} slot.
-
 The purpose of the \texttt{commands} slot is to hold the text strings that will eventually be executed in Brownie itself.  That is, once the phylogenetic tree and any node data is loaded into the Brownie core, these commands are run.  They describe actions that the brownie core should take: analyses might need to be run on certain trees and not others, choose which models to use when model tests are done, etc.  A full list and description of all the commands can be found in the \href{http://www.brianomeara.info/brownie/manual}{Brownie manual}.  
 
 In common use however, these commands will be filled in automatically by some higher level functions (e.g. \texttt{addCensored} ) which were designed to make it easy to set up and execute common analysis.  If you do find yourself needing to manipulate these commands, there are a series of functions to manipulate commands directly (\texttt{clearCommands}, \texttt{removeCommands}, etc) that are probably irrelevant to most end users and are not discussed here.
 
-The \texttt{datatypes} slot is a character vector which contains a description of each column in the \texttt{data} slot.  RBrownie uses this information in order to write different parts of the \texttt{data} data.frame to different blocks in a nexus file.  For example, discrete and continuous data are treated differently in Brownie and each require their own nexus block (CHARACTERS and CHARACTERS2 are used).  Also, taxa sets are stored in the \texttt{data} slot as binary data (1 is taxon is in the set, 0 if not) and they are written to an ASSUMPTIONS nexus block.  To illustrate this, lets look at the data in parrot data set.  (NOTE: The \texttt{data} slot comes from phylobase, its accessor functions also come from there.  \texttt{tdata} is an example)
+The \texttt{datatypes} slot is a character vector which contains a description of each column in the \texttt{data} slot.  \verb@RBrownie@ uses this information in order to write different parts of the \texttt{data} data.frame to different blocks in a nexus file.  For example, discrete and continuous data are treated differently in Brownie and each require their own nexus block (CHARACTERS and CHARACTERS2 are used).  Also, taxa sets are stored in the \texttt{data} slot as binary data (1 is taxon is in the set, 0 if not) and they are written to an ASSUMPTIONS nexus block.  To illustrate this, lets look at the data in parrot data set.  (NOTE: The \texttt{data} slot comes from phylobase, its accessor functions also come from there.  \texttt{tdata} is an example)
 
 <<BrownieExample,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
 require(RBrownie)
@@ -292,7 +291,7 @@ parrot_new = addData(parrot_new, all.data=junkdisc, dataTypes=discData())
 datatypes(parrot_new)
 @
 
-Now there are two new datatypes in the parrot data which we specified.  Also note how \texttt{addData()} and \texttt{datatypes()} can be called on list objects as well as brownie objects - the list variant of these functions actually adds the data to each object in that list.  RBrownie has a number of such convenient functions.
+Now there are two new datatypes in the parrot data which we specified.  Also note how \texttt{addData()} and \texttt{datatypes()} can be called on list objects as well as brownie objects - the list variant of these functions actually adds the data to each object in that list.  \verb@RBrownie@ has a number of such convenient functions.
 
 Adding taxa set data is a bit different.  There is an accessor function in \verb@RBrownie@ called \texttt{taxasets()} which gives the user access to all the data columns representing sets of taxa.  It can also be used to create new taxasets:
 
@@ -315,19 +314,19 @@ plot.taxaset(parrot[[3]],2) # plot the second taxaset
 @
 
 
-And that is the \texttt{brownie} class which can be thought of as a specialization of generic phylogentic trees + data.  It would be instructive to take some of the examples above, where data is added to data contained within RBRownie, write it out to a file using \texttt{writeBrownie}, and look at how the different changes manifest in the nexus file itself.  
+And that is the \texttt{brownie} class which can be thought of as a specialization of generic phylogentic trees + data.  It would be instructive to take some of the examples above, where data is added to data contained within \verb@RBrownie@, write it out to a file using \texttt{writeBrownie}, and look at how the different changes manifest in the nexus file itself.  
 
 \section{Running Analyses}
 
-Now that you are familiar with the data structures in RBrownie, we can move on to using their methods effectively.  RBrownie includes a number of high-level functions to perform the most common evolutionary analyses (discussed in the first three subsections), but also exposes a number of lower-level functions making it easier for the user to tweak or customize the commands the will eventually be run on the Brownie core.
+Now that you are familiar with the data structures in \verb@RBrownie@, we can move on to using their methods effectively.  \verb@RBrownie@ includes a number of high-level functions to perform the most common evolutionary analyses (discussed in the first three subsections), but also exposes a number of lower-level functions making it easier for the user to tweak or customize the commands the will eventually be run on the Brownie core.
 
-RBrownie provides two general ways to run any of these analyses.  First, they can be run directly by calling one of the pre-packaged functions of the form \texttt{runTEST}.  These functions clear away anything currently in the commands block and run the \texttt{TEST} specified.  Alternatively, commands can be added to a \texttt{brownie} objects one by one using functions of the form \texttt{addTEST} or \texttt{addOPTION} and then all the commands in the brownie object can be executed using \texttt{run.asis}.  We'll see examples of all of these below.
+\verb@RBrownie@ provides two general ways to run any of these analyses.  First, they can be run directly by calling one of the pre-packaged functions of the form \texttt{runTEST}.  These functions clear away anything currently in the commands block and run the \texttt{TEST} specified.  Alternatively, commands can be added to a \texttt{brownie} objects one by one using functions of the form \texttt{addTEST} or \texttt{addOPTION} and then all the commands in the brownie object can be executed using \texttt{run.asis}.  We'll see examples of all of these below.
 
 \subsection{Censored Rate Test}
 
 Briefly, the purpose of this test is to calculate and compare rate of continuous character evolution in different parts of a tree.  A \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesoriginalcensoredapproach}{detailed description} of this test is beyond the scope of this guide, but can be found in the Brownie manual.
 
-Brownie uses the 'ratetest' command to perform this test allowing the user to specify a number of optional parameters and so function RBrownie provides functions which add this command along with various options to the \texttt{commands} slot of a \texttt{brownie} object.  It requires the use of a \texttt{phylo4d\_ext} object as input (see the manual) - Let's look at an example:
+Brownie uses the 'ratetest' command to perform this test allowing the user to specify a number of optional parameters and so function \verb@RBrownie@ provides functions which add this command along with various options to the \texttt{commands} slot of a \texttt{brownie} object.  It requires the use of a \texttt{phylo4d\_ext} object as input (see the manual) - Let's look at an example:
 
 <<RateTestThree,echo=TRUE,eval=FALSE,keep.source=FALSE>>=
 require(RBrownie)
@@ -353,34 +352,7 @@ plot.censored(parrot[[2]],taxind=2)
 
 The non-censored rate test is similar to the original censored version, except that where exactly on the branch the state changes matters to the likelihood estimate.  Agian, describing the test in full is outside of the scope of this guide, but a \href{http://www.brianomeara.info/brownie/manual\#Testingcontinuousratesnoncensoredapproach}{full description} is available in the Brownie manual and \citep*{brau}.  
 
-Brownie uses the 'cont' command to perform this test - let's look at an example where we will run and compare two different models of morphological evolution (in this case, the two models are based on brownian motion):
-
-<<ContOne,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
-require(RBrownie)
-data(parrot_nocmds)
-par.new <- addModel(par.new,"BM1")
-par.new <- addNonCensored(par.new,treeloop=T,
-	charloop=T,taxset="all",filereplace=T)
-par.new <- addModel(par.new,"BMS")
-par.new <- addNonCensored(par.new,treeloop=T,
-	charloop=T,taxset="all",fileappend=T,filereplace=F)
-commands(par.new)
-@
-
-As you can see, in the non-censored case it is necessary to add more than one command - two for the two different models and two to instruct the Brownie core execute a Non-censored ratetest using which ever continuous evolution model is set.  Executing the whole bunch is similar to the censored test:
-
-<<ContTwo,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
-# run the brownie objects as is and get the text 
-# output from the brownie core
-rawtxt = run.asis(par.new)$textout 
-rawtxt = scan.textout(rawtxt)  # process text output 
-test.results = read.continuous.output(txt=rawtxt)
-summaryCont(test.results)
-@
-
-\texttt{test.results} is again a data.frame with the log-likelihood and and AIC values calculated for each tree, character, and model used and \texttt{summaryCont} prints out the model comparisons for each character, averaging over all the trees used.  For more information about the test and how to interpret it, check out the Brownie manual and \citep*{phylo}.  
-
-Again, there is a more direct way to execute a non-censored rate test:
+Brownie uses the 'cont' command to perform this test - let's look at an example where we will run and compare two different models of morphological evolution (in this case, the two models are based on brownian motion, to view all the available models call the \texttt{brownie.models.continuous(T)} command):
 
 <<RateTestThree,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
 require(RBrownie)
@@ -391,7 +363,10 @@ test.results = runNonCensored(parrot,models=brownie.models.continuous()[1:2],
 summaryCont(test.results)
 @
 
-In the example above \texttt{runNonCensored} removes all commands currently in the \texttt{commands} slot and replaces them with the same commands we added earlier manually and then executes the resulting \texttt{brownie} list (all within the function).  In returns the same data.frame.  
+In the example above \texttt{runNonCensored} removes all commands currently in the \texttt{commands} slot and replaces them with custom commands and then executes the resulting \texttt{brownie} list.
+
+\texttt{test.results} is again a data.frame with the log-likelihood and and AIC values calculated for each tree, character, and model used and \texttt{summaryCont} prints out the model comparisons for each character, averaging over all the trees used.  For more information about the test and how to interpret it, check out the Brownie manual and \citep*{phylo}.  
+
 
 \subsubsection{Plots}
 
@@ -446,58 +421,6 @@ Brownie can do discrete character reconstructions about which more information c
 
 Brownie uses the 'discrete' command to run these tests.  Unlike the Censored and Non-Censored rate tests, this command simply requires a phylogenetic tree (with no branch annotations) and discrete data at the tree tips.  Let's see an example using the geospiza\_ext dataset built into \verb@RBrownie@:
 
-<<DiscreteOne,echo=TRUE,eval=TRUE,keep.source=TRUE>>=
-require(RBrownie)
-data(geospiza_ext_nocmds)
-#
-# brownie.models.discrete(T), to see avail. models
-# brownie.freqs(T), to see avail. freq. models
-geoext=addDiscrete(geoext,
-	model="nonrev",
-	freq="unif",
-	reconstruct=T,
-	filereplace=T)
-geoext=addDiscrete(geoext,
-	model="nonrev",
-	freq="equilib",
-	reconstruct=T,
-	fileappend=T)
-commands(geoext)
-@
-
-At this point we have essentially re-created the geospiza\_ext object. Now we will manually run the analysis:
-<<DiscreteTwo,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
-rawout = run.asis(geoext)
-@
-If we look at the \texttt{rawout} we will see that both list elements \texttt{textout} and \texttt{treesout} are non-null.  The \texttt{treesout} element includes the trees with reconstructed discrete values mapped on to either branches - in this case two model,freqs combinations were analyzed so two tree reconstructions are returned.  But first, process the text output using some familiar commands.
-
-<<DiscreteThree,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
-rawtext = scan.textout(rawout$textout)  # process text output 
-test.results = read.discrete.output(txt=rawtext) 
-@
-
-And the trees can be retrieved like so:
-
-<<DiscreteFour,echo=TRUE,eval=FALSE,keep.source=TRUE>>=
-# condition brownie output, by removing the ticks it adds
-treesout = gsub("'","",rawout$treesout) 
-#
-# retrieve phylo4d objects with subnodes as singletons
-tree1 = read.simmap(text=treesout[1]) 
-tree2 = read.simmap(text=treesout[2]) 
-#
-# Convert singletons to subnodes 
-# (and phylo4d objects to phylo4d_ext objects)
-tree1.ext = phyext(tree1)
-tree2.ext = phyext(tree2)
-#
-# Visualize the results:
-plot(tree1.ext)
-plot(tree2.ext)
-@
-
-Once more, there is a less round-about way to run this analysis:
-
 <<DiscreteFive,echo=TRUE,eval=TRUE,keep.source=TRUE,fig=TRUE>>=
 require(RBrownie)
 data(geospiza_ext)
@@ -506,23 +429,30 @@ junkrun=runDiscrete(geospiza_ext,
 	freqs=c("unif","equilib"),
 	reconstruct=T)
 #
-# View the reconstruction results for the first tree:
+# (View the reconstruction results for the first tree;
+#  under the model 'nonrev' and using freq 'unif'):
 plot(junkrun$trees[[1]])
 @
 
+Unlike the previous two analyses, \texttt{runDiscrete} returns a list containing the trees with ancestral state reconstructions and a data.frame giving details about the support each model/freq has.  More details about the discrete reconstruction function (and options that can be passed to the run function above) can be found by typing \texttt{?addDiscrete}.
+
 \subsection{Custom Tests}
 
-As shown above all of the \texttt{runTEST} commands can also be put together manually using \texttt{addTEST} and \texttt{addOPTION} commands.  There is an add command for most Brownie options and commands - to view the available options, see:
+The examples above show how to execute the three most common commands \verb@RBrownie@ has to offer, using function of the format \texttt{runTEST}.  In all cases, it is possible to manually put together an analysis using \texttt{addTEST} and \texttt{addOPTION} commands.  There are add commands for most Brownie options and commands - to view these, see:
 
 <<CustomOne,echo=TRUE,eval=FALSE>>=
 help.search("add",package="RBrownie")
 @
 
+Once an the \texttt{commands} slot of a brownie object has been filled with all the commands you want executed, the object can be executed directly using \texttt{run.asis}.  A further vignette aimed at power users will describe in detail how to piece together custom analyses, so we will leave this thread here.  Check back fo
+
+\section{Getting Help}
+
+We'd like to invite anyone who has questions about how to use \texttt{Brownie} or \verb@RBrownie@ to post them to the \href{http://groups.google.com/group/brownie-users}{Brownie-users google group}.  Also, we are continually updating \verb@RBrownie@ and would love your feedback on how it can be improved. Feel free to also suggest new features, bring bugs to our notice, or give general feedback - it would be appreciated!
+
 \section{Final Thoughts}
 
 More work is currently in progress to have \verb@RBrownie@ support more branch annotation formats (those currently supported by Mesquite and BEAST) and work being done to support returning confidence intervals for rate tests and reconstructions.  Check back soon to see if there are any updates or more detailed tutorials.
-
-We are continually updating \verb@RBrownie@ and would love your feedback on how it can be improved. If there is a feature you would like to see supported in either Brownie or RBrownie, please post a feature request to the \href{http://groups.google.com/group/brownie-users}{brownie-users google group}.
 
 \begin{thebibliography}{}
 

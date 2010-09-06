@@ -91,7 +91,7 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 # 
 # ellipsis stuff if passed to read.analysis.output
 # 
-read.discrete.output <- function(filename,txt=NULL,...)
+read.discrete.output <- function(filename,txt=NULL,show.warn=FALSE,...)
 {
 	warnpattern="^WARNING:"
 	output=character(0)
@@ -105,8 +105,8 @@ read.discrete.output <- function(filename,txt=NULL,...)
 	warnlines = grep(warnpattern,output)
 	if(length(warnlines)!=0)
 	{
-		cat("Analysis returned some warnings:\n")
-		print(output[warnlines])
+		if(show.warn) cat("Analysis returned some warnings:\n")
+		if(show.warn) print(output[warnlines])
 		output = output[-warnlines]
 	}
 	
