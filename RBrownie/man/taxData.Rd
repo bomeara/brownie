@@ -1,5 +1,5 @@
-\name{taxaData}
-\alias{taxaData}
+\name{taxData}
+\alias{taxData}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Return datatype string representing the taxaset datatype
@@ -8,7 +8,7 @@ Return datatype string representing the taxaset datatype
 Return datatype string representing the taxaset datatype
 }
 \usage{
-taxaData()
+taxData()
 }
 %- maybe also 'usage' for other objects documented here.
 \details{

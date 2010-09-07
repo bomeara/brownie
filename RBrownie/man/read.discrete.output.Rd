@@ -8,7 +8,7 @@ Read brownie output from discrete analysis
 This function processes output returned from the brownie core before passing it on to read.analysis.output.
 }
 \usage{
-read.discrete.output(filename, txt = NULL, ...)
+read.discrete.output(filename, txt = NULL, show.warn = FALSE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,6 +17,9 @@ A file with brownie output
 }
   \item{txt}{
 Text containing brownie output
+}
+  \item{show.warn}{
+Should internal warnings be shown?  If you are using trees with a small number of taxa or characters then this should be turned on.
 }
   \item{\dots}{
 Not currently used
