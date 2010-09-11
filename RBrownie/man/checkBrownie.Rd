@@ -42,22 +42,7 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (object) 
-{
-    retval = TRUE
-    if (length(object@commands) != 0 && !all(object@commands == 
-        "")) 
-        retval = retval && checkCommands(object@commands)
-    if (length(object@datatypes) != 0 && !all(object@datatypes == 
-        "")) 
-        retval = retval && checkDataTypes(object@datatypes)
-    return(retval && checkPhylo4(object))
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

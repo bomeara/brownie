@@ -8,7 +8,12 @@ Add log start command to brownie object
 This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to start logging to a certain file.  (Be careful when using this.  Logging doesn't seem stable in the brownie core).
 }
 \usage{
-addStartLog(obj, file = NULL, fileappend = FALSE, filereplace = FALSE, usetempfile = FALSE, ...)
+addStartLog(obj, 
+	file = NULL, 
+	fileappend = FALSE, 
+	filereplace = FALSE, 
+	usetempfile = FALSE, 
+	...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

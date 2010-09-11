@@ -19,11 +19,11 @@ A list of phylogenetic trees (list of brownie objects)
 The taxaset to use (as column index)
 }
   \item{percent}{
-Should the results be returned as the number of trees in the set which contain this monophyly (percent=FALSE) or the percentage of trees (percent=TRUE)
+Should the results be returned as the number of trees in the set which contain this monophyly (\code{percent=FALSE}) or the percentage of trees (\code{percent=TRUE})
 }
 }
 \details{
-This function exists so that a set of trees can be checked to see if how many of the trees within contain the paraphyly specified by taxaset.  To see a list of the taxasets available to test call taxasets().
+This function exists so that a set of trees can be checked to see if how many of the trees within contain the paraphyly specified by taxaset.  To see a list of the taxasets available to test call \code{taxasets()}.
 }
 \value{
 The number of trees (as percent or number) which contain the paraphyly
@@ -41,7 +41,7 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{which.para}}
 }
 \examples{
 data(parrot)

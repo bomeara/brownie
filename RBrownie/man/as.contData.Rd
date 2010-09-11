@@ -42,7 +42,7 @@ Returns dat converted to a numeric vector
 \examples{
 x = sample(1:3,10,replace=TRUE)
 class(x)
-x = as.discData(x)
+x = as.contData(x)
 class(x)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

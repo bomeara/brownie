@@ -8,7 +8,10 @@ Get tree weights
 Read the tree weights from a nexus file or text.  It looks within the comments before each tree string for the weights.
 }
 \usage{
-get.tree.weights(finput, text = NULL, starters = c("&W", "&lnP"), splitchar = "( |=)")
+get.tree.weights(finput, 
+	text = NULL, 
+	starters = c("&W", "&lnP"), 
+	splitchar = "( |=)")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

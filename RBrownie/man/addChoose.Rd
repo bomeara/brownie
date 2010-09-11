@@ -5,7 +5,7 @@
 Add choose command to a brownie object (or list of brownie objects)
 }
 \description{
-This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to "choose" or select a certain tree, continuous or discrete character for further analysis.
+This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to "choose" or select a certain tree, continuous or discrete character for further analysis.
 }
 \usage{
 addChoose(obj, char = NULL, tree = NULL, discchar = NULL)
@@ -26,7 +26,7 @@ Choose a certain discrete character for analysis.
 }
 }
 \details{
-The 'choose' command instructs the brownie core to use a certain parameter for further analysis.
+The 'choose' command instructs the brownie core to use a certain parameter for further analysis.  Only use one of the options.
 
 From brownie core:
 Selects one tree and/or character to use for subsequent analyses. Continuous characters are chosen by default ('char=' or 'c='), discrete characters must be chosen using 'discretechar=' or 'd='.
@@ -35,7 +35,7 @@ The remaining trees and characters are still stored in memory and can be chosen 
 
 }
 \value{
-Returns the original object (obj) with ratetest command added.
+Returns the original object (\code{obj}) with ratetest command added to its \code{commands} slot.
 }
 \references{
 %% ~put references to the literature/web site here ~

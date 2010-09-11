@@ -2,10 +2,10 @@
 \alias{addSubNode}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add subnode to phylo4d_ext object
+Add subnode to \code{phylo4d_ext} object
 }
 \description{
-Add a subnode to phylo4d_ext object.  This will rarely be used
+Add a subnode to \code{phylo4d_ext} object.  
 }
 \usage{
 addSubNode(x, anc, dec, position, dataf)
@@ -32,11 +32,7 @@ a data.frame object which mimics the structure of the the data slot.  It contain
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+Returns \code{x} with a new subnode added.
 }
 \references{
 %% ~put references to the literature/web site here ~
@@ -51,7 +47,7 @@ a data.frame object which mimics the structure of the the data slot.  It contain
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{phyext}}
 }
 \examples{
 

@@ -1,11 +1,11 @@
 Package: RBrownie
 Type: Package
-Title: Continuous and discrete ancestral character reconstruction and rate tests
+Title: Continuous and discrete ancestral character reconstruction and evolutionary rate tests.
 Version: 0.0.4
-Date: 2010-05-24
+Date: 2010-09-10
 Author: J. Conrad Stack <stack@psu.edu>, Brian O'Meara, Luke Harmon
 Maintainer: J. Conrad Stack <stack@psu.edu>
-Description: This R package implements the BROWNIE phylogenetics module 
+Description: This R package wraps the Brownie c++ library, which is a phylogenetic library which performs evolutionary rate tests and ancestral character reconstructions.  
 URL: http://code.google.com/p/brownie/, http://www.conradstack.info
 License: GPL-2
 Collate: processNexus.R processBrownie.R class-phylo4d_ext.R class-brownie.R methods-phylo4d_ext.R methods-brownie.R setAs-methods.R phyextPlots.R readWrite.R rcpp_hello_world.R Rpack-internal.R zzz.R constructAnalyses.R readAnalyses.R class-datatypes.R

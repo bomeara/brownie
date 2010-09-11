@@ -23,13 +23,15 @@ Observations of taxon means have uncertainty. By default, the program assumes th
 \details{
 Note that if the tip variance type is set to given, values in the matrix are assumed to consist of a taxon average followed by the corresponding variance, so the matrix might be:
  taxon1   char1_mean  char1_variance  char2_mean  char2_variance  char3_mean  char3_variance...
+ 
  taxon2   char1_mean  char1_variance  char2_mean  char2_variance  char3_mean  char3_variance...
+ 
  taxon3   char1_mean  char1_variance  char2_mean  char2_variance  char3_mean  char3_variance...
 
 This differs somewhat from the NEXUS specification (Maddison et al, 1997), which would use an ITEMS=(AVERAGE VARIANCE) command and a somewhat different matrix.
 }
 \value{
-Returns the original object (obj) with CONTinuous command added.
+Returns the original object (\code{obj}) with 'tv' command added to its \code{commands} slot.
 }
 \references{
 %% ~put references to the literature/web site here ~

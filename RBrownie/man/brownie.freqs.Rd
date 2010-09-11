@@ -42,24 +42,7 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (with.desc = F) 
-{
-    brownie_freqs_options = c("EMPIRICAL", "EQUILIBRIUM", "UNIFORM", 
-        "OPTIMIZE", "SET")
-    brownie_freqs_description = c("Frequencies based on empirical distribution of states at the tips", 
-        "The frequencies expected with the optimized rate matrix given infinitely long branches", 
-        "Frequencies all the same", "Frequencies are optimized as part of the model", 
-        "User-specified frequencies")
-    if (with.desc) 
-        brownie_freqs_options = cbind(brownie_freqs_options, 
-            brownie_freqs_description)
-    return(brownie_freqs_options)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

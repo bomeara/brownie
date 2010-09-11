@@ -43,7 +43,7 @@ J. Conrad Stack
 \examples{
 x = factor(sample(1:3,10,replace=TRUE))
 class(x)
-x = as.contData(x)
+x = as.discData(x)
 class(x)
 
 }

@@ -20,7 +20,7 @@ The column index of the taxaset to be checked
 }
 }
 \details{
-Use the command taxasets(x) to see which taxasets are available for checking.  If the taxindex entered is greater than the number of taxasets then this command simply returns false and a warning.  The taxaset(x) command can also be assigned to in order to create new taxasets.
+Use the command \code{taxasets(x)} to see which taxasets are available for checking.  If the taxindex entered is greater than the number of taxasets then this command simply returns false and a warning.  The \code{taxasets(x)} command can also be assigned to in order to create new taxasets.
 }
 \value{
 True if the taxa form a monophyly, false otherwise.
@@ -38,6 +38,7 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
+\code{\link{taxasets}}
 }
 \examples{
 data(parrot)

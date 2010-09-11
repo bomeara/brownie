@@ -45,7 +45,11 @@ J. Conrad Stack
 }
 \examples{
 data(parrot)
-junkrun=runNonCensored(parrot,brfile="cont_junk.txt",models=brownie.models.continuous()[1:2],treeloop=TRUE,charloop=TRUE)
+junkrun=runNonCensored(parrot,
+	brfile="cont_junk.txt",
+	models=brownie.models.continuous()[1:2],
+	treeloop=TRUE,
+	charloop=TRUE)
 summaryCont(junkrun)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

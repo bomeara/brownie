@@ -8,7 +8,12 @@ Add and Run a discrete command to brownie object
 This function runs a discrete character evolution analysis on a brownie object using various models and frequencies.  Commands currently in the brownie object are ignored.  
 }
 \usage{
-runDiscrete(brobj, outfile = NULL, brfile = NULL, models = brownie.models.discrete()[1], freqs = brownie.freqs()[1], ...)
+runDiscrete(brobj, 
+	outfile = NULL, 
+	brfile = NULL, 
+	models = brownie.models.discrete()[1], 
+	freqs = brownie.freqs()[1], 
+	...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -57,14 +62,15 @@ J. Conrad Stack
 
 \seealso{
 \code{\link{addDiscrete}},
-\code{\link{brownie.models.discrete}},
 \code{\link{brownie.freqs}},
 \code{\link{run.analysis}},
-\code{\link{read.discrete.output}}
 }
 \examples{
 data(geospiza_ext)
-junkrun=runDiscrete(geospiza_ext,models=c("nonrev","nonrev"),freqs=c("unif","equilib"),reconstruct=TRUE)
+junkrun=runDiscrete(geospiza_ext,
+	models=c("nonrev","nonrev"),
+	freqs=c("unif","equilib"),
+	reconstruct=TRUE)
 plot(junkrun$trees[[1]]) # plot one of the reconstructed trees
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -8,7 +8,15 @@ Add numerical optimization command to brownie object
 This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to set certain variables when performing numerical optimization.
 }
 \usage{
-addNumopt(obj, iter = NULL, toler = NULL, randstart = NULL, seed = NULL, stepsize = NULL, detail = FALSE, redo = FALSE, giveupfactor = NULL)
+addNumopt(obj, 
+	iter = NULL, 
+	toler = NULL, 
+	randstart = NULL, 
+	seed = NULL, 
+	stepsize = NULL, 
+	detail = FALSE, 
+	redo = FALSE, 
+	giveupfactor = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -37,7 +45,7 @@ Specifies whether or not to have detailed output from numerical optimization
 Specifies whether to redo reps which stop due to iteration limits
 }
   \item{giveupfactor}{
-when redo=T, is used to tell the software when to stop restarting: when the ratio of unsuccessful to successful starts is > giveupfactor.
+When \code{redo=T}, is used to tell the software when to stop restarting: when the ratio of unsuccessful to successful starts is > \code{giveupfactor}.
 }
 }
 \details{

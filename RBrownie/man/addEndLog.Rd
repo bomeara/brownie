@@ -5,7 +5,7 @@
 Add log stop command to brownie object
 }
 \description{
-This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to stop logging to a certain file.  (Be careful when using this.  Logging doesn't seem stable in the brownie core).
+This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to stop logging to a certain file.  (Be careful when using this.  Logging doesn't seem stable in the brownie core).
 
 }
 \usage{
@@ -18,7 +18,7 @@ A brownie object (or list of brownie objects)
 }
 }
 \details{
-Adds 'log stop;' 
+Adds 'log stop;' to the \code{commands} slot of a brownie object
 }
 \value{
 %%  ~Describe the value returned

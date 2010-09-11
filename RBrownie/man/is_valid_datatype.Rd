@@ -42,17 +42,6 @@ is_valid_datatype(object)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (object) 
-{
-    if (object@type \%in\% brownie.datatypes()) 
-        return(TRUE)
-    return(FALSE)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

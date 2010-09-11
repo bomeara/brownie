@@ -16,14 +16,14 @@ areTaxaMutex(x, ...)
 A brownie object
 }
   \item{\dots}{
-An indefinite number of taxaset indices.  See example below
+An indefinite number of taxaset column indices.  See example below.
 }
 }
 \details{
-
+This function is still relatively experimental.
 }
 \value{
-TRUE if the taxaset indices is ... are mutually exclusive.
+TRUE if the taxaset column indices in ... are mutually exclusive.
 }
 \references{
 %% ~put references to the literature/web site here ~

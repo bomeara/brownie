@@ -20,10 +20,10 @@ A character string which is added to commands.
 }
 }
 \details{
-Caution should be used when using this function.  It adds cmdstr to the commands slot of a brownie object.  It adds the character string as is, so this command really should only be used by those people who are familiar with brownie command-line commands.
+Caution should be used when using this function.  It adds cmdstr to the commands slot of a brownie object.  It adds the character string as is and should only be used by those who are familiar with the brownie commands.  To get familiar with these commands, check out the Brownie manual online.
 }
 \value{
-Returns the original object (obj) with ratetest command added.
+Returns the original object (\code{obj}) with the \code{cmdstr} added to the \code{commands} slot.
 }
 \references{
 %% ~put references to the literature/web site here ~

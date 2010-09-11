@@ -19,7 +19,7 @@ A list of phylogenetic trees (list of brownie objects)
 The taxaset to use (as column index)
 }
   \item{percent}{
-Should the results be returned as the number of trees in the set which contain this monophyly (percent=FALSE) or the percentage of trees (percent=TRUE)
+Should the results be returned as the number of trees in the set which contain this monophyly (\code{percent=FALSE}) or the percentage of trees (\code{percent=TRUE})
 }
 }
 \details{
@@ -41,7 +41,9 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{taxa.mono}},
+\code{\link{taxa.charvect}},
+\code{\link{which.mono}}
 }
 \examples{
 data(parrot)

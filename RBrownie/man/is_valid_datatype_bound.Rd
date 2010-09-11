@@ -42,20 +42,6 @@ is_valid_datatype_bound(object)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (object) 
-{
-    retval = TRUE
-    if (object@type != contData()) 
-        retval = FALSE
-    if (object@level > 100 || object@level < 0) 
-        retval = FALSE
-    return(retval)
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

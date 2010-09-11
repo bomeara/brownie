@@ -8,7 +8,14 @@ Add and Run NonCensored ratetest command to brownie object
 This function runs a NonCensored ratetest on a brownie object using various models.  Commands currently in the brownie object are ignored.  
 }
 \usage{
-runNonCensored(brobj, outfile = NULL, brfile = NULL, models = brownie.models.continuous()[1], taxsets = character(0), states = character(0), changes = character(0), ...)
+runNonCensored(brobj, 
+	outfile = NULL, 
+	brfile = NULL, 
+	models = brownie.models.continuous()[1], 
+	taxsets = character(0), 
+	states = character(0), 
+	changes = character(0), 
+	...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -60,15 +67,17 @@ J. Conrad Stack
 \seealso{
 \code{\link{addNonCensored}},
 \code{\link{addModel}},
-\code{\link{brownie.models.continuous}},
 \code{\link{run.analysis}},
-\code{\link{read.continuous.output}},
 \code{\link{summaryCont}}
 }
 \examples{
 # Noncensored ("cont")
 data(parrot)
-junkrun=runNonCensored(parrot,brfile="cont_junk.txt",models=brownie.models.continuous()[1:2],treeloop=TRUE,charloop=TRUE)
+junkrun=runNonCensored(parrot,
+	brfile="cont_junk.txt",
+	models=brownie.models.continuous()[1:2],
+	treeloop=TRUE,
+	charloop=TRUE)
 summaryCont(junkrun)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
