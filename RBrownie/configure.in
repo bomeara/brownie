@@ -1,6 +1,6 @@
 AC_PREREQ(2.50) dnl require version 2.5+ of autoconf
 
-AC_INIT([RBrownie], 0.0.4) dnl package name, version
+AC_INIT([RBrownie], 0.0.5) dnl package name, version
 
 AC_REQUIRE_CPP
 AC_PROG_RANLIB
@@ -13,6 +13,7 @@ if test -z "${R_HOME}"; then
 fi
 CXX=`"${R_HOME}/bin/R" CMD config CXX`  			dnl c++ compiler command
 CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`  	dnl c++ compiler flags
+SHAREDFLAGS=`"${R_HOME}/bin/R" CMD config CXXPICFLAGS`  	dnl c++ share
 
 RCPP_LIB=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::LdFlags()'`
 RCPP_FLAGS=`"${R_HOME}/bin/Rscript" --vanilla -e 'Rcpp:::CxxFlags()'`
@@ -56,8 +57,7 @@ AC_SUBST(CXXFLAGS)
 AC_OUTPUT(src/Makevars)
 
 cd src/brownie_src
-make CXX="${CXX}" -f makefilestatic
-
+make CXX="${CXX}" SHAREDFLAGS="${SHAREDFLAGS}" -f makefilestatic
 
 
 
