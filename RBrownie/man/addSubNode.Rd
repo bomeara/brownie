@@ -2,10 +2,10 @@
 \alias{addSubNode}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Add subnode to \code{phylo4d_ext} object
+Add subnode to phylo4d_ext object
 }
 \description{
-Add a subnode to \code{phylo4d_ext} object.  
+Add a subnode to phylo4d_ext object.  
 }
 \usage{
 addSubNode(x, anc, dec, position, dataf)
