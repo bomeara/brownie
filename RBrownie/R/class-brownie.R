@@ -30,6 +30,7 @@ setMethod("brownie", "phylo", function(x, annote=list()){
 	# special way to convert phylo to brownie
 	converted = as(x,"brownie")
 	converted@annote <- annote
+	tipLabels(converted) <- checkLabel(tipLabels(converted))
 	
 	return(converted)
 })
@@ -53,7 +54,9 @@ setMethod("brownie","phylo4d", function(x,dataTypes,annote=list()){
 	
 	# TODO: -check if datatypes match up with the @data slot, 
 	#		 convert datatypes if necessary.
-	#
+
+	# Convert to valid names (if necessary)
+	tipLabels(converted) <- checkLabel(tipLabels(converted))	
 	
 	return(converted)
 })
