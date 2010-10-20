@@ -19125,11 +19125,15 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
     {
         token.GetNextToken();
         if( token.Equals(";") ) {
+        	cout<<"semicolon";
+        	if (enteredsplit && enteredmodel) {
+        		adequateinput=true;
+        	}
             if (adequateinput==false) {
                 message="Insufficient input: type \"timeslice ?\" for help";
                 PrintMessage();
+                break;
             }
-            break;
         }
         else if( token.Equals("?") ) {
             adequateinput=true;
@@ -19144,6 +19148,8 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
             message+="\n                                                 *Option is nonpersistent\n\n";
             message+="This will allow assignment of different models on the specified intervals across all trees.\nFor example, to specify one rate parameter for the interval from the present to 50 MYA,\nanother rate parameter from 50 MYA to 65 MYA, and the first rate parameter again from 65 MYA\nto the root of the phylogeny:\n\n  Time Model\n   0     1\n   5     1\n   .     .\n  45     1\n__50_____1_\n| 50     2 |\n| 55     2 |\n| 60     2 |\n|_65_____2_|\n  65     1\n  70     1\n   .     .\n\none would type\n\nTimeslice splits=(50 65) models=(1 2 1);\n\nSplits specifies where one model changes to the other;\nthere should be one fewer split than there are intervals.\nEdges spanning a split are properly divided\n(so a given path may have more than one model).\n\nBy default, times are measured from the most recent taxon. \nTo specify that they should be measured from the root instead, specify fromroot=yes [NOT IMPLEMENTED YET];\nThis becomes most important when the root node may be of different depths in different trees.\nNote that you are currently limited to only 9 splits (if this becomes a problem, email omeara.brian@gmail.com).\nDoing this command will overwrite any previous splits or discrete character mappings.";
             PrintMessage();
+            token.GetNextToken();
+			break;
         }
         else if( token.Abbreviation("Splits") ) {
 			enteredsplit=true;
@@ -19191,12 +19197,12 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
         }
         else if (token.Abbreviation("FromRoot")  ) {
         }
-        else {
+  /*      else {
             errormsg = "Unexpected keyword (";
             errormsg += token.GetToken();
-            errormsg += ") encountered reading RateTest command. Type \"RateTest ?\" for help.";
+            errormsg += ") encountered reading TimeSlice command. Type \"TimeSlice ?\" for help.";
             throw XNexus( errormsg, token.GetFilePosition(), token.GetFileLine(), token.GetFileColumn() );
-        }
+        }*/
         //timeslicetimes[9]=GSL_POSINF;
         //timeslicemodels;
 		
@@ -19217,7 +19223,7 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
 				if (q!=(*Tptr).GetRoot()) {
 					double BeginTime=MaxLength-(q->GetPathLength());
 					double EndTime=BeginTime+(q->GetEdgeLength());
-				//cout<<endl<<endl<<"---------------------------------"<<endl<<"Begin time="<<BeginTime<<" EndTime="<<EndTime<<endl<<"PathLength="<<q->GetPathLength()<<endl<<"EdgeLength="<<q->GetEdgeLength()<<endl;
+				cout<<endl<<endl<<"---------------------------------"<<endl<<"Begin time="<<BeginTime<<" EndTime="<<EndTime<<endl<<"PathLength="<<q->GetPathLength()<<endl<<"EdgeLength="<<q->GetEdgeLength()<<endl;
 					vector<double> modelvector(maxModelCategoryStates,0.0); //maxModelCategoryStates is in TreeLib.h
 					vector<int> stateordervector;
 					vector<double> statetimesvector; 
