@@ -5905,7 +5905,7 @@ void BROWNIE::PrintCitations()
 		message+="\n\nCitations for Ornstein-Uhlenbeck model with multiple means but one attraction and rate parameter:";
 		message+="\n\n   Butler, M.A., King, A.A. 2004. \"Phylogenetic comparative analysis: a modeling approach for adaptive evolution.\" American Naturalist. 164(6):683-695.";
 		message+="\n\n   Hansen, T.F., 1997. \"Stabilizing selection and the comparative analysis of adaptation.\" Evolution, 51:1341-1351.";
-		message+="\n\n   O'Meara, B.C. Brownie v2.1.2. Distributed by the author at http://www.brianomeara.info/brownie";
+		message+="\n\n   O'Meara, B.C. Brownie v2.1.3. Distributed by the author at http://www.brianomeara.info/brownie";
 				}
 	if (citationarray[3]) {
 		message+="\n\nCitation for species delimitation approach:";
@@ -7982,6 +7982,9 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 								tmessage+=usermatrix;
 								tmessage+=")";
 							}
+							else if (discretechosenmodel==5) {
+								tmessage+="Hetero";
+							}
 							tmessage+="\t";
 							
 							if (discretechosenstatefreqmodel==1) {
@@ -8053,6 +8056,10 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							message+=usermatrix;
 							message+=")";
 						}
+						else if (discretechosenmodel==5) {
+							message+="Hetero";
+						}
+						
 						
 						for (int i=0; i<localnumbercharstates;i++) {
 							for (int j=0; j<localnumbercharstates;j++) {
@@ -8141,6 +8148,10 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						if (discretechosenmodel==4) {
 							vectorposition=position+1; //since we care about position in the output vector, which just has variable parameters.
 						}
+						if (discretechosenmodel==5) {
+							vectorposition=position+1; //since we care about position in the output vector, which just has variable parameters.
+						}
+
 						if (discretechosenstatefreqmodel==1) {
 							message+="\n  Statefreqs: uniform";
 						}
@@ -8428,6 +8439,11 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
                 message="You have chosen a user-specified model";
 				PrintMessage();
             }
+            else if(token.Abbreviation("Hetero")) {
+				discretechosenmodel=5;
+                message="You have chosen a model where different parts of the tree can have different rate matrices.";
+				PrintMessage();
+            }
 			
             else {
                 errormsg = "Unexpected option (";
@@ -8547,6 +8563,9 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 			else if (discretechosenmodel==4) {
 					message+="User";
 			}
+			else if (discretechosenmodel==5) {
+					message+="Hetero";
+			}
 			message+="\n Freq           <string>                                  ";
 			if (discretechosenstatefreqmodel==1) {
 				message+="Uniform";
@@ -8609,7 +8628,8 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 			message+="\n GlobalStates   No|Yes                                    *No";
             message+="\n                                                        *Option is nonpersistent\n";
 			message+="\nModel: Allows you to specify whether to use a USER-specified model, a model where all rates are EQUAL, a REVersible model where q_ij=q_ji\n";
-			message+="       for all states i and j but are otherwise free to vary, or an NONREVersible model where all rates can vary independently.";
+			message+="       for all states i and j but are otherwise free to vary, or an NONREVersible model where all rates can vary independently. There is also\n";
+			message+="       a new HETERO model that when combined with painted branches, allows different rate matrices on different parts of a tree (EXPERIMENTAL).\n";
 			message+="\nRateMat: A vector containing information about rate parameters. Note that only off-diagonal entries should be included.\n";
 			message+="         The model specification, except for the built-in types (equal, rev, nonrev), is grossly similar to PAUP's method for specifying\n";
 			message+="         which rates are constrained to be equal, plus allows fixing of certain values. For example, the following rate matrix:\n";
@@ -8623,7 +8643,23 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 			message+="         non-negative fixed value. Basically, all rates sharing a letter take the same optimized rate value, while those assigned a number have a fixed\n";
 			message+="         rate value. To specify the above rate matrix, the command would be\n";
 			message+="		     \"discrete model=user ratemat=(a 0.5 b c 0.0 a)\"\n";
-			message+="         Letters are case-sensitive, so there are 52 (26*2) possible free rate parameters you can use in a user model.\n";
+			message+="         Letters are case-sensitive, so there are 52 (26*2) possible free rate parameters you can use in a user model.\n\n";
+			message+="         For a hetero model (experimental), enter the ratemat for the model for the parts of the tree painted 0, followed by the ratemat for the parts of the tree painted 1,\n";
+			message+="         and so forth. I.e., for two different rate matrices,\n";
+			message+="           PART 0\n";
+			message+="                to->  0     1     2\n";
+			message+="               from ------------------\n";
+			message+="                 0 |  -     a    0.5\n";
+			message+="                 1 |  b     -     c\n";
+			message+="                 2 | 0.0    a     -\n\n";
+			message+="           PART 1\n";
+			message+="                to->  0     1     2\n";
+			message+="               from ------------------\n";
+			message+="                 0 |  -    0.4    a\n";
+			message+="                 1 | 0.3    -     a\n";
+			message+="                 2 | 0.0    d     -\n";
+			message+="         the ratemat would be ratemat=(a 0.5 b c 0.0 a 0.4 a 0.3 a 0.0 d). Think of the different rate matrices arranged one on top of each other.\n";
+			message+="         Note that by using the same letter in different matrices, you can force them to have the same estimated rate.\n";
 			message+="Freq: The probability of each state at the root can be based on the EMPIRICAL distribution at the tips, can be SET by the user\n";
 			message+="      (using the statevector command), can be OPTIMIZEd as part of the model, can be set to EQUILIBRIUM frequencies (the\n";
 			message+="      frequencies expected with the optimized rate matrix given infinitely-long branches), or can be set to be UNIFORM (equal).\n";
@@ -8694,7 +8730,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
             }
 			//int numbercharstates=(discretecharacters->GetObsNumStates(discretechosenchar));
 			int expectednumberofentries=(localnumbercharstates*localnumbercharstates)-localnumbercharstates;
-            if (inputcount!=expectednumberofentries) {
+            if (0!=inputcount % expectednumberofentries) {
                 errormsg="You should have entered ";
 				errormsg+=expectednumberofentries;
 				errormsg+=" values (the current character has ";
@@ -12534,7 +12570,7 @@ void BROWNIE::RunCmdLine(bool inputfilegiven, nxsstring fn)
 	Add( characters2 );
     Add( this );
     cout<<endl<<endl<<endl;
-    cout<<"                               Brownie V2.1.2 (r"<<$SVN_VERSION<<")"<<endl;
+    cout<<"                               Brownie V2.1.3 (r"<<$SVN_VERSION<<")"<<endl;
 	cout<<"                          Character evolution models,"<<endl;
 	cout<<"                             species delimitation,"<<endl; 
 	cout<<"                               and tree search"<<endl<<endl;
@@ -16713,12 +16749,18 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 		int ntax=taxa->GetNumTaxonLabels();
 		
 		gsl_matrix *RateMatrix=gsl_matrix_calloc(localnumbercharstates,localnumbercharstates);
+		gsl_matrix *RateMatrixHetero=gsl_matrix_calloc(maxModelCategoryStates*localnumbercharstates,localnumbercharstates); 
+		
 		gsl_vector *ancestralstatevector=gsl_vector_calloc(localnumbercharstates);
 		int vectorposition=0;
 		int position=-1; //used in user-set matrix only
-		for (int i=0; i<localnumbercharstates;i++) {
+		int rowMultiplier=1;
+		if (discretechosenmodel==5) {
+			rowMultiplier=10;
+		}
+		for (int i=0; i<localnumbercharstates*rowMultiplier;i++) {
 			for (int j=0; j<localnumbercharstates;j++) {
-				if (i!=j) {
+				if ((i % localnumbercharstates)!=j) { //want to ignore the diagonals of the matrices. But i can get bigger than the number of rows in a matrix for hetero models. Thus, use the remainder
 					if (discretechosenmodel==1) { //one rate
 						gsl_matrix_set(RateMatrix,i,j,gsl_vector_get(localvariables,0));
 						vectorposition=1;
@@ -16750,20 +16792,54 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 						}
 						vectorposition++;
 					}
+					if (discretechosenmodel==5) { //hetero user-specified model
+						if (ratematassignvector[vectorposition]>=0) { //means there's an assigned rate
+							gsl_matrix_set(RateMatrixHetero,i,j,ratematfixedvector[(ratematassignvector[vectorposition])]);
+						}
+						else {
+							position=-1*(1+ratematassignvector[vectorposition]);
+							if (debugmode) {
+								cout<<"calling position "<<position<<" for variables vector of size "<<localvariables->size<<endl;
+							}
+							gsl_matrix_set(RateMatrixHetero,i,j,gsl_vector_get(localvariables,position)); //means it's a variable rate
+						}
+						vectorposition++;
+					}
+
 				}
 			}
 		}
 		if (discretechosenmodel==4) {
 			vectorposition=position+1;
 		}
-		for (int i=0; i<localnumbercharstates; i++) { //fill in diagonal entries
-			double ratesum=0;
-			for (int j=0; j<localnumbercharstates; j++) {
-				ratesum+=gsl_matrix_get(RateMatrix,i,j);
-			}
-			gsl_matrix_set(RateMatrix,i,i,-1.0*ratesum);
+		if (discretechosenmodel==5) {
+			vectorposition=position+1;
 		}
+		
+		if (discretechosenmodel==5) {
+			for (int i=0; i<localnumbercharstates*maxModelCategoryStates; i++) { //fill in diagonal entries
+				double ratesum=0;
+				for (int j=0; j<localnumbercharstates; j++) {
+					ratesum+=gsl_matrix_get(RateMatrixHetero,i,j);
+				}
+				gsl_matrix_set(RateMatrixHetero,i,i % localnumbercharstates,-1.0*ratesum); //remember about using remainder to get the colun
+			}
+		}
+		else {
+			for (int i=0; i<localnumbercharstates; i++) { //fill in diagonal entries
+				double ratesum=0;
+				for (int j=0; j<localnumbercharstates; j++) {
+					ratesum+=gsl_matrix_get(RateMatrix,i,j);
+				}
+				gsl_matrix_set(RateMatrix,i,i,-1.0*ratesum);
+			}
+		}
+		
 		if (discretechosenstatefreqmodel==3) { //Calculate Equilibrium state freqs by just getting a Pmatrix (P=exp(QT)) for a really big time
+			if (discretechosenmodel==5) {
+				errormsg="You cannot use equilibrium state frequencies with a hetero model -- just too hard for me to calculate these at the moment.";
+				throw XNexus( errormsg);
+			}
 			if (debugmode) {
 				cout<<"now computing equilibrium state frequencies"<<endl;
 			}
@@ -16910,14 +16986,34 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 			}
 			return likelihood;	
 		}
-		
-		likelihood=(CalculateDiscreteCharLnL(RateMatrix,ancestralstatevector));
+		if (discretechosenmodel==1 || discretechosenmodel==2 || discretechosenmodel==3 || discretechosenmodel==4) {
+			likelihood=(CalculateDiscreteCharLnL(RateMatrix,ancestralstatevector));
+			gsl_matrix_swap(currentdiscretecharQmatrix,RateMatrix);
+		}
+		else if (discretechosenmodel==5) {
+			likelihood=(CalculateDiscreteCharLnLHetero(RateMatrixHetero, ancestralstatevector));
+			gsl_matrix_swap(currentdiscretecharQmatrix,RateMatrixHetero);
+	/*		for (int rpos = 0 ; rpos<localnumbercharstates; rpos++) {
+				for (int cpos = 0 ; cpos<localnumbercharstates;  cpos++) {
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos,cpos,gsl_matrix_get(RateMatrix0,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+localnumbercharstates,cpos,gsl_matrix_get(RateMatrix1,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+2*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix2,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+3*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix3,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+4*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix4,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+5*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix5,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+6*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix6,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+7*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix7,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+8*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix8,rpos,cpos));
+					gsl_matrix_set(currentdiscretecharQmatrix,rpos+9*localnumbercharstates,cpos,gsl_matrix_get(RateMatrix9,rpos,cpos));
+				}
+			}*/
+		}
 		//cout<<"likelihood is "<<likelihood<<endl;
-		gsl_matrix_swap(currentdiscretecharQmatrix,RateMatrix);
 		//cout<<"currentdiscretecharQmatrix\n"; 
 		//PrintMatrix(currentdiscretecharQmatrix);
 		gsl_vector_swap(currentdiscretecharstatefreq,ancestralstatevector);
 		gsl_matrix_free(RateMatrix);
+		gsl_matrix_free(RateMatrixHetero);
 		gsl_vector_free(ancestralstatevector);
 		gsl_vector_free(localvariables);
 		//cout<<"\neeeeeeeeeeeeeeeeeeeeeeeeeee"<<endl;
@@ -17113,8 +17209,12 @@ gsl_vector * BROWNIE::DiscreteGeneralOptimization()
 	numberoffreerates=0;
 	numberoffreefreqs=0;
 	//gsl_matrix_free(optimaldiscretecharQmatrix);
-	optimaldiscretecharQmatrix=gsl_matrix_calloc(localnumbercharstates,localnumbercharstates);
-	currentdiscretecharQmatrix=gsl_matrix_calloc(localnumbercharstates,localnumbercharstates);
+	int QmatrixRowMultiplier=1;
+	if (discretechosenmodel==5) {
+		QmatrixRowMultiplier=10;
+	}
+	optimaldiscretecharQmatrix=gsl_matrix_calloc(localnumbercharstates*QmatrixRowMultiplier,localnumbercharstates);
+	currentdiscretecharQmatrix=gsl_matrix_calloc(localnumbercharstates*QmatrixRowMultiplier,localnumbercharstates);
 	//gsl_vector_free(optimaldiscretecharstatefreq);
 	optimaldiscretecharstatefreq=gsl_vector_calloc(localnumbercharstates);
 	currentdiscretecharstatefreq=gsl_vector_calloc(localnumbercharstates);
@@ -17130,6 +17230,9 @@ gsl_vector * BROWNIE::DiscreteGeneralOptimization()
 		numberoffreerates=numberofrates;
 	}
 	else if (discretechosenmodel==4) {
+		numberoffreerates=freerateletterstring.size();
+	}
+	else if (discretechosenmodel==5) {
 		numberoffreerates=freerateletterstring.size();
 	}
 	if (discretechosenstatefreqmodel==4) {
@@ -18563,6 +18666,185 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 	else if (neglnL<0) {
 		if (debugmode) {
 			message="\nWarning: The negative ln likelihood in CalculateDiscreteCharLnL was less than zero (";
+			message+=neglnL;
+			message+="), so a very large value (BROWNIE_MAXLIKELIHOOD) was returned instead.\n";
+			PrintMessage();
+		}
+		neglnL=BROWNIE_MAXLIKELIHOOD ;
+
+	}
+	return neglnL;
+}
+
+//Calculates the likelihood of discrete character discretechosenchar on tree chosentree
+//Deals with underflow issues by using superdouble
+double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gsl_vector * ancestralstatevector)
+{
+	double neglnL=0;
+	double Prob=0;
+	if (variablecharonly) {
+		//Prob=CalculateDiscreteCharProbAllConstant(RateMatrix,ancestralstatevector);
+		errormsg="Variable characters only is not a valid option for a hetero model";
+		throw XNexus( errormsg);
+	}			
+	int startingdiscretechosenchar=discretechosenchar;
+	int endingdiscretechosenchar=discretechosenchar+1;
+	if (allchar) {
+		startingdiscretechosenchar=0;
+		endingdiscretechosenchar=discretecharacters->GetNChar();
+	}
+	int olddiscretechosenchar=discretechosenchar;
+	for (discretechosenchar=startingdiscretechosenchar;discretechosenchar<endingdiscretechosenchar;discretechosenchar++) {
+		if ((discretecharacters->GetObsNumStates(discretechosenchar))>1 || variablecharonly==false) { //so, ignore invariant characters if variablecharonly==true
+			Superdouble L=0;
+			map<Node*, vector<Superdouble> > stateprobatnodes;
+			Tree T=intrees.GetIthTree(chosentree-1);
+			NodeIterator <Node> n (T.GetRoot()); //Goes from tips down
+			NodePtr currentnode = n.begin();
+			while (currentnode)
+			{
+				if (currentnode->IsLeaf() ) {
+					int statenumber=discretecharacters->GetInternalRepresentation(taxa->FindTaxon(currentnode->GetLabel()),discretechosenchar); //NOTE: for discrete chars, the number starts at 0
+					for(int j=0;j<ancestralstatevector->size;j++) {
+						Superdouble probofstatej=0; //do all in straight prob, then convert to ln L
+						if (j==statenumber) {
+							probofstatej=1; 
+						}
+						(stateprobatnodes[currentnode]).push_back(probofstatej);
+/*						if (debugmode) {
+							cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofstatej = "<<probofstatej.getMantissa()<<" x 10^"<<probofstatej.getExponent()<<", -ln(probofstatej) = "<<-1.0*probofstatej.getLn()<<endl<<endl;
+						}*/
+						
+					}
+					
+				}
+				else { //must be an internal node, including the root
+					for(int i=0;i<ancestralstatevector->size;i++) { //do this for each possible state at the current node
+						NodePtr descnode=currentnode->GetChild();
+						Superdouble probofstatei=1;
+						while (descnode!=NULL) {  //What we have to do is look at the probablity all the way down the branch, segment by segment
+							vector<Superdouble> probOfIntermediateStateTipward (ancestralstatevector->size,0.0); 
+							probOfIntermediateStateTipward[i]=1;
+							vector<Superdouble> probOfIntermediateStateRootward (ancestralstatevector->size,0.0); 
+							vector<int> stateordervector(descnode->GetStateOrder()); 
+							vector<double> statetimesvector(descnode->GetStateTimes());
+							for (int vectorpos=(stateordervector.size()-1); vectorpos>=0; vectorpos--) { //go from tip ward to rootward
+								gsl_matrix * RateMatrixTMP=gsl_matrix_calloc(ancestralstatevector->size, ancestralstatevector->size);
+								int stateID=stateordervector[vectorpos];
+								double stateTime=stateordervector[vectorpos];
+								for (int rowpos=0; rowpos<ancestralstatevector->size; rowpos++) {
+									for (int colpos=0; colpos<ancestralstatevector->size; colpos++) {
+										gsl_matrix_set(RateMatrixTMP,rowpos,colpos,gsl_matrix_get(RateMatrixHetero,rowpos+stateID*(ancestralstatevector->size),colpos));
+									}
+								}
+							/*	if(stateID==0) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix0);
+								}
+								else if(stateID==1) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix1);
+								}
+								else if(stateID==2) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix2);
+								}
+								else if(stateID==3) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix3);
+								}
+								else if(stateID==4) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix4);
+								}
+								else if(stateID==5) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix5);
+								}
+								else if(stateID==6) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix6);
+								}
+								else if(stateID==7) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix7);
+								}
+								else if(stateID==8) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix8);
+								}
+								else if(stateID==9) {
+									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix9);
+								}*/
+								gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrixTMP,stateTime);
+								for (int tipwardstate=0; tipwardstate<ancestralstatevector->size; tipwardstate++) {
+									for (int rootwardstate=0; rootwardstate<ancestralstatevector->size; rootwardstate++) {
+										probOfIntermediateStateRootward[rootwardstate]+=Superdouble(probOfIntermediateStateTipward[tipwardstate]) * Superdouble(gsl_matrix_get(Pmatrix,rootwardstate,tipwardstate));
+									}
+								}
+								probOfIntermediateStateTipward=probOfIntermediateStateRootward;
+								probOfIntermediateStateRootward.assign(ancestralstatevector->size,0);
+								gsl_matrix_free(RateMatrixTMP);
+								gsl_matrix_free(Pmatrix);
+							}
+							//gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength());
+							Superdouble probofthissubtree=0;
+/*							if (debugmode) {
+								Tree PrunedTree;
+								PrunedTree.SetRoot((intrees.GetIthTree(chosentree-1)).CopyOfSubtree(descnode));
+								cout<<endl;
+								PrunedTree.Write(cout);
+							}*/
+							for(int j=0;j<ancestralstatevector->size;j++) {
+								Superdouble transitionprob=probOfIntermediateStateTipward[j];
+								probofthissubtree+=transitionprob*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
+							/*	if (debugmode) {
+									cout<<"From "<<i<<" to "<<j<<" has move prob "<<gsl_matrix_get(Pmatrix,i,j)<<" and input subtree prob "<<((stateprobatnodes[descnode])[j])<<" product "<<transitionprob*((stateprobatnodes[descnode])[j])<<" and cumulative prob "<<probofthissubtree<<endl;
+								} */
+							}
+							probofstatei*=probofthissubtree;
+							descnode=descnode->GetSibling(); //we're going to look at all descendant subtrees (even in case of polytomies)
+							//gsl_matrix_free(Pmatrix);
+						}
+						(stateprobatnodes[currentnode]).push_back(probofstatei);
+				/*		if (debugmode) {
+							cout<<"CalculateDiscreteCharLnL: i = "<<i<<", probofstatei = "<<probofstatei<<", -ln(probofstatei) = "<<-1.0*probofstatei.getLn()<<endl<<endl;
+						} */
+					}
+				}
+		/*		if (debugmode) {
+					Superdouble totalprob=0;
+					cout<<"(stateprobatnodes[currentnode])[i] ";
+					for(int i=0;i<ancestralstatevector->size;i++) {
+						cout<<"state "<<i<<" "<<(stateprobatnodes[currentnode])[i]<<" [totalprob is "<<totalprob<<"], ";
+						totalprob+=(stateprobatnodes[currentnode])[i];
+					}
+					cout<<" mantissa="<<totalprob.getMantissa()<<"total = "<<totalprob<<endl;
+					//assert(totalprob.getMantissa()>0);
+				} */
+				currentnode = n.next();
+				
+			}
+	//now, finish up by getting the weighted sum at the root
+			for (int i=0;i<ancestralstatevector->size;i++) {
+				Superdouble ancestralprob=gsl_vector_get(ancestralstatevector,i);
+				L+=ancestralprob*((stateprobatnodes[T.GetRoot()])[i]);
+			}
+			if (variablecharonly) {
+				L=L/Superdouble(1.0-Prob); //after equation 3 in Lewis 2001 and equation 8 in Felsenstein 1992
+			}		
+/*			if (debugmode) {
+				cout<<"CalculateDiscreteCharLnL: original ("<<neglnL<<" * -1.0*log(L) [L="<<L<<"] = ";
+			}  */
+			neglnL+=-1.0*L.getLn();
+/*			if (debugmode) {
+				cout<<neglnL<<endl;
+			} */
+			
+		}
+	}
+	discretechosenchar=olddiscretechosenchar;
+	if (1==isnan(neglnL)) { //this is not a number, which makes optimization difficult
+		if (debugmode) {
+			message="\nWarning: The negative ln likelihood in CalculateDiscreteCharLnLHetero was NaN, so a very large value (BROWNIE_MAXLIKELIHOOD) was returned instead.\n";
+			PrintMessage();
+		}
+		neglnL=BROWNIE_MAXLIKELIHOOD ;
+	}
+	else if (neglnL<0) {
+		if (debugmode) {
+			message="\nWarning: The negative ln likelihood in CalculateDiscreteCharLnLHetero was less than zero (";
 			message+=neglnL;
 			message+="), so a very large value (BROWNIE_MAXLIKELIHOOD) was returned instead.\n";
 			PrintMessage();

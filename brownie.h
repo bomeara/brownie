@@ -246,6 +246,7 @@ public:
     void HandlePrintEdgeLengths(NexusToken& token);
     void HandleVCV(NexusToken& token);
 	virtual double CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * ancestralstatevector);
+	virtual double CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gsl_vector * ancestralstatevector);
 	virtual double CalculateDiscreteCharProbAllConstant(gsl_matrix * RateMatrix, gsl_vector * ancestralstatevector);
 	virtual NodePtr EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMatrix, gsl_vector * ancestralstatevector, int breaksperbranch);
 	virtual double CalculateDiscreteLindy2(double rateA, double rateB);

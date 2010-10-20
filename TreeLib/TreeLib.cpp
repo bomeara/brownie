@@ -503,7 +503,8 @@ int Tree::Parse (const char *TreeDescr)
 							
 							//  wrote everything in this if statement
 							//Note that the simmap parser only deals with "morphological" data -- states should be integers, in other words. //BCO
-							
+							//State order goes from rootmost end of the branch to the tipmost end //BCO
+							//StateTimes[i] is amount of time in StateOrder[i] //BCO
 							vector<double> modelvector(maxModelCategoryStates,0.0); //maxModelCategoryStates is in TreeLib.h
 							vector<int> stateordervector; //Added by BCO
 							vector<double> statetimesvector; //Added by BCO
