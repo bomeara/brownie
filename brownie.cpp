@@ -845,6 +845,7 @@ void BROWNIE::HandleHelp( NexusToken& token )
 	message += "\n\nIn development:";
     message += "\n  [nast]";	
 	message += "\n  [timeslice]";
+	message += "\n  [speciationtransform]";
 	message += "\n  [debug]";
 	message += "\n  [Garland]";
 
@@ -8057,7 +8058,9 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							message+=")";
 						}
 						else if (discretechosenmodel==5) {
-							message+="Hetero";
+							message+="hetero, with entry ( ";
+							message+=usermatrix;
+							message+=")";
 						}
 						
 						
@@ -8142,9 +8145,13 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 										}
 										vectorposition++;
 									}
+									if (discretechosenmodel==5) {
+									}
 								}
 							}
 						}
+						cout<<"output vector: ";
+						PrintVector(output);
 						if (discretechosenmodel==4) {
 							vectorposition=position+1; //since we care about position in the output vector, which just has variable parameters.
 						}
@@ -12447,6 +12454,9 @@ void BROWNIE::Read( NexusToken& token )
 		}
         else if( token.Abbreviation("TIMeslice") ) {
             HandleTimeSlice( token );
+        }
+        else if( token.Abbreviation("SPECIATIONTransform") ) {
+        	HandleSpeciationTransform( token );
         }
         else if( token.Abbreviation("Debug") ) {
             HandleDebug( token );
@@ -16777,31 +16787,37 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 						vectorposition++;
 					}
 					if (discretechosenmodel==4) { //user
-						if (debugmode) {
+					/*	if (debugmode) {
 							cout<<"vectorposition = "<<vectorposition<<"ratematassignvector["<<vectorposition<<"]="<<ratematassignvector[vectorposition]<<endl;
-						}
+						}*/
 						if (ratematassignvector[vectorposition]>=0) { //means there's an assigned rate
 							gsl_matrix_set(RateMatrix,i,j,ratematfixedvector[(ratematassignvector[vectorposition])]);
 						}
 						else {
 							position=-1*(1+ratematassignvector[vectorposition]);
-							if (debugmode) {
+					/*		if (debugmode) {
 								cout<<"calling position "<<position<<" for variables vector of size "<<localvariables->size<<endl;
-							}
+							}*/
 							gsl_matrix_set(RateMatrix,i,j,gsl_vector_get(localvariables,position)); //means it's a variable rate
 						}
 						vectorposition++;
 					}
 					if (discretechosenmodel==5) { //hetero user-specified model
-						if (ratematassignvector[vectorposition]>=0) { //means there's an assigned rate
-							gsl_matrix_set(RateMatrixHetero,i,j,ratematfixedvector[(ratematassignvector[vectorposition])]);
-						}
-						else {
-							position=-1*(1+ratematassignvector[vectorposition]);
-							if (debugmode) {
-								cout<<"calling position "<<position<<" for variables vector of size "<<localvariables->size<<endl;
+						if (vectorposition<(int) ratematassignvector.size() ) {
+							if (ratematassignvector[vectorposition]>=0) { //means there's an assigned rate
+								/*if (debugmode) {
+									cout<<"i "<<i<<" j "<<j<<" vectorposition "<<vectorposition<<" length(ratematassignvector) "<<(int) ratematassignvector.size()<<" length(ratematfixedvector) "<<(int) ratematfixedvector.size()<<endl;
+									PrintMatrix(RateMatrixHetero);
+								}*/
+								gsl_matrix_set(RateMatrixHetero,i,j,ratematfixedvector[(ratematassignvector[vectorposition])]);
 							}
-							gsl_matrix_set(RateMatrixHetero,i,j,gsl_vector_get(localvariables,position)); //means it's a variable rate
+							else {
+								position=-1*(1+ratematassignvector[vectorposition]);
+								/*if (debugmode) {
+									cout<<"calling position "<<position<<" for variables vector of size "<<localvariables->size<<endl;
+								}*/
+								gsl_matrix_set(RateMatrixHetero,i,j,gsl_vector_get(localvariables,position)); //means it's a variable rate
+							}
 						}
 						vectorposition++;
 					}
@@ -16824,6 +16840,9 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 				}
 				gsl_matrix_set(RateMatrixHetero,i,i % localnumbercharstates,-1.0*ratesum); //remember about using remainder to get the colun
 			}
+	/*		if (debugmode) {
+				PrintMatrix(RateMatrixHetero);
+			}*/
 		}
 		else {
 			for (int i=0; i<localnumbercharstates; i++) { //fill in diagonal entries
@@ -16840,9 +16859,9 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 				errormsg="You cannot use equilibrium state frequencies with a hetero model -- just too hard for me to calculate these at the moment.";
 				throw XNexus( errormsg);
 			}
-			if (debugmode) {
+		/*	if (debugmode) {
 				cout<<"now computing equilibrium state frequencies"<<endl;
-			}
+			}*/
 			gsl_matrix* Pmatrix=gsl_matrix_calloc(localnumbercharstates,localnumbercharstates);
 			gsl_matrix* StartFreqs=gsl_matrix_calloc(1,localnumbercharstates);
 			gsl_matrix_set_all (StartFreqs, 1.0/localnumbercharstates); //start with equal freqs
@@ -16874,9 +16893,9 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 		else {	
 			for (int i=0; i<localnumbercharstates; i++) { //do ancestralstatevector for freqs
 				if (discretechosenstatefreqmodel==1) {
-					if (debugmode) {
+			/*		if (debugmode) {
 						cout<<"now setting uniform state frequencies"<<endl;
-					}	
+					}	*/
 					//Uniform
 					//gsl_vector_set(ancestralstatevector,i,1.0/localnumbercharstates);
 					if (i<(localnumbercharstates-1)) {
@@ -16891,9 +16910,9 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 					}
 				}
 				else if (discretechosenstatefreqmodel==2) {
-					if (debugmode) {
+					/*if (debugmode) {
 						cout<<"now setting state frequencies based on empirical frequencies for this character"<<endl;
-					}	
+					}	*/
 					double frequency=0.0;
 					for (int j=0;j<ntax;j++) {
 						if (discretecharacters->GetInternalRepresentation(j,discretechosenchar)==i) {
@@ -16903,17 +16922,17 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 					gsl_vector_set(ancestralstatevector,i,frequency);
 				}
 				else if (discretechosenstatefreqmodel==4) {
-					if (debugmode) {
+					/*if (debugmode) {
 						cout<<"now setting state frequencies based on optimal frequencies for this character"<<endl;
 					}	
 
 					if (debugmode) {
 						cout<<"i="<<i<<" variables->size="<<localvariables->size<<" vectorposition="<<vectorposition<<endl;
-					}
+					}*/
 					if (i<(localnumbercharstates-1)) {
-						if (debugmode) {
+						/*if (debugmode) {
 							cout<<"vectorposition = "<<vectorposition<<endl;
-						}
+						}*/
 						gsl_vector_set(ancestralstatevector,i,gsl_vector_get(localvariables,vectorposition));
 						vectorposition++;
 					}
@@ -16927,9 +16946,9 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 				}
 				else if (discretechosenstatefreqmodel==5) {
 					//user
-					if (debugmode) {
+					/*if (debugmode) {
 						cout<<"now setting state frequencies based on user-specified frequencies for this character"<<endl;
-					}	
+					}	*/
 
 					if (userstatefreqvector.size()!=localnumbercharstates) {
 						errormsg="The current (possibly default) vector of user-specified state frequencies ";
@@ -16947,14 +16966,14 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 		}
 		/*cout<<"\n\nbbbbbbbbbbbbbbbbbbbbbbb"<<endl;
 		*/
-		if (debugmode) {
+	/*	if (debugmode) {
 			PrintMatrix(RateMatrix);
 			cout<<"\nancestral freq: ";
 			for (int i=0; i<ancestralstatevector->size;i++) {
 				cout<<gsl_vector_get(ancestralstatevector,i)<<"\t";
 			}
 			cout<<endl;
-		}
+		}*/
 		double frequencysum=0.0;
 		for (int i=0; i<ancestralstatevector->size;i++) {
 			frequencysum+=gsl_vector_get(ancestralstatevector,i);
@@ -16992,6 +17011,9 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 		}
 		else if (discretechosenmodel==5) {
 			likelihood=(CalculateDiscreteCharLnLHetero(RateMatrixHetero, ancestralstatevector));
+			if(debugmode) {
+				PrintMatrix(RateMatrixHetero);
+			}
 			gsl_matrix_swap(currentdiscretecharQmatrix,RateMatrixHetero);
 	/*		for (int rpos = 0 ; rpos<localnumbercharstates; rpos++) {
 				for (int cpos = 0 ; cpos<localnumbercharstates;  cpos++) {
@@ -18587,9 +18609,9 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 							probofstatej=1; 
 						}
 						(stateprobatnodes[currentnode]).push_back(probofstatej);
-/*						if (debugmode) {
+						if (debugmode) {
 							cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofstatej = "<<probofstatej.getMantissa()<<" x 10^"<<probofstatej.getExponent()<<", -ln(probofstatej) = "<<-1.0*probofstatej.getLn()<<endl<<endl;
-						}*/
+						}
 						
 					}
 					
@@ -19119,16 +19141,86 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
 	
     bool noerror=true;
     bool adequateinput=false;
+    bool readytorun=false;
 	bool enteredsplit=false;
 	bool enteredmodel=false;
     for(;;)
     {
         token.GetNextToken();
         if( token.Equals(";") ) {
-        	cout<<"semicolon";
         	if (enteredsplit && enteredmodel) {
         		adequateinput=true;
-        	}
+				//adequateinput=true;
+				int originalchosentree=chosentree;
+				for (chosentree = 1; chosentree <= trees->GetNumTrees(); chosentree++) {
+					Tree *Tptr=&(intrees.Trees[chosentree-1]);
+					(*Tptr).SetPathLengths();
+					double MaxLength=(*Tptr).GetMaxPathLength();
+					//cout<<"MaxPathLength = "<<MaxLength<<endl;
+					NodeIterator <Node> n ((*Tptr).GetRoot());
+					Node *q = n.begin();
+					while (q)
+					{
+						if (q!=(*Tptr).GetRoot()) {
+							double BeginTime=MaxLength-(q->GetPathLength());
+							double EndTime=BeginTime+(q->GetEdgeLength());
+						//cout<<endl<<endl<<"---------------------------------"<<endl<<"Begin time="<<BeginTime<<" EndTime="<<EndTime<<endl<<"PathLength="<<q->GetPathLength()<<endl<<"EdgeLength="<<q->GetEdgeLength()<<endl;
+							vector<double> modelvector(maxModelCategoryStates,0.0); //maxModelCategoryStates is in TreeLib.h
+							vector<int> stateordervector;
+							vector<double> statetimesvector; 
+							double RegimeStartTime=0;
+							double RegimeEndTime=MaxLength;
+							for (int i=0; i<timeslicemodels.size(); i++) {
+								if (i>0) {
+									RegimeStartTime=timeslicetimes[i-1];
+									if (gsl_isinf(timeslicetimes[i-1])!=0) {
+										RegimeStartTime=MaxLength;
+									}
+									
+								}
+								if (gsl_isinf(timeslicetimes[i])==0) {
+									RegimeEndTime=timeslicetimes[i];
+								}
+								else {
+									RegimeEndTime=MaxLength;
+								}
+								//cout<<endl<<"Regime "<<i<<" state "<<timeslicemodels[i]<<" "<<RegimeStartTime<<"-"<<RegimeEndTime;
+								if (BeginTime<RegimeEndTime && BeginTime<EndTime) {
+							//	cout<<"  IN REGIME";
+									double timeinstate=GSL_MIN(RegimeEndTime,EndTime)-BeginTime;
+									modelvector[(timeslicemodels[i])]+=timeinstate;
+									stateordervector.push_back(timeslicemodels[i]);
+									statetimesvector.push_back(timeinstate);
+									BeginTime=GSL_MIN(RegimeEndTime,EndTime);
+								}
+							}
+							q->SetModelCategory(modelvector); 
+							q->SetStateOrder(stateordervector); 
+							q->SetStateTimes(statetimesvector);
+							/*	cout<<endl<<"modelvector"<<endl;
+							for (int i=0; i<modelvector.size(); i++) {
+								cout<<modelvector[i]<<"\t";
+							}
+							cout<<endl<<"stateordervector"<<endl;
+							for (int i=0; i<stateordervector.size(); i++) {
+								cout<<stateordervector[i]<<"\t";
+							}
+							
+							cout<<endl<<"statetimesvector"<<endl;
+							for (int i=0; i<statetimesvector.size(); i++) {
+								cout<<statetimesvector[i]<<"\t";
+							} */
+							
+						}
+						q = n.next();
+					}
+
+				}
+				chosentree=originalchosentree;
+				message="Done transforming trees";
+				PrintMessage();
+				break;
+	        }
             if (adequateinput==false) {
                 message="Insufficient input: type \"timeslice ?\" for help";
                 PrintMessage();
@@ -19208,80 +19300,119 @@ void BROWNIE::HandleTimeSlice( NexusToken& token )
 		
     }
     //if (__________EVERYTHING IS OKAY__________) {
-	if (enteredsplit && enteredmodel) { //Everything is okay?
-		adequateinput=true;
-		int originalchosentree=chosentree;
-		for (chosentree = 1; chosentree <= trees->GetNumTrees(); chosentree++) {
-			Tree *Tptr=&(intrees.Trees[chosentree-1]);
-			(*Tptr).SetPathLengths();
-			double MaxLength=(*Tptr).GetMaxPathLength();
-			//cout<<"MaxPathLength = "<<MaxLength<<endl;
-			NodeIterator <Node> n ((*Tptr).GetRoot());
-			Node *q = n.begin();
-			while (q)
-			{
-				if (q!=(*Tptr).GetRoot()) {
-					double BeginTime=MaxLength-(q->GetPathLength());
-					double EndTime=BeginTime+(q->GetEdgeLength());
-				cout<<endl<<endl<<"---------------------------------"<<endl<<"Begin time="<<BeginTime<<" EndTime="<<EndTime<<endl<<"PathLength="<<q->GetPathLength()<<endl<<"EdgeLength="<<q->GetEdgeLength()<<endl;
-					vector<double> modelvector(maxModelCategoryStates,0.0); //maxModelCategoryStates is in TreeLib.h
-					vector<int> stateordervector;
-					vector<double> statetimesvector; 
-					double RegimeStartTime=0;
-					double RegimeEndTime=MaxLength;
-					for (int i=0; i<timeslicemodels.size(); i++) {
-						if (i>0) {
-							RegimeStartTime=timeslicetimes[i-1];
-							if (gsl_isinf(timeslicetimes[i-1])!=0) {
-								RegimeStartTime=MaxLength;
-							}
-							
-						}
-						if (gsl_isinf(timeslicetimes[i])==0) {
-							RegimeEndTime=timeslicetimes[i];
-						}
-						else {
-							RegimeEndTime=MaxLength;
-						}
-						//cout<<endl<<"Regime "<<i<<" state "<<timeslicemodels[i]<<" "<<RegimeStartTime<<"-"<<RegimeEndTime;
-						if (BeginTime<RegimeEndTime && BeginTime<EndTime) {
-					//	cout<<"  IN REGIME";
-							double timeinstate=GSL_MIN(RegimeEndTime,EndTime)-BeginTime;
-							modelvector[(timeslicemodels[i])]+=timeinstate;
-							stateordervector.push_back(timeslicemodels[i]);
-							statetimesvector.push_back(timeinstate);
-							BeginTime=GSL_MIN(RegimeEndTime,EndTime);
-						}
-					}
-					q->SetModelCategory(modelvector); 
-					q->SetStateOrder(stateordervector); 
-					q->SetStateTimes(statetimesvector);
-					/*	cout<<endl<<"modelvector"<<endl;
-					for (int i=0; i<modelvector.size(); i++) {
-						cout<<modelvector[i]<<"\t";
-					}
-					cout<<endl<<"stateordervector"<<endl;
-					for (int i=0; i<stateordervector.size(); i++) {
-						cout<<stateordervector[i]<<"\t";
-					}
-					
-					cout<<endl<<"statetimesvector"<<endl;
-					for (int i=0; i<statetimesvector.size(); i++) {
-						cout<<statetimesvector[i]<<"\t";
-					} */
-					
-				}
-				q = n.next();
-			}
-		}
-		chosentree=originalchosentree;
-	}
+//	if (readytorun) 
     //Do the set model thing
     //}
 	
 }
 
+void BROWNIE::HandleSpeciationTransform( NexusToken& token )
+{
+	staterestrictionvector.clear();
+	timeslicetimes.clear();
+	timeslicemodels.clear();
+	for (int state=0;state<=(maxModelCategoryStates-1);state++) {
+        staterestrictionvector.push_back(state);
+        timeslicetimes.push_back(GSL_POSINF);
+        timeslicemodels.push_back(0);
+    }
+	
+    bool noerror=true;
+    bool donenothing=true;
+	bool enteredsplit=false;
+	bool enteredmodel=false;
+	int AddLength=1;
+    for(;;)
+    {
+        token.GetNextToken();
+        if( token.Equals(";") ) {
+        	if (donenothing) {
+				int originalchosentree=chosentree;
+				for (chosentree = 1; chosentree <= trees->GetNumTrees(); chosentree++) {
+					Tree *Tptr=&(intrees.Trees[chosentree-1]);
+					(*Tptr).SetPathLengths();
+					NodeIterator <Node> n ((*Tptr).GetRoot());
+					Node *q = n.begin();
+					while (q)
+					{
+						if (q!=(*Tptr).GetRoot()) {
+							double OriginalLength=q->GetEdgeLength();
+							vector<double> modelvector(maxModelCategoryStates,0.0); //maxModelCategoryStates is in TreeLib.h
+							modelvector[0]=OriginalLength;
+							modelvector[1]=AddLength;
+							vector<int> stateordervector;
+							stateordervector.push_back(0);
+							stateordervector.push_back(1);
+							vector<double> statetimesvector; 
+							statetimesvector.push_back(OriginalLength);
+							statetimesvector.push_back(AddLength);
+							q->SetModelCategory(modelvector); 
+							q->SetStateOrder(stateordervector); 
+							q->SetStateTimes(statetimesvector);
+							q->SetEdgeLength(AddLength+OriginalLength);
+							/*	cout<<endl<<"modelvector"<<endl;
+							for (int i=0; i<modelvector.size(); i++) {
+								cout<<modelvector[i]<<"\t";
+							}
+							cout<<endl<<"stateordervector"<<endl;
+							for (int i=0; i<stateordervector.size(); i++) {
+								cout<<stateordervector[i]<<"\t";
+							}
+							
+							cout<<endl<<"statetimesvector"<<endl;
+							for (int i=0; i<statetimesvector.size(); i++) {
+								cout<<statetimesvector[i]<<"\t";
+							} */
+							
+						}
+						q = n.next();
+					}
 
+				}
+				chosentree=originalchosentree;
+				message="Done transforming trees";
+				PrintMessage();
+	        }
+	        break;
+        }
+        else if( token.Equals("?") ) {
+            donenothing=false;
+            message="Usage: SpeciationTransform length=<number> [options...]\n\n";
+            message+="Transforms trees to add a model on lengthened edges after speciation.\n\n";
+            message+="Available options:\n\n";
+            message+="Keyword ---- Option type ------------------------ Current setting --";
+            message+="\nLength       <number>                             *";
+            message+=AddLength;
+            message+="\n                                                 *Option is nonpersistent\n\n";
+            message+="This will add an extra branch segment after each speciation event. The tree will be\npainted so that one discrete or continuous model can be applied to the existing \nbranches (model 0) and another to apply right after speciation (model 1).";
+            PrintMessage();
+            token.GetNextToken();
+			break;
+        }
+        else if( token.Abbreviation("Length") ) {
+			nxsstring numbernexus = GetNumber(token);
+            AddLength=atof( numbernexus.c_str() ); //convert to int
+			if (AddLength<=0) {
+				errormsg="The additional length must be positive";
+		        throw XNexus( errormsg);
+			}			
+		}
+/*        else {
+            errormsg = "Unexpected keyword (";
+            errormsg += token.GetToken();
+            errormsg += ") encountered reading SpeciationTransform command. Type \"SpeciationTransform ?\" for help.";
+            throw XNexus( errormsg, token.GetFilePosition(), token.GetFileLine(), token.GetFileColumn() );
+        }*/
+        //timeslicetimes[9]=GSL_POSINF;
+        //timeslicemodels;
+		
+    }
+    //if (__________EVERYTHING IS OKAY__________) {
+//	if (readytorun) 
+    //Do the set model thing
+    //}
+	
+}
 
 int main(int argc, char *argv[])
 {

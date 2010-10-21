@@ -262,6 +262,7 @@ public:
     gsl_vector* DiscreteGeneralOptimization();	
 	gsl_matrix* ComputeTransitionProb(gsl_matrix *RateMatrix, double brlen);
     void HandleTimeSlice( NexusToken& token );
+    void HandleSpeciationTransform( NexusToken& token); 
     void HandleTipVariance( NexusToken& token );
     void HandleTestLikelihoodWithTipVariance(NexusToken& token);
 	void Assign(NexusToken& token);
