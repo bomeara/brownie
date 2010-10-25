@@ -7896,15 +7896,37 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 					tmessage+=n;
 					tmessage+=")\t";
 				}
-				for (int i=0;i<localnumbercharstates;i++) {
-					for (int j=0;j<localnumbercharstates;j++) {
-						if (i!=j) {
-							tmessage+="q_";
-							tmessage+=i;
-							tmessage+="_";
-							tmessage+=j;
-							tmessage+="\t";
-						}
+				if (discretechosenmodel!=5) {
+				   for (int i=0;i<localnumbercharstates;i++) {
+					   for (int j=0;j<localnumbercharstates;j++) {
+						   if (i!=j) {
+							   tmessage+="q_";
+							   tmessage+=i;
+							   tmessage+="_";
+							   tmessage+=j;
+							   tmessage+="\t";
+						   }
+					   }
+				   }
+				}
+				else if (discretechosenmodel==5) {
+					int elementsinonematrix=(localnumbercharstates*localnumbercharstates)-localnumbercharstates;
+					int numberoftotalmatrices=ratematassignvector.size()/elementsinonematrix;
+					for (int matrixid=0; matrixid<numberoftotalmatrices; matrixid++) {
+					   for (int i=0;i<localnumbercharstates;i++) {
+						   for (int j=0;j<localnumbercharstates;j++) {
+							   if (i!=j) {
+							   		tmessage+="matrix";
+							   		tmessage+=matrixid;
+							   		tmessage+="_";
+								   tmessage+="q_";
+								   tmessage+=i;
+								   tmessage+="_";
+								   tmessage+=j;
+								   tmessage+="\t";
+							   }
+						   }
+					   }
 					}
 				}
 				if (tablef_open && (!exists || !appending) ) {
@@ -8145,16 +8167,62 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 										}
 										vectorposition++;
 									}
-									if (discretechosenmodel==5) {
+							
+								}
+							}
+						}
+/*						cout<<"output vector: ";
+						PrintVector(output);*/
+						if (discretechosenmodel==4) {
+							vectorposition=position+1; //since we care about position in the output vector, which just has variable parameters.
+						}
+						
+						if (discretechosenmodel==5) {
+							int elementsinonematrix=(localnumbercharstates*localnumbercharstates)-localnumbercharstates;
+							int numberoftotalmatrices=ratematassignvector.size()/elementsinonematrix;
+/*							for (int i=0; i<ratematassignvector.size(); i++) {
+								cout<<"ratematassignvector["<<i<<"] = "<<ratematassignvector[i]<<endl;
+							}
+							for (int i=0; i<ratematfixedvector.size(); i++) {
+								cout<<"ratematfixedvector["<<i<<"] = "<<ratematfixedvector[i]<<endl;
+							}*/
+
+							for (int matrixid=0; matrixid<numberoftotalmatrices; matrixid++) {
+								message+="\n\nPart of tree mapped with ";
+								message+=matrixid;
+								message+=":\n";
+								for (int i=0; i<localnumbercharstates;i++) {
+									for (int j=0; j<localnumbercharstates;j++) {
+										if (i!=j) {
+										   message+="\n    q_";
+										   message+=i;
+										   message+="_";
+										   message+=j;
+										   message+=" = ";	
+										   if (ratematassignvector[vectorposition]>=0) { //means there's an assigned rate
+											   //cout<<"vectorposition = "<<vectorposition<<endl;
+											   //cout<<"(ratematassignvector[vectorposition]) = "<<(ratematassignvector[vectorposition])<<endl;
+											   message+=ratematfixedvector[(ratematassignvector[vectorposition])];
+											   message+=" FIXED";
+										   }
+										   else {
+											   position=-1*(1+ratematassignvector[vectorposition]);
+											   message+=gsl_vector_get(output,position);
+											   message+=" +/- ";
+											   assert((position+numberoffreeparameters)<output->size);
+											   message+=gsl_vector_get(output,position+numberoffreeparameters);	
+											   if (gsl_vector_get(output,position)<0.00000001 && !nonnegvariables) {
+												   message+="  Warning: an estimate near zero sometimes makes estimating other parameters, and therefore the lnL, very imprecise. Play with numopt or the model";
+											   }
+											   
+										   }
+										   vectorposition++;
+										}
 									}
 								}
 							}
 						}
-						cout<<"output vector: ";
-						PrintVector(output);
-						if (discretechosenmodel==4) {
-							vectorposition=position+1; //since we care about position in the output vector, which just has variable parameters.
-						}
+						
 						if (discretechosenmodel==5) {
 							vectorposition=position+1; //since we care about position in the output vector, which just has variable parameters.
 						}
@@ -8213,9 +8281,14 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						//tmessage+=gsl_vector_get(optimaldiscretecharstatefreq,n);
 							tmessage+="\t";
 						}
-						for (int i=0;i<localnumbercharstates;i++) {
+						int numberoftotalmatrices=1;
+						if (discretechosenmodel==5) {
+							int elementsinonematrix=(localnumbercharstates*localnumbercharstates)-localnumbercharstates;
+							numberoftotalmatrices=ratematassignvector.size()/elementsinonematrix;
+						}
+						for (int i=0;i<localnumbercharstates*numberoftotalmatrices;i++) {
 							for (int j=0;j<localnumbercharstates;j++) {
-								if (i!=j) {
+								if ((i % localnumbercharstates)!=j) {
 									/*message+="\n\tq_";
 									message+=i;
 									message+="_";
@@ -18739,7 +18812,7 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 						}
 						(stateprobatnodes[currentnode]).push_back(probofstatej);
 						if (debugmode) {
-							cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofstatej = "<<probofstatej.getMantissa()<<" x 10^"<<probofstatej.getExponent()<<", -ln(probofstatej) = "<<-1.0*probofstatej.getLn()<<endl<<endl;
+							cout<<"TIP "<<currentnode->GetLabel()<<" ancestor = "<<currentnode->GetAnc()<<" CalculateDiscreteCharLnLHetero: j = "<<j<<", probofstatej = "<<probofstatej.getMantissa()<<" x 10^"<<probofstatej.getExponent()<<", -ln(probofstatej) = "<<-1.0*probofstatej.getLn()<<endl<<endl;
 						}
 						
 					}
@@ -18749,16 +18822,25 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 					for(int i=0;i<ancestralstatevector->size;i++) { //do this for each possible state at the current node
 						NodePtr descnode=currentnode->GetChild();
 						Superdouble probofstatei=1;
+						if (debugmode) {
+							cout<<"INTERNAL "<<currentnode->GetLabel()<<endl;
+						}
 						while (descnode!=NULL) {  //What we have to do is look at the probablity all the way down the branch, segment by segment
+							if (debugmode) {
+								cout<<"\tDESCNODE "<<descnode->GetLabel()<<" from ancestor "<<descnode->GetAnc()<<endl;
+							}
 							vector<Superdouble> probOfIntermediateStateTipward (ancestralstatevector->size,0.0); 
 							probOfIntermediateStateTipward[i]=1;
 							vector<Superdouble> probOfIntermediateStateRootward (ancestralstatevector->size,0.0); 
 							vector<int> stateordervector(descnode->GetStateOrder()); 
 							vector<double> statetimesvector(descnode->GetStateTimes());
 							for (int vectorpos=(stateordervector.size()-1); vectorpos>=0; vectorpos--) { //go from tip ward to rootward
+								if (debugmode) {
+									cout<<"stateordervector["<<vectorpos<<"] = "<<stateordervector[vectorpos]<<" statetimesvector["<<vectorpos<<"] = "<<statetimesvector[vectorpos]<<endl;
+								}
 								gsl_matrix * RateMatrixTMP=gsl_matrix_calloc(ancestralstatevector->size, ancestralstatevector->size);
 								int stateID=stateordervector[vectorpos];
-								double stateTime=stateordervector[vectorpos];
+								double stateTime=statetimesvector[vectorpos];
 								for (int rowpos=0; rowpos<ancestralstatevector->size; rowpos++) {
 									for (int colpos=0; colpos<ancestralstatevector->size; colpos++) {
 										gsl_matrix_set(RateMatrixTMP,rowpos,colpos,gsl_matrix_get(RateMatrixHetero,rowpos+stateID*(ancestralstatevector->size),colpos));
@@ -18801,6 +18883,8 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 									}
 								}
 								if(debugmode) {
+									cout<<"RateMatrixTMP"<<endl;
+									PrintMatrix(RateMatrixTMP);
 									cout<<"PMatrix"<<endl;
 									PrintMatrix(Pmatrix);
 									cout<<"stateTime "<<stateTime<<endl;
@@ -18826,7 +18910,7 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 								Superdouble transitionprob=probOfIntermediateStateTipward[j];
 								probofthissubtree+=transitionprob*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
 								if (debugmode) {
-									cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofthissubtree = "<<probofthissubtree.getMantissa()<<" x 10^"<<probofthissubtree.getExponent()<<", -ln(probofthissubtree) = "<<-1.0*probofthissubtree.getLn()<<endl<<endl;
+									cout<<"CalculateDiscreteCharLnLHetero: j = "<<j<<", probofthissubtree = "<<probofthissubtree.getMantissa()<<" x 10^"<<probofthissubtree.getExponent()<<", -ln(probofthissubtree) = "<<-1.0*probofthissubtree.getLn()<<endl;
 								}
 	
 
