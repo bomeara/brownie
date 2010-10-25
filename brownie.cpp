@@ -18632,6 +18632,10 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 							for(int j=0;j<ancestralstatevector->size;j++) {
 								Superdouble transitionprob=gsl_matrix_get(Pmatrix,i,j);
 								probofthissubtree+=transitionprob*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
+								if (debugmode) {
+									cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofthissubtree = "<<probofthissubtree.getMantissa()<<" x 10^"<<probofthissubtree.getExponent()<<", -ln(probofthissubtree) = "<<-1.0*probofthissubtree.getLn()<<endl<<endl;
+								}
+
 							/*	if (debugmode) {
 									cout<<"From "<<i<<" to "<<j<<" has move prob "<<gsl_matrix_get(Pmatrix,i,j)<<" and input subtree prob "<<((stateprobatnodes[descnode])[j])<<" product "<<transitionprob*((stateprobatnodes[descnode])[j])<<" and cumulative prob "<<probofthissubtree<<endl;
 								} */
@@ -18641,6 +18645,7 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 							gsl_matrix_free(Pmatrix);
 						}
 						(stateprobatnodes[currentnode]).push_back(probofstatei);
+
 				/*		if (debugmode) {
 							cout<<"CalculateDiscreteCharLnL: i = "<<i<<", probofstatei = "<<probofstatei<<", -ln(probofstatei) = "<<-1.0*probofstatei.getLn()<<endl<<endl;
 						} */
@@ -18733,9 +18738,9 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 							probofstatej=1; 
 						}
 						(stateprobatnodes[currentnode]).push_back(probofstatej);
-/*						if (debugmode) {
+						if (debugmode) {
 							cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofstatej = "<<probofstatej.getMantissa()<<" x 10^"<<probofstatej.getExponent()<<", -ln(probofstatej) = "<<-1.0*probofstatej.getLn()<<endl<<endl;
-						}*/
+						}
 						
 					}
 					
@@ -18795,6 +18800,15 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 										probOfIntermediateStateRootward[rootwardstate]+=Superdouble(probOfIntermediateStateTipward[tipwardstate]) * Superdouble(gsl_matrix_get(Pmatrix,rootwardstate,tipwardstate));
 									}
 								}
+								if(debugmode) {
+									cout<<"PMatrix"<<endl;
+									PrintMatrix(Pmatrix);
+									cout<<"stateTime "<<stateTime<<endl;
+									/*cout<<"probOfIntermediateStateTipward"<<endl;
+									PrintVector(probOfIntermediateStateTipward);
+									cout<<"probOfIntermediateStateRootward"<<endl;
+									PrintVector(probOfIntermediateStateRootward);*/
+								}
 								probOfIntermediateStateTipward=probOfIntermediateStateRootward;
 								probOfIntermediateStateRootward.assign(ancestralstatevector->size,0);
 								gsl_matrix_free(RateMatrixTMP);
@@ -18811,6 +18825,11 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 							for(int j=0;j<ancestralstatevector->size;j++) {
 								Superdouble transitionprob=probOfIntermediateStateTipward[j];
 								probofthissubtree+=transitionprob*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
+								if (debugmode) {
+									cout<<"CalculateDiscreteCharLnL: j = "<<j<<", probofthissubtree = "<<probofthissubtree.getMantissa()<<" x 10^"<<probofthissubtree.getExponent()<<", -ln(probofthissubtree) = "<<-1.0*probofthissubtree.getLn()<<endl<<endl;
+								}
+	
+
 							/*	if (debugmode) {
 									cout<<"From "<<i<<" to "<<j<<" has move prob "<<gsl_matrix_get(Pmatrix,i,j)<<" and input subtree prob "<<((stateprobatnodes[descnode])[j])<<" product "<<transitionprob*((stateprobatnodes[descnode])[j])<<" and cumulative prob "<<probofthissubtree<<endl;
 								} */
