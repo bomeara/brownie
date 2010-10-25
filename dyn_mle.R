@@ -6,13 +6,14 @@ require(phylobase)
 
 
 
-dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states=NULL,ratemat=T)
+dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states=NULL,conditionals=T)
 {
 	
 	phytree = as(phytree,'phylo4')
 	# plot initial tree
 	#plot(phytree,show.node.label=T,rot=-90,tip.order=rev(seq(nTips(phytree))))
 	phytree = reorder(phytree,"postorder")
+
 
 	###############################################
 	# Setting up data structures
@@ -25,38 +26,28 @@ dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states
 	tip.costs = matrix(NA,nrow=nTips(phytree),ncol=length(states.unique))
 	tip.states.mapping = sapply(tip.states,function(i) head(which(i==states.unique),1),simplify=T)
 		
-	print(tip.states.mapping)
+	cat("mapping states: ",tip.states.mapping,"\n")
 	for(ii in seq(nTips(phytree)))
 	{
-		edge.ind = which(edges(phytree)[,2] == ii)
-
-		# calculate transition probability new matrix for each branch length
-		#
-		if(ratemat)
-		{
-			tmp.costmat =  matexpo( cost.mat * edgeLength(phytree)[edge.ind] )
-		} else {
-			tmp.costmat = cost.mat
-		}
-		# tip is the terminal ("to" part of transition matrix), so index the column
-		tip.costs[ii,] = tmp.costmat[,tip.states.mapping[ii]]
+		tip.costs[ii,] = 0
+		tip.costs[ii,tip.states.mapping[ii]] = 1
 	}
-	
-	#tip.states.mat = matrix(rep(seq(length(states.unique)),nTips(phytree)),nrow=nTips(phytree),byrow=T)
 	tip.states.mat = matrix(rep(states.unique,nTips(phytree)),nrow=nTips(phytree),byrow=T)
-	rownames(tip.costs) <- tipLabels(phytree)
-	rownames(tip.states.mat) <- tipLabels(phytree)
+	rownames(tip.costs) <- nodeId(phytree,"tip")
+	colnames(tip.costs) <- states.unique
+	
+
 
 	# setup matrices to hold internal node costs and states
 	#
-	node.states = matrix(NA,nrow=nNodes(phytree),ncol=length(states.unique))
+	#node.states = matrix(NA,nrow=nNodes(phytree),ncol=length(states.unique))
 	node.costs = matrix(NA,nrow=nNodes(phytree),ncol=length(states.unique))
-	rownames(node.costs) <- nodeLabels(phytree)
-	rownames(node.states) <- nodeLabels(phytree)
+	rownames(node.costs) <- nodeId(phytree,"internal")
+	#rownames(node.states) <- nodeLabels(phytree)
 	
 	# taking advantage of phylo4 class: tips are numbered 1-nTips
-	states = rbind(tip.states.mat,node.states)
-	costs = rbind(log(tip.costs),node.costs)
+	#states = rbind(tip.states.mat,node.states)
+	costs = rbind(tip.costs,node.costs)
 	colnames(costs) <- states.unique
 
 	####################################
@@ -75,62 +66,55 @@ dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states
 			next
 				
 		# temporary data structures
-		daughters = edges(phytree)[which(edges(phytree)[,1]==node.i),2]
+		edge.inds = which(edges(phytree)[,1] == node.i)
+		daughters = edges(phytree)[edge.inds,2]
 		tmp.scores = numeric(length(states.unique))
-		tmp.states = character(length(states.unique))
+		#tmp.states = character(length(states.unique))
 		
 		cat("running on: ",labels(phytree)[node.i])	
 		cat(" with daughters: ", labels(phytree)[daughters],"\n")
 		
-		# for internal nodes
-		if(nodeType(phytree)[node.i] != "root")
+		tmp.costs = numeric(length(states.unique))			
+		tmp.costmat = array(NA,c(length(edge.inds),dim(cost.mat)))
+		
+		# generate temporary transition probability matrix for these branches (log-like)
+		#
+		for(kk in seq(length(edge.inds)))
 		{
-			# generate temporary cost matrix for this branch (log-like)
-			#
-			if(ratemat)
-			{
-				tmp.costmat =  log(matexpo( cost.mat * edgeLength(phytree)[edge.ind] ))
-			} else {
-				tmp.costmat = log(cost.mat)
-			}
-
-			# state.x is a potential mother state
-			for (state.x in seq(length(states.unique)))
-			{
-				# state.y is potential state of node.i
-				tmp.scores.y = numeric(length(states.unique))
-				for(state.y in seq(length(states.unique)))
-				{
-					tmp.scores.y[state.y] = tmp.costmat[state.x,state.y]
-					for(daught in daughters)
-						tmp.scores.y[state.y] = tmp.scores.y[state.y] + costs[daught,state.y]
-				}
-				
-				minimums = which(tmp.scores.y == max(tmp.scores.y))
-				tmp.scores[state.x] = tmp.scores.y[which.max(tmp.scores.y)]
-				tmp.states[state.x] = paste(states.unique[minimums],collapse="/")
-			}
-
-		} else {
-			
-			# for root node:
-			#tmp.scores.y = numeric(length(states.unique))
-			tmp.scores.y = log(states.freq)
-			for(state.y in seq(length(states.unique)))
-				for(daught in daughters)
-					tmp.scores.y[state.y] = tmp.scores.y[state.y] + costs[daught,state.y] 
-			
-			tmp.scores = tmp.scores.y
-			tmp.states = states.unique
+			elen = edgeLength(phytree)[edge.inds[kk]]
+			tmp.costmat[kk,,] = matexpo( cost.mat * elen) 
 		}
-		costs[node.i,] = tmp.scores
-		states[node.i,] = tmp.states
+		
+		# state.x is a potential mother state
+		# state.y is a potential child state
+		for (state.x in seq(length(states.unique)))
+		{
+			tmp.score.x = 1
+			for(kk in seq(length(edge.inds))){
+				tmp.scores = 0
+				for(state.y in seq(length(states.unique)))
+					tmp.scores = tmp.scores + (tmp.costmat[kk,state.y,state.x] * costs[daughters[kk],state.y])
+				
+				tmp.score.x = tmp.score.x * tmp.scores
+			}
+			tmp.costs[state.x] = tmp.score.x
+		}
+
+		# store this nodes costs:
+		#costind = nTips(phytree) + which(node.i == nodeId(phytree))
+		costs[node.i,] = tmp.costs
 	}
 	
+
+	lik = sum( costs[rootNode(phytree),] * states.freq )
 	# reconstruct vector:
-	outframe = data.frame(unname(cbind(costs,states)),stringsAsFactors=F)
-	colnames(outframe) <- c(paste("loglike",states.unique,sep="."),paste("state",states.unique,sep="."))
-	return( addData(phytree,all.data = outframe) ) 
+	#outframe = data.frame(unname(cbind(costs,states)),stringsAsFactors=F)
+	#colnames(outframe) <- c(paste("loglike",states.unique,sep="."),paste("state",states.unique,sep="."))
+	#return( addData(phytree,all.data = outframe) )
+	if(conditionals)
+		return(costs)
+	
+	return(lik)
 }
 
 
