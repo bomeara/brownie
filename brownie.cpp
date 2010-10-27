@@ -7785,7 +7785,7 @@ Char1:				Char2
 			message+="Model: Allows you to specify the model. The model can be INDependent or DEPendent between the two characters. Within each character,\n";
 			message+="       the forward and reverse rates can be the same (REVersible) or allowed to vary (NONreversible). The available options are therefore\n";
 			message+="       IndRev, DepRev, IndNon, DepNon. IndNon and DepNon correspond to Pagel (1994) analyses (if state frequency is UNIFORM)\n";
-			message+="Freq: The probability of each state at the root can be based on the EMPIRICAL distribution at the tips, can be SET by the user\n";
+			message+="Freq: The probability of each state at the root can be based on the EMPIRICAL distribution at the tips, can be set by the USER\n";
 			message+="      (using the statevector command), can be OPTIMIZEd as part of the model, can be set to EQUILIBRIUM frequencies (the\n";
 			message+="      frequencies expected with the optimized rate matrix given infinitely-long branches), or can be set to be UNIFORM (equal).\n";
 			message+="Treeloop: Allows the analysis to be run across all the trees. A weighted average is returned (using tree weights such as posterior\n";
@@ -8740,7 +8740,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 			message+="                 2 | 0.0    d     -\n";
 			message+="         the ratemat would be ratemat=(a 0.5 b c 0.0 a 0.4 a 0.3 a 0.0 d). Think of the different rate matrices arranged one on top of each other.\n";
 			message+="         Note that by using the same letter in different matrices, you can force them to have the same estimated rate.\n";
-			message+="Freq: The probability of each state at the root can be based on the EMPIRICAL distribution at the tips, can be SET by the user\n";
+			message+="Freq: The probability of each state at the root can be based on the EMPIRICAL distribution at the tips, can be set by the USER\n";
 			message+="      (using the statevector command), can be OPTIMIZEd as part of the model, can be set to EQUILIBRIUM frequencies (the\n";
 			message+="      frequencies expected with the optimized rate matrix given infinitely-long branches), or can be set to be UNIFORM (equal).\n";
 			message+="StateVector: Contains the user-specified probabilities of the ancestral states.\n";
