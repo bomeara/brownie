@@ -8039,10 +8039,6 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						bool likelihoodOkay=true;
 						if (likelihood==BROWNIE_MAXLIKELIHOOD) {
 							likelihoodOkay=false;
-							errormsg="Error: probability of the observed data given the model is zero, so neg lnL should be infinity (rounded down to ";
-							errormsg+=BROWNIE_MAXLIKELIHOOD;
-							errormsg+=" to keep brownie from crashing). DO NOT TRUST RESULTS. TRY A DIFFERENT MODEL.";
-							throw XNexus( errormsg);
 						}
 						double K=1.0*numberoffreeparameters;
 						double aicc=(2.0*likelihood)+2.0*K+2.0*K*(K+1.0)/(1.0*ntax-K-1.0); //AICc, n=1;
@@ -8051,7 +8047,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							tmessage="";
 							tmessage+=likelihood;
 							if (!likelihoodOkay) {
-								tmessage+=" ERROR: this is the worst possible likelihood brownie can report, corresponding to a probability of the data of zero.";
+								tmessage+=" ERROR: this is the worst possible likelihood brownie can report, corresponding to a probability of the data of zero. TRY A DIFFERENT MODEL! DO NOT USE THESE RESULTS!";
 							}
 							tmessage+="\t";
 							tmessage+=numberoffreeparameters;
@@ -8067,7 +8063,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						sprintf(outputstring,"%14.6f",likelihood);
 						message+=outputstring;
 						if (!likelihoodOkay) {
-							message+=" ERROR: this is the worst possible likelihood brownie can report, corresponding to a probability of the data of zero.";
+							message+=" ERROR: this is the worst possible likelihood brownie can report, corresponding to a probability of the data of zero. TRY A DIFFERENT MODEL! DO NOT USE THESE RESULTS!";
 						}
 						message+="\n  AIC  = ";
 						sprintf(outputstring,"%14.6f",aic);
