@@ -8036,12 +8036,23 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						}
 						assert(output->size>0);
 						double likelihood=gsl_vector_get(output,-1+output->size);
+						bool likelihoodOkay=true;
+						if (likelihood==BROWNIE_MAXLIKELIHOOD) {
+							likelihoodOkay=false;
+							errormsg="Error: probability of the observed data given the model is zero, so neg lnL should be infinity (rounded down to ";
+							errormsg+=BROWNIE_MAXLIKELIHOOD;
+							errormsg+=" to keep brownie from crashing). DO NOT TRUST RESULTS. TRY A DIFFERENT MODEL.";
+							throw XNexus( errormsg);
+						}
 						double K=1.0*numberoffreeparameters;
 						double aicc=(2.0*likelihood)+2.0*K+2.0*K*(K+1.0)/(1.0*ntax-K-1.0); //AICc, n=1;
 						double aic=(2.0*likelihood)+2.0*K;
 						if (tablef_open) {
 							tmessage="";
 							tmessage+=likelihood;
+							if (!likelihoodOkay) {
+								tmessage+=" ERROR: this is the worst possible likelihood brownie can report, corresponding to a probability of the data of zero.";
+							}
 							tmessage+="\t";
 							tmessage+=numberoffreeparameters;
 							tmessage+="\t";
@@ -8055,6 +8066,9 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						message+="\n  -lnL = ";
 						sprintf(outputstring,"%14.6f",likelihood);
 						message+=outputstring;
+						if (!likelihoodOkay) {
+							message+=" ERROR: this is the worst possible likelihood brownie can report, corresponding to a probability of the data of zero.";
+						}
 						message+="\n  AIC  = ";
 						sprintf(outputstring,"%14.6f",aic);
 						message+=outputstring;
@@ -16789,7 +16803,7 @@ double BROWNIE::GetDiscreteCharLnL_gsl( const gsl_vector * variables, void *obj)
 {
 	double temp;
 	temp= ((BROWNIE*)obj)->GetDiscreteCharLnL(variables);
-	if((gsl_isinf (temp))<0) {
+	if((gsl_finite (temp))!=1) {
 		temp=BROWNIE_MAXLIKELIHOOD;
 	}
 	return temp;
@@ -17111,6 +17125,7 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 		gsl_matrix_free(RateMatrixHetero);
 		gsl_vector_free(ancestralstatevector);
 		gsl_vector_free(localvariables);
+		
 		//cout<<"\neeeeeeeeeeeeeeeeeeeeeeeeeee"<<endl;
 		if (debugmode) {
 			cout<<"GetDiscreteCharLnL output (third return) is "<<likelihood<<endl;
