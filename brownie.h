@@ -261,6 +261,7 @@ public:
 	gsl_vector * LindyGeneralOptimization(int ChosenModel);
     gsl_vector* DiscreteGeneralOptimization();	
 	gsl_matrix* ComputeTransitionProb(gsl_matrix *RateMatrix, double brlen);
+	gsl_matrix* ComputeTransitionProbBuiltInFn(gsl_matrix *RateMatrix, double brlen);
     void HandleTimeSlice( NexusToken& token );
     void HandleSpeciationTransform( NexusToken& token); 
     void HandleTipVariance( NexusToken& token );

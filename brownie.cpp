@@ -9094,7 +9094,7 @@ void BROWNIE::SimulateCharacters(int n, int chartype, nxsstring outputfilename, 
 				if (currentnode!=T.GetRoot() ) {
 					int startstate=(currentnode->GetAnc())->GetLabelNumber();
 					int nextstate=0;
-					gsl_matrix * Pmatrix=ComputeTransitionProb(optimaldiscretecharQmatrix,currentnode->GetEdgeLength());
+					gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(optimaldiscretecharQmatrix,currentnode->GetEdgeLength());
 					vector<double> Pancstatetopossiblenext;
 					double cumulativeP=0;
 					for (int endstate=0;endstate<localnumbercharstates;endstate++) {
@@ -16955,7 +16955,7 @@ double BROWNIE::GetDiscreteCharLnL(const gsl_vector * variables)
 			double tolerlimit=0.0001/localnumbercharstates; //More char states, want more precision
 			double simulatedtime=1000;
 			while (maxdiff>tolerlimit) {
-				Pmatrix=ComputeTransitionProb(RateMatrix,simulatedtime); //A really long time
+				Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,simulatedtime); //A really long time
 				simulatedtime*=100; //increase it in case we need to do this over a longer time interval
 				gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,1.0, StartFreqs, Pmatrix,0.0, EndFreqs);
 				gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,1.0, EndFreqs, Pmatrix,0.0, EndFreqs2);
@@ -17864,7 +17864,7 @@ NodePtr BROWNIE::EstimateMLDiscreteCharJointAncestralStates(gsl_matrix * RateMat
 	while (currentnode)
 	{
 		double eachsegmentlength=(currentnode->GetEdgeLength())/(1.0*(breaksperbranch+1)); //adding breaksperbranch nodes of degree 2 divides the branch into breaksperbranch+1 segments
-		gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,eachsegmentlength);
+		gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,eachsegmentlength);
 		if (currentnode->IsLeaf() ) {
 			for (int breaknum=0;breaknum<(breaksperbranch+1);breaknum++) { //initialize the vectors
 				vector<double> tempdouble;
@@ -18498,7 +18498,7 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 						NodePtr descnode=currentnode->GetChild();
 						long double probofstatei=1;
 						while (descnode!=NULL) { 
-							gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength());
+							gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,descnode->GetEdgeLength());
 							long double probofthissubtree=0;
 							for(int j=0;j<ancestralstatevector->size;j++) {
 								probofthissubtree+=(gsl_matrix_get(Pmatrix,i,j))*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
@@ -18583,7 +18583,7 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 						NodePtr descnode=currentnode->GetChild();
 						double probofstatei=0;
 						while (descnode!=NULL) { 
-							gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength()); //this is in terms of probabilities, not log probabilities
+							gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,descnode->GetEdgeLength()); //this is in terms of probabilities, not log probabilities
 							if (debugmode) {
 								PrintMatrix(Pmatrix);
 							}
@@ -18705,7 +18705,7 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 						NodePtr descnode=currentnode->GetChild();
 						Superdouble probofstatei=1;
 						while (descnode!=NULL) { 
-							gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength());
+							gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,descnode->GetEdgeLength());
 							Superdouble probofthissubtree=0;
 /*							if (debugmode) {
 								Tree PrunedTree;
@@ -18887,7 +18887,7 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 								else if(stateID==9) {
 									gsl_matrix_memcpy(RateMatrixTMP,RateMatrix9);
 								}*/
-								gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrixTMP,stateTime);
+								gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrixTMP,stateTime);
 								for (int tipwardstate=0; tipwardstate<ancestralstatevector->size; tipwardstate++) {
 									for (int rootwardstate=0; rootwardstate<ancestralstatevector->size; rootwardstate++) {
 										probOfIntermediateStateRootward[rootwardstate]+=Superdouble(probOfIntermediateStateTipward[tipwardstate]) * Superdouble(gsl_matrix_get(Pmatrix,rootwardstate,tipwardstate));
@@ -18909,7 +18909,7 @@ double BROWNIE::CalculateDiscreteCharLnLHetero(gsl_matrix * RateMatrixHetero, gs
 								gsl_matrix_free(RateMatrixTMP);
 								gsl_matrix_free(Pmatrix);
 							}
-							//gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength());
+							//gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,descnode->GetEdgeLength());
 							Superdouble probofthissubtree=0;
 /*							if (debugmode) {
 								Tree PrunedTree;
@@ -19018,7 +19018,7 @@ double BROWNIE::CalculateDiscreteCharProbAllConstant(gsl_matrix * RateMatrix, gs
 					NodePtr descnode=currentnode->GetChild();
 					double probofstatei=1;
 					while (descnode!=NULL) { 
-						gsl_matrix * Pmatrix=ComputeTransitionProb(RateMatrix,descnode->GetEdgeLength());
+						gsl_matrix * Pmatrix=ComputeTransitionProbBuiltInFn(RateMatrix,descnode->GetEdgeLength());
 						double probofthissubtree=0;
 						for(int j=0;j<ancestralstatevector->size;j++) {
 							probofthissubtree+=(gsl_matrix_get(Pmatrix,i,j))*((stateprobatnodes[descnode])[j]); //Prob of going from i to j on desc branch times the prob of the subtree with root state j
@@ -19055,9 +19055,9 @@ double BROWNIE::CalculateDiscreteLindy2(double rateA, double rateB)
 //	gsl_matrix_set(testmat,0,1,0.5);
 //	gsl_matrix_set(testmat,1,0,0.7);
 //	gsl_matrix_set(testmat,1,1,-0.7);
-//	gsl_matrix * testmatout=ComputeTransitionProb(testmat,1.0);
+//	gsl_matrix * testmatout=ComputeTransitionProbBuiltInFn(testmat,1.0);
 //	cout<<"testmatnow with brlen 1\n"<<gsl_matrix_get(testmatout,0,0)<<"\t"<<gsl_matrix_get(testmatout,0,1)<<"\n"<<gsl_matrix_get(testmatout,1,0)<<"\t"<<gsl_matrix_get(testmatout,1,1)<<endl;
-//	testmatout=ComputeTransitionProb(testmat,0.0);
+//	testmatout=ComputeTransitionProbBuiltInFn(testmat,0.0);
 //	cout<<"testmatnow with brlen 0\n"<<gsl_matrix_get(testmatout,0,0)<<"\t"<<gsl_matrix_get(testmatout,0,1)<<"\n"<<gsl_matrix_get(testmatout,1,0)<<"\t"<<gsl_matrix_get(testmatout,1,1)<<endl;
 
 	
@@ -19099,12 +19099,12 @@ double BROWNIE::CalculateDiscreteLindy2(double rateA, double rateB)
 					gsl_matrix * Pmatrix=gsl_matrix_calloc(2,2);
 					if ((currentnode->GetStateOrder())[0]==0) {
 //						cout<<"\n\nQmatrix is\n"<<gsl_matrix_get(ratematrixA,0,0)<<"\t"<<gsl_matrix_get(ratematrixA,0,1)<<"\n"<<gsl_matrix_get(ratematrixA,1,0)<<"\t"<<gsl_matrix_get(ratematrixA,1,1)<<endl;
-						Pmatrix=ComputeTransitionProb(ratematrixA,currentnode->GetEdgeLength());
+						Pmatrix=ComputeTransitionProbBuiltInFn(ratematrixA,currentnode->GetEdgeLength());
 //						cout<<"Qmatrix is\n"<<gsl_matrix_get(ratematrixA,0,0)<<"\t"<<gsl_matrix_get(ratematrixA,0,1)<<"\n"<<gsl_matrix_get(ratematrixA,1,0)<<"\t"<<gsl_matrix_get(ratematrixA,1,1)<<endl;
 
 					}
 					else {
-						Pmatrix=ComputeTransitionProb(ratematrixB,currentnode->GetEdgeLength());
+						Pmatrix=ComputeTransitionProbBuiltInFn(ratematrixB,currentnode->GetEdgeLength());
 					}
 //					cout<<"edgelength was "<<currentnode->GetEdgeLength()<<endl;
 //					cout<<"Pmatrix is\n"<<gsl_matrix_get(Pmatrix,0,0)<<"\t"<<gsl_matrix_get(Pmatrix,0,1)<<"\n"<<gsl_matrix_get(Pmatrix,1,0)<<"\t"<<gsl_matrix_get(Pmatrix,1,1)<<endl;
@@ -19126,10 +19126,10 @@ double BROWNIE::CalculateDiscreteLindy2(double rateA, double rateB)
 					int statenumber=discretecharacters->GetInternalRepresentation(taxa->FindTaxon(currentnode->GetLabel()),currentchar-1);
 					gsl_matrix * Pmatrix=gsl_matrix_calloc(2,2);
 					if ((currentnode->GetStateOrder())[0]==0) {
-						Pmatrix=ComputeTransitionProb(ratematrixA,currentnode->GetEdgeLength());
+						Pmatrix=ComputeTransitionProbBuiltInFn(ratematrixA,currentnode->GetEdgeLength());
 					}
 					else {
-						Pmatrix=ComputeTransitionProb(ratematrixB,currentnode->GetEdgeLength());
+						Pmatrix=ComputeTransitionProbBuiltInFn(ratematrixB,currentnode->GetEdgeLength());
 					}
 					for(int j=0;j<ancestralstatevector->size;j++) {
 						double probofstatej=0;
@@ -19199,7 +19199,15 @@ gsl_matrix * BROWNIE::ComputeTransitionProb(gsl_matrix *RateMatrix, double brlen
 	gsl_matrix_complex_memcpy (inverseeigenvectorsstart, eigenvectors);
 	gsl_linalg_complex_LU_decomp (inverseeigenvectorsstart,p, &signum);
 //	cout<<"inverseeigenvectorsstart: \n"<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectorsstart,0,0))<<" "<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectorsstart,0,1))<<endl<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectorsstart,1,0))<<"\t"<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectorsstart,1,1))<<endl;
-	gsl_linalg_complex_LU_invert (inverseeigenvectorsstart,p, inverseeigenvectors);
+    gsl_set_error_handler_off();
+	int gsl_linalg_complex_LU_invert_status=gsl_linalg_complex_LU_invert (inverseeigenvectorsstart,p, inverseeigenvectors);
+	//gsl_linalg_complex_LU_invert (inverseeigenvectorsstart,p, inverseeigenvectors);
+	bool ComputeTransitionProbWorking=true;
+	if (gsl_linalg_complex_LU_invert_status!=0) {
+		cout<<"gsl_linalg_complex_LU_invert_status = "<<gsl_linalg_complex_LU_invert_status<<endl;
+		ComputeTransitionProbWorking=false;
+	}
+	gsl_set_error_handler (NULL);
 //	cout<<"inverseeigenvectors: \n"<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectors,0,0))<<" "<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectors,0,1))<<endl<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectors,1,0))<<"\t"<<GSL_REAL(gsl_matrix_complex_get(inverseeigenvectors,1,1))<<endl;
 
 	//cout<<"inverseeigenvectors: "<<gsl_matrix_get(inverseeigenvectors,0,0)<<" "<<gsl_matrix_get(inverseeigenvectors,0,1)<<endl<<gsl_matrix_get(inverseeigenvectors,1,0)<<"\t"<<gsl_matrix_get(inverseeigenvectors,1,1)<<endl;
@@ -19232,8 +19240,31 @@ gsl_matrix * BROWNIE::ComputeTransitionProb(gsl_matrix *RateMatrix, double brlen
 	gsl_matrix_complex_free(transitionmatrixcomplex);
 //	cout<<"transitionmatrixcomplex: \n"<<GSL_REAL(gsl_matrix_complex_get(transitionmatrixcomplex,0,0))<<" "<<GSL_REAL(gsl_matrix_complex_get(transitionmatrixcomplex,0,1))<<endl<<GSL_REAL(gsl_matrix_complex_get(transitionmatrixcomplex,1,0))<<"\t"<<GSL_REAL(gsl_matrix_complex_get(transitionmatrixcomplex,1,1))<<endl;
 //	cout<<"transitionmatrix: \n"<<gsl_matrix_get(transitionmatrix,0,0)<<" "<<gsl_matrix_get(transitionmatrix,0,1)<<endl<<gsl_matrix_get(transitionmatrix,1,0)<<"\t"<<gsl_matrix_get(transitionmatrix,1,1)<<endl;
+	if (!ComputeTransitionProbWorking && detailedoutput==true) {
+		gsl_matrix *ratematrixforBuiltIn=gsl_matrix_calloc(dimension,dimension);
+		gsl_matrix_memcpy (ratematrixforBuiltIn, RateMatrix);
+		gsl_matrix *transitionmatrixforBuiltIn=gsl_matrix_calloc(dimension,dimension);
+		transitionmatrixforBuiltIn=ComputeTransitionProbBuiltInFn(ratematrixforBuiltIn,brlen);
+		cout<<"transitionmatrix ComputeTransitionProb"<<endl;
+		PrintMatrix(transitionmatrix);
+		cout<<"\ntransitionmatrixforBuiltIn ComputeTransitionProbBuiltInFn"<<endl;
+		PrintMatrix(transitionmatrixforBuiltIn);
+	}
 	return transitionmatrix;
 	
+}
+
+
+//Just does this directly, P(t)=exp(Qt)
+gsl_matrix * BROWNIE::ComputeTransitionProbBuiltInFn(gsl_matrix *RateMatrix, double brlen) {
+	int dimension=RateMatrix->size1;
+	gsl_matrix *ratematrixTMP=gsl_matrix_calloc(dimension,dimension);
+	gsl_matrix_memcpy (ratematrixTMP, RateMatrix);
+	gsl_matrix *transitionmatrix=gsl_matrix_calloc(dimension,dimension);
+	gsl_matrix_scale (ratematrixTMP, brlen);
+	gsl_linalg_exponential_ss(RateMatrix,transitionmatrix,.00000000000000000000000001);
+	gsl_matrix_free(ratematrixTMP);
+	return transitionmatrix;
 }
 
 
