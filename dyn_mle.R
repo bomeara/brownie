@@ -4,6 +4,19 @@
 # 	Section 4 - Maximum Likelihood Methods
 require(phylobase)
 
+#
+# ripped from geiger (thanks luke)
+logspace_add<-function(logx, logy) {
+	if(logx==-Inf) return(logy) else max(logx, logy) + log1p(exp (-abs (logx - logy)));
+}
+
+logspace_sum<-function(logx) {
+      r<-logx[1]
+      if(length(logx)>1)
+      	for(i in 2:length(logx))
+      		r<-logspace_add(r, logx[i])
+      r	
+}
 
 
 dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states=NULL,conditionals=T)
@@ -152,11 +165,18 @@ plot(as(treed,'phylo4'),show.node.label=T)
 dyn.loop.mle(treed,rateq,states.unique,states.freq,as.character(treed@data$"tipdata"))
 
 
-
+#
+#
+#
+#
+#
+#
 #
 ###
 ##### Test: example from pupko 2000
 ###
+#
+#
 #
 
 states.unique = c("A","V")
@@ -174,7 +194,7 @@ tipLabels(phytree) <- paste(tipLabels(phytree),tip.states)
 plot(phytree,show.node.label=T)
 
 
-dyn.loop.mle(phytree,cmat,states.unique,states.freq,tip.states,ratemat=F)->junk
+dyn.loop.mle(phytree,cmat,states.unique,states.freq,tip.states)->junk
 
 tree <- reorder(junk,"preorder")
 ntypes = nodeType(phytree)
