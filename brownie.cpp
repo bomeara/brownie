@@ -62,6 +62,7 @@
 #include <gsl/gsl_version.h>
 #include <gsl/gsl_sf_exp.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
 #include "optimizationfn.h"
 #include "cdfvectorholder.h"
 #include <sstream>
@@ -273,6 +274,8 @@ void BROWNIE::FactoryDefaults()
     debugmode=false;
     maxiterations=1000;
     stoppingprecision=1e-7;
+    confidenceLnLdistance=2.0;
+    confidenceprecision=1e-5;
     randomstarts=15;
     treefilename="besttrees.tre";
 	useCOAL=false;
@@ -7831,6 +7834,7 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
     bool name_provided=false;	
 	bool appending=true;
 	bool replacing=false;
+	bool confidence=false;
     for(;;)
     {
         token.GetNextToken();
@@ -7960,8 +7964,14 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 						double treeweight=trees->GetTreeWeight(chosentree-1);
 						weighttotal+=treeweight;
 						nxsstring treename=trees->GetTreeName(chosentree-1);
-						gsl_vector* output=DiscreteGeneralOptimization();
 						
+						gsl_vector* output;
+						if (!confidence) {
+							output=DiscreteGeneralOptimization();
+						}
+						else {
+							output=DiscreteGeneralConfidence();
+						}
 						/*for (int i=0; i<output->size;i++) {
 							cout<<gsl_vector_get(output,i)<<"\t";
 						}
@@ -8107,8 +8117,15 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 										message+=j;
 										message+=" = ";		
 										message+=gsl_vector_get(output,0);
-										message+=" +/- ";
-										message+=gsl_vector_get(output,1);
+										if (confidence) {
+											message+=" ( ";
+											message+=gsl_vector_get(output,numberoffreeparameters);
+											message+=" , ";
+											message+=gsl_vector_get(output,2*numberoffreeparameters);
+											message+=" )";
+										}
+										//message+=" +/- ";
+										//message+=gsl_vector_get(output,1);
 										vectorposition=2;
 										if (gsl_vector_get(output,0)<0.00000001 && !nonnegvariables) {
 											message+="  Warning: an estimate near zero sometimes makes estimating other parameters, and therefore the lnL, very imprecise. Play with numopt or the model";
@@ -8122,8 +8139,15 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 											message+=j;
 											message+=" = ";									
 											message+=gsl_vector_get(output,vectorposition);
-											message+=" +/- ";
-											message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+											if (confidence) {
+												message+=" ( ";
+												message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+												message+=" , ";
+												message+=gsl_vector_get(output,vectorposition+2*numberoffreeparameters);
+												message+=" )";
+											}
+											//message+=" +/- ";
+											//message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
 										//since symmetric
 											message+="\n    q_";
 											message+=j;
@@ -8131,8 +8155,16 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 											message+=i;
 											message+=" = ";									
 											message+=gsl_vector_get(output,vectorposition);
-											message+=" +/- ";
-											message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+											if (confidence) {
+												message+=" ( ";
+												message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+												message+=" , ";
+												message+=gsl_vector_get(output,vectorposition+2*numberoffreeparameters);
+												message+=" )";
+											}
+
+											//message+=" +/- ";
+											//message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
 											if (gsl_vector_get(output,vectorposition)<0.00000001 && !nonnegvariables) {
 												message+="  Warning: an estimate near zero sometimes makes estimating other parameters, and therefore the lnL, very imprecise. Play with numopt or the model";
 											}										
@@ -8147,8 +8179,16 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 										message+=j;
 										message+=" = ";									
 										message+=gsl_vector_get(output,vectorposition);
-										message+=" +/- ";
-										message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+										if (confidence) {
+											message+=" ( ";
+											message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+											message+=" , ";
+											message+=gsl_vector_get(output,vectorposition+2*numberoffreeparameters);
+											message+=" )";
+										}
+
+										//message+=" +/- ";
+										//message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
 										if (gsl_vector_get(output,vectorposition)<0.00000001 && !nonnegvariables) {
 											message+="  Warning: an estimate near zero sometimes makes estimating other parameters, and therefore the lnL, very imprecise. Play with numopt or the model";
 										}									
@@ -8167,9 +8207,17 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 										else {
 											position=-1*(1+ratematassignvector[vectorposition]);
 											message+=gsl_vector_get(output,position);
-											message+=" +/- ";
-											assert((position+numberoffreeparameters)<output->size);
-											message+=gsl_vector_get(output,position+numberoffreeparameters);	
+											if (confidence) {
+												message+=" ( ";
+												message+=gsl_vector_get(output,position+numberoffreeparameters);
+												message+=" , ";
+												message+=gsl_vector_get(output,position+2*numberoffreeparameters);
+												message+=" )";
+											}
+
+											//message+=" +/- ";
+											//assert((position+numberoffreeparameters)<output->size);
+											//message+=gsl_vector_get(output,position+numberoffreeparameters);	
 											if (gsl_vector_get(output,position)<0.00000001 && !nonnegvariables) {
 												message+="  Warning: an estimate near zero sometimes makes estimating other parameters, and therefore the lnL, very imprecise. Play with numopt or the model";
 											}
@@ -8218,9 +8266,17 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 										   else {
 											   position=-1*(1+ratematassignvector[vectorposition]);
 											   message+=gsl_vector_get(output,position);
-											   message+=" +/- ";
-											   assert((position+numberoffreeparameters)<output->size);
-											   message+=gsl_vector_get(output,position+numberoffreeparameters);	
+												if (confidence) {
+													message+=" ( ";
+													message+=gsl_vector_get(output,position+numberoffreeparameters);
+													message+=" , ";
+													message+=gsl_vector_get(output,position+2*numberoffreeparameters);
+													message+=" )";
+												}
+										   
+											 //  message+=" +/- ";
+											  // assert((position+numberoffreeparameters)<output->size);
+											   //message+=gsl_vector_get(output,position+numberoffreeparameters);	
 											   if (gsl_vector_get(output,position)<0.00000001 && !nonnegvariables) {
 												   message+="  Warning: an estimate near zero sometimes makes estimating other parameters, and therefore the lnL, very imprecise. Play with numopt or the model";
 											   }
@@ -8261,8 +8317,16 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
 							if (discretechosenstatefreqmodel==4) {
 								if (i<(localnumbercharstates-1)) {
 									message+=gsl_vector_get(output,vectorposition);
-									message+=" +/- ";
-									message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+									if (confidence) {
+										message+=" ( ";
+										message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
+										message+=" , ";
+										message+=gsl_vector_get(output,vectorposition+2*numberoffreeparameters);
+										message+=" )";
+									}
+
+									//message+=" +/- ";
+									//message+=gsl_vector_get(output,vectorposition+numberoffreeparameters);
 									vectorposition++;
 								}
 								else { //last number must be 1-sum(other states)
@@ -8402,13 +8466,22 @@ void BROWNIE::HandleDiscrete( NexusToken& token )
                 treeloop=true;
             }
         }		
-        else if (token.Abbreviation("Charloop") ) {
+        else if (token.Abbreviation("CHarloop") ) {
             nxsstring yesnocharloop=GetFileName(token);
             if (yesnocharloop[0] == 'n') {
                 charloop=false;
             }
             else {
                 charloop=true;
+            }
+        }		
+        else if (token.Abbreviation("COnfidence") ) {
+            nxsstring yesnoconfidence=GetFileName(token);
+            if (yesnoconfidence[0] == 'n') {
+                confidence=false;
+            }
+            else {
+                confidence=true;
             }
         }		
 		else if (token.Abbreviation("Globalstates") ) {
@@ -10868,6 +10941,11 @@ void BROWNIE::NumOpt( NexusToken& token)
             char outputstring[10];
             sprintf(outputstring,"%1.9f",stoppingprecision);
             message+=outputstring;
+            message+="\n ciLnL         <double>                             ";
+            message+=confidenceLnLdistance;
+            message+="\n ConfidenceTol <double>                             ";
+            sprintf(outputstring,"%1.9f",confidenceprecision);
+            message+=outputstring;
             message+="\n RandStart     <integer>                            ";
             message+=randomstarts;
             message+="\n Seed          <integer>                            ";
@@ -10903,6 +10981,15 @@ void BROWNIE::NumOpt( NexusToken& token)
             nxsstring numbernexus = GetNumber(token);
             stoppingprecision=atof( numbernexus.c_str() );
         }
+        else if( token.Abbreviation("CIlnl") ) {
+            nxsstring numbernexus = GetNumber(token);
+            confidenceLnLdistance=atof( numbernexus.c_str() );
+        }
+        else if( token.Abbreviation("COnfidencetol") ) {
+            nxsstring numbernexus = GetNumber(token);
+            confidenceprecision=atof( numbernexus.c_str() );
+        }
+
         else if( token.Abbreviation("RAndstart") ) {
             nxsstring numbernexus = GetNumber(token);
             randomstarts=atoi( numbernexus.c_str() ); //convert to int
@@ -17789,57 +17876,562 @@ else {
 	return finalvector;
 }
 
-/*double BROWNIE::E_discretegeneral(void *xp) {
-	gsl_vector * inputvariables=gsl_vector_calloc(numberoffreeparameters);
-	double *params = (double *) xp;
-	for (int i=0;i++;i<numberoffreeparameters) {
-		gsl_vector_set(inputvariables,i,params[i]);
-	}
-	double E=GetDiscreteCharLnL(inputvariables);
-	gsl_vector_free(inputvariables);
-	return E;
-}
 
-double BROWNIE::M_discretegeneral(void *xp, void *yp)
+//This function is like DiscreteGeneralOptimization, but returns both the point estimates and a confidence
+//  interval. The confidence interval is created by taking the optimal points and, for each free parameter, 
+//  holding the others constant, find the upper bound and lower bound of parameter values such that the 
+//  lnL is within confidenceLnLdistance of the best lnL score
+gsl_vector * BROWNIE::DiscreteGeneralConfidence()
 {
-	double *params1 = (double *) xp, *params2 = (double *) yp;
-	double distance = 0;
-	int i;
-	for (i = 0; i < numberoffreeparameters; ++i) {
-		distance += GSL_MAX(params1[i],params2[i])-GSL_MAX(params1[i],params2[i]);
+	bestdiscretelikelihood=BROWNIE_MAXLIKELIHOOD;
+	bool globalbesthadfixedzerosorones=false;
+	int hitlimitscount=0;
+	int numberofrates=(localnumbercharstates*localnumbercharstates)-localnumbercharstates;
+	int ntax=taxa->GetNumTaxonLabels();
+	numberoffreerates=0;
+	numberoffreefreqs=0;
+	int QmatrixRowMultiplier=1;
+	if (discretechosenmodel==5) {
+		QmatrixRowMultiplier=10;
 	}
-	return distance;
-}
+	optimaldiscretecharQmatrix=gsl_matrix_calloc(localnumbercharstates*QmatrixRowMultiplier,localnumbercharstates);
+	currentdiscretecharQmatrix=gsl_matrix_calloc(localnumbercharstates*QmatrixRowMultiplier,localnumbercharstates);
+	optimaldiscretecharstatefreq=gsl_vector_calloc(localnumbercharstates);
+	currentdiscretecharstatefreq=gsl_vector_calloc(localnumbercharstates);
+	double currentstepsize=stepsize;
+	
+	if (discretechosenmodel==1) {
+		numberoffreerates=1;
+	}
+	else if (discretechosenmodel==2) {
+		numberoffreerates=numberofrates/2;
+	}
+	else if (discretechosenmodel==3) {
+		numberoffreerates=numberofrates;
+	}
+	else if (discretechosenmodel==4) {
+		numberoffreerates=freerateletterstring.size();
+	}
+	else if (discretechosenmodel==5) {
+		numberoffreerates=freerateletterstring.size();
+	}
+	if (discretechosenstatefreqmodel==4) {
+		numberoffreefreqs=localnumbercharstates-1;
+	}
+	numberoffreeparameters=numberoffreerates+numberoffreefreqs; //stored globally for later calculation of AIC/AICc
+	if (((1.0*ntax)/(1.0*numberoffreeparameters))<10 && !allchar) {
+		message="\n-------------------------------------------------------------------------------\n WARNING: You are trying to estimate ";
+		message+=numberoffreeparameters;
+		if (numberoffreeparameters==1) {
+			message+=" parameter, but only have ";
+		}
+		else {
+			message+=" parameters, but only have ";
+		}
+		message+=ntax; 
+		message+=" taxa.\n Make sure to try some simpler models, and expect quite imprecise estimates.\n-------------------------------------------------------------------------------";
+		PrintMessage();
+	}
+	else if (((discretecharacters->GetNChar())*((1.0*ntax)/(1.0*numberoffreeparameters)))<10 && allchar) {
+		message="\n-------------------------------------------------------------------------------\n WARNING: You are trying to estimate ";
+		message+=numberoffreeparameters;
+		if (numberoffreeparameters==1) {
+			message+=" parameter, but only have ";
+		}
+		else {
+			message+=" parameters, but only have ";
+		}
+		message+=ntax; 
+		message+=" taxa and ";
+		message+=discretecharacters->GetNChar();
+		message+=" characters.\n Make sure to try some simpler models, and expect quite imprecise estimates.\n-------------------------------------------------------------------------------";
+		PrintMessage();
+	}
+	
+	size_t np=numberoffreeparameters;
+	gsl_vector * finalvector=gsl_vector_calloc((3*np)+1); //optima, max ci, lower ci, likelihood
+	if (np>0) {
+		gsl_vector * results=gsl_vector_calloc(np);
+		double estimates[randomstarts][np];
+		double startingvalues[randomstarts][np];
+		double optima[np];
+		double CI[2][np]; //holds the parameter values for the confidence bound; row 0 is min, row 1 is max
+		double likelihoods[randomstarts][1];
+		if(detailedoutput==false) {
+			ProgressBar(randomstarts);
+		}
+		for (int startnum=0;startnum<randomstarts;startnum++) {
+			if (optimizationalgorithm==1) { //do nelder-mead simplex
+				const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex;
+				gsl_multimin_fminimizer *s = NULL;
+				gsl_vector *ss, *x;
+				size_t iter = 0, i;
+				int status;
+				double size;
+				bool hitlimits=false;
+				/* Initial vertex size vector */
+				ss = gsl_vector_alloc (np);
+				gsl_vector_set_all (ss, currentstepsize);
+				
+				/* Starting points */
+				x = gsl_vector_calloc (np);
+				if (startnum==0 || (gsl_ran_flat(r,0,1))>0.5 ) { //about 50% of the time, start from these values
+					for (int i=0; i<numberoffreerates; i++) {
+						gsl_vector_set (x,i,GSL_MIN(gsl_ran_exponential (r,0.5),gsl_ran_flat(r,0,1) )); //starting rate
+						startingvalues[startnum][i]=gsl_vector_get(x,i);
+					}
+					for (int i=numberoffreerates; i<numberoffreerates+numberoffreefreqs; i++) {  
+						gsl_vector_set (x,i,(1.0/localnumbercharstates)); //starting freqs are equal
+						startingvalues[startnum][i]=gsl_vector_get(x,i);			
+					}
+				}
+				else { //start again from near current point
+					for (int i=0; i<numberoffreerates; i++) { 
+						gsl_vector_set (x,i,gsl_ran_exponential(r,(estimates[startnum-1][i]))); //use a modified optimal value from the last run
+						startingvalues[startnum][i]=gsl_vector_get(x,i);
+					}
+					for (int i=numberoffreerates; i<numberoffreerates+numberoffreefreqs; i++) {
+						gsl_vector_set (x,i,(estimates[startnum-1][i])); //use optimal value from the last run
+						startingvalues[startnum][i]=gsl_vector_get(x,i);			
+					}			
+				}
+				if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+					for (int i=0; i<x->size; i++) {
+						gsl_vector_set(x,i,log(gsl_vector_get(x,i)));
+					}
+				}
+				BROWNIE *pt;
+				pt=(this);
+				double (*F)(const gsl_vector *, void *);
+				F = &BROWNIE::GetDiscreteCharLnL_gsl;
+				gsl_multimin_function minex_func;
+				minex_func.f=*F;
+				minex_func.params=pt;
+				minex_func.n = np;
+				s = gsl_multimin_fminimizer_alloc (T, np);
+				gsl_multimin_fminimizer_set (s, &minex_func, x, ss);
+				do
+				{
+					iter++;
+					/*	if (negbounceparam>-1) { //Means the previous iteration went too low at that position; we'll set the value to zero before iterating again
+					 if (detailedoutput) {
+					 cout<<"Had a negative value; now changing s->x from"<<endl;
+					 PrintVector(s->x);
+					 gsl_vector_set(s->x,negbounceparam,0.0);
+					 cout<<endl<<"to"<<endl;
+					 PrintVector(s->x);
+					 }
+					 } */
+					status = gsl_multimin_fminimizer_iterate(s);
+					if (status!=0) { //0 Means it's a success in c++, but not in C
+						printf ("error: %s\n", gsl_strerror (status));
+						break;
+					}
+					size = gsl_multimin_fminimizer_size (s);
+					status = gsl_multimin_test_size (size, stoppingprecision); //since we want more precision
+					if (status == GSL_SUCCESS)
+					{
+						//printf ("converged to minimum at\n");
+					}
+					
+					if (detailedoutput) {
+						if (iter<100 || (iter%25 ==0)) {
+							printf ("%5d ", iter);
+							for (i = 0; i < np; i++)
+							{
+								if (nonnegvariables) {
+									printf ("%10.9e ", exp(gsl_vector_get (s->x, i)));
+								}
+								
+								else {
+									printf ("%10.9e ", gsl_vector_get (s->x, i));
+								}
+							}
+							printf ("f() = %7.9f size = %.9f\n", s->fval, size);	
+						}
+					}
+				}
+				while (status == GSL_CONTINUE && iter < maxiterations);
+				
+				if (s->fval<bestdiscretelikelihood) {
+					globalbesthadfixedzerosorones=false;
+					gsl_vector_memcpy(results,s->x);
+					if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+						for (int i=0; i<x->size; i++) {
+							gsl_vector_set(results,i,exp(gsl_vector_get(results,i)));
+						}
+					}					
+					bestdiscretelikelihood=s->fval;
+					//if (debugmode) {
+					//	cout<<"likelihood score improved"<<endl;
+					//}
+					gsl_matrix_swap(currentdiscretecharQmatrix,optimaldiscretecharQmatrix);
+					gsl_vector_swap(currentdiscretecharstatefreq,optimaldiscretecharstatefreq);
+				}
+				//The following section tries to round the parameter values: it's possible that 0 is a better value than some very small double
+				gsl_vector *roundx=gsl_vector_calloc((s->x)->size);
+				gsl_vector_memcpy(roundx,s->x);
+				for (int i=0;i<roundx->size;i++) {
+					if(nonnegvariables) {
+						gsl_vector_set(roundx,i,exp(gsl_vector_get(roundx,i)));
+					}
+					if (gsl_vector_get(roundx,i)<8.0*BROWNIE_EPSILON) {
+						gsl_vector_set(roundx,i,0.0);
+					}
+					else if (fabs(1.0-gsl_vector_get(roundx,i))<8.0*BROWNIE_EPSILON) {
+						gsl_vector_set(roundx,i,1.0);
+					}
+				}
+				bool roundedwasbetter=false;
+				bool orignonnegvariables=nonnegvariables;
+				nonnegvariables=false; //since roundx is untransformed
+				double roundlikelihood=GetDiscreteCharLnL(roundx);
+/*				if (detailedoutput) {
+					message="using vector ";
+					PrintMessage();
+					PrintVector(roundx);
+					message=" would get likelihood of ";
+					message+=GetDiscreteCharLnL(roundx);
+					PrintMessage();
+				}*/
+				nonnegvariables=orignonnegvariables;
+				if (roundlikelihood<bestdiscretelikelihood) {
+					roundedwasbetter=true;
+					globalbesthadfixedzerosorones=true;
+					bestdiscretelikelihood=roundlikelihood;
+					gsl_matrix_swap(currentdiscretecharQmatrix,optimaldiscretecharQmatrix);
+					gsl_vector_swap(currentdiscretecharstatefreq,optimaldiscretecharstatefreq);
+					gsl_vector_memcpy(results,roundx);
+				}
+				if (detailedoutput) {
+					printf ("fixed zeros %5d ", iter);
+					for (i = 0; i < np; i++)
+					{
+						
+						printf ("%10.9e ", gsl_vector_get (roundx, i));
+						
+					}
+					printf ("f() = %7.9f \n", roundlikelihood);	
+					/*message="using vector ";
+					PrintMessage();
+					PrintVector(roundx);
+					message=" would get likelihood of ";
+					message+=GetDiscreteCharLnL(roundx);
+					PrintMessage();*/
+				}
+				
+				
+				if (iter==maxiterations) {
+					hitlimits=true;
+					hitlimitscount++;
+				}
+				message="Replicate ";
+				if (detailedoutput) {
+					message+=startnum+1;
+					if (hitlimits) {
+						message+=" **WARNING**";
+					}
+					message+="\n   NM iterations needed = ";
+					int iterationsrequired=iter;
+					message+=iterationsrequired;
+					if (hitlimits) {
+						message+=" **Max iterations hit; see WARNING below**";
+					}
+					message+="\n   -LnL = ";
+					char outputstring[60];
+					sprintf(outputstring,"%60.45f",1.0*(s->fval));
+					if (roundedwasbetter) {
+						sprintf(outputstring,"%60.45f",1.0*roundlikelihood);					
+					}
+					message+=outputstring;
+					message+="\n   Starts:    ";
+					for (int parameternumber=0; parameternumber<np; parameternumber++) {
+						message+=startingvalues[startnum][parameternumber];
+						message+=" ";
+					}				
+					message+="\n   Estimates: ";
+				}
+				for (int parameternumber=0; parameternumber<np; parameternumber++) {
+					if(roundedwasbetter) {
+						estimates[startnum][parameternumber]=gsl_vector_get(roundx,parameternumber);
+					}
+					else {
+						if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+							estimates[startnum][parameternumber]=exp(gsl_vector_get(s->x,parameternumber));
+						}	
+						else {
+							estimates[startnum][parameternumber]=gsl_vector_get(s->x,parameternumber);
+						}
+					}
+					if (detailedoutput) {
+						message+=estimates[startnum][parameternumber];
+						message+=" ";
+					}
+				}		
+				// message+="\n   Rate = ";
+				// message+=gsl_vector_get(s->x,0);
+				if (detailedoutput) {
+					PrintMessage();
+				}
+				gsl_vector_free(x);
+				gsl_vector_free(ss);
+				gsl_vector_free(roundx);
+				gsl_multimin_fminimizer_free (s);
+				if (hitlimits && redobad) {
+					startnum--; //redo this rep (from a new starting point)
+					if (hitlimitscount>giveupfactor*randomstarts) {
+						message="\n----------------------------------------------------------------------------\n";
+						message+= " ABORTING: You have chosen to keep restarting until you get ";
+						message+=randomstarts;
+						message+=" to\n";
+						message+=" complete, but we've already tried ";
+						message+=hitlimitscount;
+						message+=" and only completed\n ";
+						message+=startnum+1;
+						message+=" starts. Maybe this is enough for you?\n You can change optimization settings with the NumOpt command.\n----------------------------------------------------------------------------";
+						PrintMessage();
+						startnum=randomstarts+1; // So we'll stop the run
+					}
+				}
+				else {
+					if (detailedoutput==false) {
+						ProgressBar(0);
+					}			
+				}
+			}
+		}
+		
+		if (hitlimitscount>0) {
+			if (redobad) {
+				message="\n----------------------------------------------------------------------------\n WARNING: For ";
+				message+=randomstarts;
+				message+=" desired completed runs, I had to do ";
+				message+=hitlimitscount;
+				message+=" starts total.\n This could suggest that you should change some NumOpt options\n (\"numopt ?\" for help).\n----------------------------------------------------------------------------";
+			}
+			else {
+				message="\n----------------------------------------------------------------------------\n WARNING: Out of ";
+				message+=randomstarts;
+				message+=" optimization starts, ";
+				message+=hitlimitscount;
+				if (hitlimitscount==1) {
+					message+=" was ";
+				}
+				else {
+					message+=" were ";
+				}
+				message+="stopped by hitting\n  the maximum # of iterations. This means that those replicates\n  may not even have hit the local maximum.\n\n  You can increase the maximum number of iterations or decrease the\n  precision with the NumOpt command. You could also consider\n  increasing the number of random starts using that same command.\n\n  If this happened on a small proportion of replicates, though,\n  or if the precision (below) is good enough, don't worry about it.\n----------------------------------------------------------------------------";
+			}
+			if (detailedoutput) {
+				PrintMessage();
+			}
+			else if ((randomstarts-hitlimitscount)<10 && (hitlimitscount/randomstarts)>.1) {
+				PrintMessage();
+			}
+		}
+		for (int position=0; position<np; position++) {
+			gsl_vector_set(finalvector,position,gsl_vector_get(results,position));
+			optima[position]=gsl_vector_get(results,position);
+			double paramestimate[randomstarts];
+			for (int startnumber=0;startnumber<randomstarts;startnumber++) {
+				paramestimate[startnumber]=estimates[startnumber][position];
+			}
+		}
+		gsl_vector_free(results);
+		
+		//Now, do profiles
+		bool orignonnegvariables=nonnegvariables;
+		nonnegvariables=false; //since input values are untransformed
+		for (int paramIndex=0; paramIndex<np; paramIndex++) {
+			message="\nGetting confidence intervals (can be slow) for parameter ";
+			message+=paramIndex+1;
+			PrintMessage();
+			
 
-void BROWNIE::S_discretegeneral(const gsl_rng * r, void *xp, double step_size)
-{
-	double old_x = *((double *) xp);
-	double new_x=old_x;
-	step_size=0;
-	int i=int(gsl_ran_flat(r,0,numberoffreeparameters)); //changes only one parameter, we pick it randomly
-	if (i<numberoffreerates) { //must be changing a rate; rates must be >=0 but no upper bound, so use an exponential distribution
-		new_x[i]=0.9*old_x[i]+0.1*gsl_ran_exponential (r,1.0/old_x[i]);
+			for (int ciRow=0; ciRow<=1; ciRow++) { //row0 is min, row1 is max bound
+				if (ciRow==0) {
+					message="\tFor lower bound";
+					PrintMessage();
+				}
+				else {
+					message="\tFor upper bound";
+					PrintMessage();
+				}
+				int trial=0;
+				int multiplier=1.0;
+				if (ciRow==0) {
+					multiplier=-1.0; //want it to get smaller
+				}
+				double workingConfidenceprecision=confidenceprecision;
+				double currentLikelihood=bestdiscretelikelihood;
+				vector<double> currentParamValues;
+				vector<double> currentLikelihoodValues;
+				gsl_vector *allParamValues=gsl_vector_calloc(np);
+				for (int i=0; i<np; i++) {
+					gsl_vector_set(allParamValues,i,optima[i]);
+				}
+
+
+				currentParamValues.push_back(optima[paramIndex]);
+				currentLikelihoodValues.push_back(currentLikelihood);
+				double offsetCounter=0;
+				while(currentLikelihood<bestdiscretelikelihood+1.0*confidenceLnLdistance || trial<6) { //Should abort with inf likelihood
+				
+					trial++;
+					assert(workingConfidenceprecision<1.0);
+					gsl_vector_set(allParamValues,paramIndex,gsl_vector_get(allParamValues,paramIndex) * (1.0 + multiplier*workingConfidenceprecision));
+					currentParamValues.push_back(gsl_vector_get(allParamValues,paramIndex));
+					currentLikelihood=GetDiscreteCharLnL(allParamValues);
+					currentLikelihoodValues.push_back(currentLikelihood);
+					if (trial>50) {
+						workingConfidenceprecision=gsl_min(1.1*workingConfidenceprecision,0.5);
+					} 
+					if (detailedoutput) {
+						message="\t";
+						message+=gsl_vector_get(allParamValues,paramIndex);
+						message+="\t";
+						message+=currentLikelihood;
+						PrintMessage();
+					}
+					if (isinf(currentLikelihood)) {
+						break;
+					}
+					if (currentLikelihood>bestdiscretelikelihood+offsetCounter) {
+						message="\t\t";
+						message+=currentLikelihood;
+						message+="\t";
+						message+=gsl_vector_get(allParamValues,paramIndex);
+						PrintMessage();
+						offsetCounter=offsetCounter+0.5;
+					}
+				}
+				if (!isinf(currentLikelihood)) { //we will interpolate
+					//gsl_interp_accel *acc = gsl_interp_accel_alloc ();
+         			//gsl_spline *spline = gsl_spline_alloc (gsl_interp_cspline, trial+1);
+         			//double currentLikelihoodValues_Array[trial+1];
+         			//double currentParamValues_Array[trial+1];
+         			//for (int i=0; i<np; i++) {
+         			//	currentLikelihoodValues_Array[i]=currentLikelihoodValues[i];
+         			//	currentParamValues_Array[i]=currentParamValues[i];
+         			//}
+     				//gsl_spline_init (spline, currentLikelihoodValues_Array , currentParamValues_Array, trial+1); //make the likelihood the X variable, so we can interpolate to get the apppropriate parameter value
+     				//CI[ciRow][paramIndex] = gsl_spline_eval (spline, bestdiscretelikelihood+confidenceLnLdistance, acc);
+     				
+     				//now go back down, slowly:
+     				double finalvalue=currentParamValues[currentParamValues.size() - 1];
+     				message="\t\t**improving precision**";
+     				PrintMessage();
+     				while(currentLikelihood>bestdiscretelikelihood+confidenceLnLdistance) {
+     					CI[ciRow][paramIndex]=currentParamValues[currentParamValues.size() - 1]; //store the current value, which is outside the + 2lnL units from the best
+     					gsl_vector_set(allParamValues,paramIndex,gsl_vector_get(allParamValues,paramIndex) * (1.0 + -1.0*multiplier*confidenceprecision)); //note the -1.0 so we go back the other way
+						currentParamValues.push_back(gsl_vector_get(allParamValues,paramIndex));
+						currentLikelihood=GetDiscreteCharLnL(allParamValues);
+						currentLikelihoodValues.push_back(currentLikelihood);
+						if (detailedoutput) {
+							message="\t";
+							message+=gsl_vector_get(allParamValues,paramIndex);
+							message+="\t";
+							message+=currentLikelihood;
+							PrintMessage();
+						}
+						offsetCounter=offsetCounter-0.1;
+						if (currentLikelihood<bestdiscretelikelihood+offsetCounter) {
+							message="\t\t";
+							message+=currentLikelihood;
+							message+="\t";
+							message+=gsl_vector_get(allParamValues,paramIndex);
+							PrintMessage();
+							offsetCounter=offsetCounter-0.1;
+						}
+     				}
+     				if(detailedoutput) {
+     					cout<<"CI[ciRow][paramIndex] = CI["<<ciRow<<"]["<<paramIndex<<"] = "<<CI[ciRow][paramIndex]<<endl;
+     				}
+				}
+				else {
+					CI[ciRow][paramIndex] = NAN;
+				}
+				
+			}
+		}
+	 	nonnegvariables=orignonnegvariables;
+
+		
+		
+		for (int i=0; i<np; i++) {
+			for (int ciRow=0; ciRow<=1; ciRow++) {
+				gsl_vector_set(finalvector,(1+ciRow)*np+i,CI[ciRow][i]);
+			}
+		}	
+
+
 	}
 	else {
-		double p[numberoffreefreqs+1];
-		int n[numberoffreefreqs+1];
-		double totalfreq=0;
-		for (int j=0;j++;j<numberoffreefreqs) {
-			p[j]=old_x[j];
-			totalfreq+=old_x[j];
-		}
-		totalfreq[numberoffreefreqs]=1.0-totalfreq;
-		int multinomialsamples=250;
-		gsl_ran_multinomial (r, numberoffreefreqs+1, multinomialsamples, p, n); //modify the state freqs slightly
-		for (int j=numberoffreerates;j++;j<numberoffreeparameters) {
-			new_x[j]=(1.0*n[j-numberoffreerates])/(1.0*multinomialsamples);
-		}	
+		gsl_vector* emptyvector=gsl_vector_calloc(1);
+		bestdiscretelikelihood=GetDiscreteCharLnL(emptyvector);	
+		gsl_matrix_swap(currentdiscretecharQmatrix,optimaldiscretecharQmatrix);
+		gsl_vector_swap(currentdiscretecharstatefreq,optimaldiscretecharstatefreq);
+		gsl_vector_free(emptyvector);
 	}
 	
-	memcpy(xp, &new_x, sizeof(new_x));
 	
+	
+	gsl_vector_set(finalvector,(3*np),bestdiscretelikelihood);
+	return finalvector;
 }
-*/
+
+
+/*double BROWNIE::E_discretegeneral(void *xp) {
+ gsl_vector * inputvariables=gsl_vector_calloc(numberoffreeparameters);
+ double *params = (double *) xp;
+ for (int i=0;i++;i<numberoffreeparameters) {
+ gsl_vector_set(inputvariables,i,params[i]);
+ }
+ double E=GetDiscreteCharLnL(inputvariables);
+ gsl_vector_free(inputvariables);
+ return E;
+ }
+ 
+ double BROWNIE::M_discretegeneral(void *xp, void *yp)
+ {
+ double *params1 = (double *) xp, *params2 = (double *) yp;
+ double distance = 0;
+ int i;
+ for (i = 0; i < numberoffreeparameters; ++i) {
+ distance += GSL_MAX(params1[i],params2[i])-GSL_MAX(params1[i],params2[i]);
+ }
+ return distance;
+ }
+ 
+ void BROWNIE::S_discretegeneral(const gsl_rng * r, void *xp, double step_size)
+ {
+ double old_x = *((double *) xp);
+ double new_x=old_x;
+ step_size=0;
+ int i=int(gsl_ran_flat(r,0,numberoffreeparameters)); //changes only one parameter, we pick it randomly
+ if (i<numberoffreerates) { //must be changing a rate; rates must be >=0 but no upper bound, so use an exponential distribution
+ new_x[i]=0.9*old_x[i]+0.1*gsl_ran_exponential (r,1.0/old_x[i]);
+ }
+ else {
+ double p[numberoffreefreqs+1];
+ int n[numberoffreefreqs+1];
+ double totalfreq=0;
+ for (int j=0;j++;j<numberoffreefreqs) {
+ p[j]=old_x[j];
+ totalfreq+=old_x[j];
+ }
+ totalfreq[numberoffreefreqs]=1.0-totalfreq;
+ int multinomialsamples=250;
+ gsl_ran_multinomial (r, numberoffreefreqs+1, multinomialsamples, p, n); //modify the state freqs slightly
+ for (int j=numberoffreerates;j++;j<numberoffreeparameters) {
+ new_x[j]=(1.0*n[j-numberoffreerates])/(1.0*multinomialsamples);
+ }	
+ }
+ 
+ memcpy(xp, &new_x, sizeof(new_x));
+ 
+ }
+ */
 
 //Calculates the joint ML mapping of ancestral states of a discrete on the tree, using the Pupko et al 2000 algorithm. Returns a pointer to the root of new tree with 
 //ML  joint estimates of state orders and state times inferred; node labels give the reconstructed states. If breaksperbranch==0, each branch gets
@@ -18784,6 +19376,7 @@ double BROWNIE::CalculateDiscreteCharLnL(gsl_matrix * RateMatrix, gsl_vector * a
 		neglnL=BROWNIE_MAXLIKELIHOOD ;
 
 	}
+
 	return neglnL;
 }
 

@@ -98,6 +98,8 @@ public:
     int unrooted;
     int maxiterations;
     double stoppingprecision;
+    double confidenceLnLdistance;
+    double confidenceprecision;
     int randomstarts;
 	nxsstring treefilename;
 	bool useCOAL;
@@ -260,6 +262,7 @@ public:
 	double GetLikelihoodUnderLindy1(const gsl_vector * variables);
 	gsl_vector * LindyGeneralOptimization(int ChosenModel);
     gsl_vector* DiscreteGeneralOptimization();	
+    gsl_vector* DiscreteGeneralConfidence();	
 	gsl_matrix* ComputeTransitionProb(gsl_matrix *RateMatrix, double brlen);
 	gsl_matrix* ComputeTransitionProbBuiltInFn(gsl_matrix *RateMatrix, double brlen);
     void HandleTimeSlice( NexusToken& token );
