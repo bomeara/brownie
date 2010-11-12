@@ -100,6 +100,7 @@ public:
     double stoppingprecision;
     double confidenceLnLdistance;
     double confidenceprecision;
+    int stepswithoutprintinglimit;
     int randomstarts;
 	nxsstring treefilename;
 	bool useCOAL;

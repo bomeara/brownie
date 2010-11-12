@@ -276,6 +276,7 @@ void BROWNIE::FactoryDefaults()
     stoppingprecision=1e-7;
     confidenceLnLdistance=2.0;
     confidenceprecision=1e-5;
+    stepswithoutprintinglimit=1000;
     randomstarts=15;
     treefilename="besttrees.tre";
 	useCOAL=false;
@@ -10946,6 +10947,8 @@ void BROWNIE::NumOpt( NexusToken& token)
             message+="\n ConfidenceTol <double>                             ";
             sprintf(outputstring,"%1.9f",confidenceprecision);
             message+=outputstring;
+            message+="\n PrintEvery    <integer>                            ";
+            message+=stepswithoutprintinglimit;
             message+="\n RandStart     <integer>                            ";
             message+=randomstarts;
             message+="\n Seed          <integer>                            ";
@@ -10970,7 +10973,7 @@ void BROWNIE::NumOpt( NexusToken& token)
 			message+="\n GiveUpFactor  <integer>                            ";
             message+=giveupfactor;
 
-            message+="\n\nIter sets the maximum number of iterations of the Nelder-Mead simplex algorithm.\n\nToler sets the precision of the stopping criterion: what amount\nof change in the likelihood is considered small enough to count as zero change.\n\nRandStart sets the number of random starts to use.\n\nStepSize sets the NM step size.\n\nDetail specifies whether or not to have detailed output from numerical optimization\n\nRedo specifies whether to redo reps which stop due to iteration limits\n\nGiveUpFactor, when redo=yes, is used to tell the software when to stop restarting: when the ratio of unsuccessful to successful starts is > giveupfactor";
+            message+="\n\nIter sets the maximum number of iterations of the Nelder-Mead simplex algorithm.\n\nToler sets the precision of the stopping criterion: what amount\nof change in the likelihood is considered small enough to count as zero change.\n\nRandStart sets the number of random starts to use.\n\nStepSize sets the NM step size.\n\nDetail specifies whether or not to have detailed output from numerical optimization\n\nRedo specifies whether to redo reps which stop due to iteration limits\n\nGiveUpFactor, when redo=yes, is used to tell the software when to stop restarting: when the ratio of unsuccessful to successful starts is > giveupfactor\nPrintEvery has output printed every so many steps for some of the analyses (so you know it has not crashed)";
             PrintMessage();
         }
         else if( token.Abbreviation("Iter") ) {
@@ -10993,6 +10996,10 @@ void BROWNIE::NumOpt( NexusToken& token)
         else if( token.Abbreviation("RAndstart") ) {
             nxsstring numbernexus = GetNumber(token);
             randomstarts=atoi( numbernexus.c_str() ); //convert to int
+        }
+        else if( token.Abbreviation("Printevery") ) {
+            nxsstring numbernexus = GetNumber(token);
+            stepswithoutprintinglimit=atoi( numbernexus.c_str() ); //convert to int
         }
         else if( token.Abbreviation("SEed") ) {
             nxsstring numbernexus = GetNumber(token);
@@ -18243,20 +18250,21 @@ gsl_vector * BROWNIE::DiscreteGeneralConfidence()
 		bool orignonnegvariables=nonnegvariables;
 		nonnegvariables=false; //since input values are untransformed
 		for (int paramIndex=0; paramIndex<np; paramIndex++) {
-			message="\nGetting confidence intervals (can be slow) for parameter ";
+			message="\nGetting confidence intervals for parameter ";
 			message+=paramIndex+1;
+			message+=" (this can be slow)";
 			PrintMessage();
 			
 
 			for (int ciRow=0; ciRow<=1; ciRow++) { //row0 is min, row1 is max bound
 				if (ciRow==0) {
-					message="\tFor lower bound";
-					PrintMessage();
+					message="\tFor lower bound want likelihood of ";
 				}
 				else {
-					message="\tFor upper bound";
-					PrintMessage();
+					message="\tFor upper bound want likelihood of ";
 				}
+				message+=bestdiscretelikelihood+confidenceLnLdistance;
+				PrintMessage();
 				int trial=0;
 				int multiplier=1.0;
 				if (ciRow==0) {
@@ -18320,10 +18328,17 @@ gsl_vector * BROWNIE::DiscreteGeneralConfidence()
      				//now go back down, slowly:
      				double finalvalue=currentParamValues[currentParamValues.size() - 1];
      				message="\t\t**improving precision**";
+     				int stepswithoutprinting=0;
      				PrintMessage();
+     				int numberOfZeros=0;
+     				int numberOfLargeLikelihoods=0;
      				while(currentLikelihood>bestdiscretelikelihood+confidenceLnLdistance) {
      					CI[ciRow][paramIndex]=currentParamValues[currentParamValues.size() - 1]; //store the current value, which is outside the + 2lnL units from the best
      					gsl_vector_set(allParamValues,paramIndex,gsl_vector_get(allParamValues,paramIndex) * (1.0 + -1.0*multiplier*confidenceprecision)); //note the -1.0 so we go back the other way
+     					if (gsl_vector_get(allParamValues,paramIndex)==0) {
+     						numberOfZeros++;
+							gsl_vector_set(allParamValues,paramIndex,confidenceprecision*pow(10.0,numberOfZeros-1)); //Multiplying a zero with numbers doesn't really get you anywhere
+     					}
 						currentParamValues.push_back(gsl_vector_get(allParamValues,paramIndex));
 						currentLikelihood=GetDiscreteCharLnL(allParamValues);
 						currentLikelihoodValues.push_back(currentLikelihood);
@@ -18334,14 +18349,28 @@ gsl_vector * BROWNIE::DiscreteGeneralConfidence()
 							message+=currentLikelihood;
 							PrintMessage();
 						}
+						stepswithoutprinting++;
 						offsetCounter=offsetCounter-0.1;
-						if (currentLikelihood<bestdiscretelikelihood+offsetCounter) {
+						if (currentLikelihood<bestdiscretelikelihood+offsetCounter || stepswithoutprinting>stepswithoutprintinglimit) {
+							stepswithoutprinting=0;
 							message="\t\t";
 							message+=currentLikelihood;
 							message+="\t";
 							message+=gsl_vector_get(allParamValues,paramIndex);
 							PrintMessage();
 							offsetCounter=offsetCounter-0.1;
+						}
+						if (currentLikelihood==BROWNIE_MAXLIKELIHOOD) {
+							numberOfLargeLikelihoods++;
+							if (numberOfLargeLikelihoods>50) {
+								if (ciRow==0) {
+									CI[ciRow][paramIndex]=0;
+								}
+								else {
+									CI[ciRow][paramIndex]= NAN;
+								}
+								break;
+							}
 						}
      				}
      				if(detailedoutput) {
