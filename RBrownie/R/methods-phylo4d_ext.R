@@ -73,7 +73,7 @@ get.nodenames<-function(newick.txt)
 
 # Check for evidence that this file contains simmap-formatted trees
 #
-is.simmap <- function(finput="",text=NULL)
+is.simmap <- function(finput="",text=NULL,vers=c(1.1,1.5))
 {
 	if(!is.null(text)){
 		# TODO: check text for newlines and split on them if they exist.
@@ -276,6 +276,250 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 	
 	#write.nexus(tr,file="written.tree")
 	return(rettree)
+}
+
+
+# helper functions for read.simmap.new (below)
+#
+match.order <- function(basevec,cmpvec)
+{
+	neworder = order(basevec)
+	neworder[order(basevec)] <- order(cmpvec)
+	stopifnot(all(cmpvec[neworder] == basevec))
+	return(neworder)		
+}
+
+
+strip<-function(str,left=TRUE,right=TRUE)
+{
+	if(left)
+		str = sub("^[ \t\n]+","",str)
+	if(right)
+		str = sub("[ \t]+$","",str)
+	return(str)
+}
+
+# Read simmap v1.5 files
+#
+read.simmap.new <- function(file="",text=NULL)
+{	
+	if(is.null(text))
+	{
+		if(file.exists(file)){
+			text = paste(readLines(file),collapse="")
+		}else{
+			stop("Could not find file ",file)
+		}
+	}
+
+	# clear whitespace	
+	txt = gsub("\\s","",text)
+	
+	# add semicolon to end
+	if(substring(txt,nchar(txt))!=";")
+		txt = paste(txt,";",sep="")
+	
+
+		
+	comments.pos = gregexpr("\\[&.*?\\]",txt)[[1]]
+	comments.len = attr(comments.pos,"match.length")
+	comments = character(length(comments.pos))
+	for(ii in seq(length(comments)))
+	{
+		comments[ii] = substr(txt,(comments.pos[ii]+2), ((comments.pos[ii] + comments.len[ii] - 2)))
+	}
+	length(comments)
+	
+	
+	####
+	# Process Trees
+	cleaned = gsub("\\[&.*?\\]","",txt)
+	textstr = cleaned
+	# add root node and internal node names
+	count = 1
+	while(regexpr("):",textstr)[1] != -1)
+	{
+		textstr = sub( "):", paste(")Internal",sprintf("%0.7d",count),":",sep=""), textstr)
+		count = count + 1
+	}
+	
+	# Root
+	if(regexpr(");",textstr)[1] != -1)
+		textstr = sub( ");", ")Root:0;" , textstr)
+			
+	nodenames = get.nodenames(textstr)
+	require(phylobase)
+	phy = as(read.tree(text=textstr),'phylo4d')
+	#
+	####
+	
+	# Sanity check:
+	if(length(nodenames)!=length(comments))
+		stop("Node names does not match up with comments (and they should).")
+	
+	####
+	# Process comments:
+	#
+	# NOTE: Only one branch mapping is allowed at this point (TODO: fix this)
+	#
+	subnode.names = c("map")
+	subnode.patt = sprintf("^(%s)$",paste(subnode.names,collapse="|"))
+	subnode.pos = matrix(NA,nrow=0,ncol=2)
+	subnode.branch = matrix(NA,nrow=0,ncol=2)
+	subnode.data = character(0)
+	
+	phy.data = NULL
+	for (kk in seq(length(comments)))
+	{
+		## Tokenize command comment:
+		comment.tokens = strsplit(comments[kk],",")[[1]]
+		ex.inds = (grepl("=",comment.tokens))
+	
+		curr = 1
+		using = rep(TRUE,length(ex.inds))
+		count = 1
+		while(count <= length(ex.inds)){
+			if(ex.inds[count]){
+				curr=count
+			} else {
+				using[count] = FALSE
+				comment.tokens[curr] = paste(comment.tokens[curr],comment.tokens[count],sep=",")
+			}
+			count = count + 1
+		}
+		comment.tokens = comment.tokens[using]
+		## end tokenize
+	
+		# strip beginning / ending whitespace from each token
+		# comment.tokens = strip(comment.tokens)
+	
+		## Process name/value pairs from comment tokens
+		## NOTE: branch mapping is treated differently that other attributes
+		nnames = character(0)
+		vals = character(0)
+		
+		for(attr.str in comment.tokens)
+		{
+			# strip whitespace from tokens
+			#
+			tmp=strsplit(attr.str,"=")[[1]]
+			metric.basename = strip(tmp[1])
+			metric.value = strip(tmp[2])
+			if(str.has("\\{",metric.value) && str.has("\\}",metric.value))
+			{
+				metric.value = sub("^\\{(.*?)\\}$","\\1",metric.value)
+				metric.value = strip(strsplit(metric.value,",")[[1]])
+			}
+			
+			if(!grepl(subnode.patt,metric.basename))
+			{
+				# process regular values
+				# Expand basenames:
+				if(length(metric.value) != 1)
+					metric.basename = sprintf("%s_%04d",metric.basename,seq(length(metric.value)))
+				
+				nnames = append(nnames,metric.basename)
+				vals = append(vals,metric.value)
+				
+			} else {
+				
+				# process map nodes:
+				# values format: STATE,LENGTH,STATE,....
+				# FROM desc to ancs (so, 1st STATE and LENGTH pair are the values for the current node)
+				#
+				if(length(metric.value) == 1){
+					nnames = append(nnames,metric.basename)
+					vals = append(vals,metric.value[1])
+				} else {
+					
+					desc = unname(which(labels(phy)==nodenames[kk]))
+					anc = unname(ancestor(phy,desc))
+					eind = .edge.index(phy,anc,desc)
+					elen = unname(edgeLength(phy)[eind])
+	
+					# if one more length is needed:
+					if( length(metric.value) %% 2 != 0 )
+					{
+						tonow = sum(as.numeric(metric.value[seq(2,length(metric.value),by=2)]))
+						metric.value = c(metric.value,(elen-tonow))
+					}
+	
+					
+					# Separate states from lengths and make lengths fractions of BRLEN 
+					# NOTE: fractions start at ANC! not DESC.  This may cause some confusion
+					#
+					states = rev(metric.value[seq(1,length(metric.value),by=2)])
+					lens = rev(as.numeric(metric.value[seq(2,length(metric.value),by=2)]))
+					lens = cumsum(lens) / elen
+					
+					# Assign data from DESC node
+					nnames = append(nnames,metric.basename)
+					vals = append(vals,tail(states,1))
+					
+					# Cache data from subnodes on this branch:
+					for (subind in seq(length(states)-1))
+					{
+						subnode.branch = rbind(subnode.branch,c(anc,desc)) # which branch
+						subnode.pos = rbind(subnode.pos,c(lens[subind],lens[subind]))  # which position on the branch
+						tmpstate=states[subind]
+						names(tmpstate) <- metric.basename
+						subnode.data = append(subnode.data,tmpstate)
+					}
+				}
+			}
+		}
+		
+		stopifnot(length(nnames) == length(vals))
+			
+		if(is.null(phy.data))
+		{
+			phy.data = matrix(NA,nrow=length(nodenames),ncol=length(nnames))
+			rownames(phy.data) <- nodenames
+			colnames(phy.data) <- nnames
+		} else {
+	
+			newcols = setdiff(nnames,colnames(phy.data))
+			if(length(newcols) != 0){
+				
+				for(cname in newcols)
+					phy.data = cbind(phy.data,NA)
+				
+				colnames(phy.data) <- c(head(colnames(phy.data),-length(newcols)),newcols)
+			}
+			
+			unusedcols = setdiff(colnames(phy.data),nnames)
+			if(length(unusedcols) != 0)
+			{
+				nnames <- append(nnames,unusedcols)
+				vals <- append(vals,rep(NA,length(unusedcols)))
+			}
+		}
+		
+		phy.data[kk,] = vals[match.order(colnames(phy.data),nnames)]
+	}
+	
+	# Guess as phy.data types:
+	options(warn=-1)  # suppress warnings for this sections
+	phy.data = data.frame(apply(phy.data,2,I),stringsAsFactors=FALSE)
+	for(jj in seq(ncol(phy.data)))
+	{
+		exclude = is.na(phy.data[,jj])
+		if( all(!is.na(as.numeric(phy.data[(!exclude),jj]))) )
+			phy.data[,jj] = as.numeric(phy.data[,jj])
+	}
+	options(warn=0)
+	
+	###
+	phyd = addData(phy,all.data=phy.data,match.data=TRUE)
+	
+	if(length(subnode.data)!=0){
+		# add subnode stuff:
+		phyd = phyext(phyd)
+		for(ii in seq(length(subnode.data)))
+			phyd = addSubNode(phyd,subnode.branch[ii,1],subnode.branch[ii,2],subnode.pos[ii],subnode.data[ii],pos.is.fraction=TRUE)
+	}
+	
+	return(phyd)
 }
 
 
@@ -821,18 +1065,17 @@ getSubNodeEdgeInds <- function(x)
 
 # return empty data.frame styled like
 # @data slot
-getEmptyDataFrame <- function(x)
+getEmptyDataFrame <- function(x,...)
 {
-	tmpdf = data.frame(x@data[0,])
+	tmpdf = data.frame(x@data[0,],...)
 	colnames(tmpdf) <- colnames(tdata(x))
 	return(tmpdf)
 }
 
 
 # TODO: overload tdata here
-
 # 
-addSubNode <- function(x,anc,dec,position,dataf)
+addSubNode <- function(x,anc,dec,position,dataf,pos.is.fraction=FALSE)
 {
 	
 	if(!is(x,'phylo4d_ext')){
@@ -848,8 +1091,8 @@ addSubNode <- function(x,anc,dec,position,dataf)
 	if(elen == 0)
 		stop("Cannot place subnode on a zero length branch")
 	
-	if(position > elen)
-		stop("Position: ",position,", is greater than branch length: ",elen,"\n")
+	if(position > ifelse(pos.is.fraction,1,elen))
+		stop("Position: ",position,", is greater than allowed value of ",ifelse(pos.is.fraction,1,elen),"\n")
 	
 	# also check for overlapping subnodes
 	
@@ -863,13 +1106,14 @@ addSubNode <- function(x,anc,dec,position,dataf)
 	} else {
 
 		if(ncol(newdf) == length(dataf)){
+			newdf = getEmptyDataFrame(x,stringsAsFactors=FALSE)  # ??
 			newdf[1,] <- dataf
-		
 		} else {
 			newdf[1,] <- rep(NA,ncol(newdf))
 			# try to match up names
 			ndf = names(dataf)
 			count = 1
+			
 			for(nm in ndf){
 				nmind = which(names(newdf)==nm)
 				if(!is.null(nmind) && length(nmind) != 0)
@@ -878,6 +1122,9 @@ addSubNode <- function(x,anc,dec,position,dataf)
 			}
 		}
 	}
+	
+	if(!pos.is.fraction) 
+		position = position / elen
 	
 	x@subnode.id = append(x@subnode.id, as.integer(nTips(x) + nNodes(x) + nSubNodes(x) + 1))
 	x@subnode.data = rbind(x@subnode.data, newdf)
@@ -942,6 +1189,7 @@ showSubNodes <- function(x)
 		print("0 indicates a subnode; * indicates 2+ subnodes overlapping. Positions are relative.")
 	}
 }
+
 
 
 #-----------------------------
