@@ -12,10 +12,10 @@
 #
 
 CC = $(CXX)
-CC_OPTIONS = -m32 -fexceptions -O0 -Wno-deprecated -fpermissive -g -DSTATIC_LIB
+CC_OPTIONS = -fexceptions -O0 -Wno-deprecated -fpermissive -g -DSTATIC_LIB
 #added these as link options
 #LNK_OPTIONS = -t -L/usr/local/lib/ -lgsl -lgslcblas -lm -L./gtp.0.15_Modified/nexus_parser/ -lnp -L./gtp.0.15_Modified/my_structures/ -lmy_structures 
-LNK_OPTIONS = -static -m32 -t -L/usr/local/lib/ -L$(GNU_LIB) -lgsl -lgslcblas -lm
+LNK_OPTIONS = -static -t -L/usr/local/lib/ -L$(GNU_LIB) -lgsl -lgslcblas -lm
 
 
 #

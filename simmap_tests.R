@@ -4,7 +4,7 @@ rd = "(Taxon1:0.1, (Taxon2:0.3, Taxon3:0.4):0.5);"
 new.tree = read.tree(text=rd)
 plot(new.tree)
 
-rd.simmap = "((Taxon1:{A,0.1; C,0.1}, Taxon2:{T,0.1; C,0.1}):{C,0.5}, Taxon3:{C,0.4} );"
+rd.simmap = "((Taxon1:{A,0.3; C,0.1}, Taxon2:{T,0.1; C,0.1}):{C,0.5}, Taxon3:{C,0.4} );"
 sub.br = ":\\{([a-zA-z0-9]{1,5}),(\\d{0,10}\\.\\d{0,10});"
 #gsub(rd.nowhite, sub.br ,"-(\\1)-(\\2)-" ,rd.nowhite)
 
