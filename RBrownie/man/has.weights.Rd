@@ -20,7 +20,7 @@ Nexus text
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+If function is still experimental.
 }
 \value{
 True or false if the weights exist
@@ -32,7 +32,7 @@ True or false if the weights exist
 J. Conrad Stack
 }
 \note{
-%%  ~~further notes~~
+
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

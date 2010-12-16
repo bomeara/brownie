@@ -16,17 +16,17 @@ addLiteral(obj, cmdstr = NULL)
 A brownie object (or list of brownie objects)
 }
   \item{cmdstr}{
-A character string which is added to commands.
+A character string which is added to \code{commands} slot of \code{obj}.
 }
 }
 \details{
-Caution should be used when using this function.  It adds cmdstr to the commands slot of a brownie object.  It adds the character string as is and should only be used by those who are familiar with the brownie commands.  To get familiar with these commands, check out the Brownie manual online.
+Caution should be used when using this function.  It adds \code{cmdstr} to the commands slot of a brownie object.  It adds the character string \strong{as is} and should only be used by those who are familiar with the brownie commands.  To get familiar with these commands, check out the Brownie manual online.
 }
 \value{
 Returns the original object (\code{obj}) with the \code{cmdstr} added to the \code{commands} slot.
 }
 \references{
-%% ~put references to the literature/web site here ~
+\url{http://www.brianomeara.info/brownie/manual}
 }
 \author{
 J. Conrad Stack

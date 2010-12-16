@@ -18,7 +18,7 @@ as.discData(dat)
 }
 }
 \details{
-Brownie uses the factor and numeric types to determine whether or not a data column in the data slot of a brownie object is 'discrete' or 'continuous'.  The distinction between the two datatypes is important as the two types are written to two different nexus blocks when brownie writes to file (CHARACTERS and CHARACTERS2).
+Brownie uses the factor and numeric types to determine whether or not a data column in the data slot of a brownie object is \sQuote{discrete} or \sQuote{continuous}.  The distinction between the two datatypes is important as the two types are written to two different nexus blocks when brownie writes to file (CHARACTERS and CHARACTERS2).
 
 This is mainly an internal function, but could be useful as a way to make sure your data is compatible with brownie datatypes (which might change in the future, but this function call will not)
 }

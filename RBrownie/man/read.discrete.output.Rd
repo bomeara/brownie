@@ -5,7 +5,7 @@
 Read brownie output from discrete analysis
 }
 \description{
-This function processes output returned from the brownie core before passing it on to read.analysis.output.
+This function processes output returned from the brownie core before passing it on to \code{read.analysis.output}.
 }
 \usage{
 read.discrete.output(filename, txt = NULL, show.warn = FALSE,...)

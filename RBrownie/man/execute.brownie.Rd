@@ -5,7 +5,7 @@
 Execute a brownie-formatted nexus file
 }
 \description{
-Use run.analysis instead - This is mainly a testing function.  It attempts to execute \code{filename} using the brownie core.
+Use \code{run.analysis} instead - This is mainly a testing function.  It attempts to execute \code{filename} using the brownie core.
 }
 \usage{
 execute.brownie(filename)
@@ -41,7 +41,7 @@ J. Conrad Stack
 \code{\link{run.analysis}}
 }
 \examples{
-
+# see run.analysis
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

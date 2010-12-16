@@ -2,7 +2,7 @@
 \alias{read.simmap}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Read simmap-formatted newick strings
+Read simmap-formatted newick strings (version 1.0)
 }
 \description{
 This function takes in a text string which contains a simmap-formatted newick string.  '{' and '}' are used in these strings to indicate subnodes and character states.

@@ -8,7 +8,7 @@ List valid continuous models
 List valid continuous state models to be used in various brownie analyses
 }
 \usage{
-brownie.models.continuous(with.desc = F)
+brownie.models.continuous(with.desc = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

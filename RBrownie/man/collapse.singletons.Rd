@@ -5,7 +5,7 @@
 Collapse singleton nodes 
 }
 \description{
-This function turns any singleton nodes (internal non-root nodes with degree = 2) into subnodes.  It uses the function addSubNodes to attach the nodes to a phylo4d_ext object.  These subnodes are positioned on the branch relative the the descendant node.  That is, the position of the subnode is the fraction of the branch length offset from that descendant node.
+This function turns any singleton nodes (internal non-root nodes with degree = 2) into subnodes.  It uses the function \code{addSubNodes} to attach the nodes to a phylo4d_ext object.  These subnodes are positioned on the branch relative to the descendant node.  
 }
 \usage{
 collapse.singletons(phy)
@@ -35,7 +35,7 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{hasSubNodes}}
 }
 \examples{
 

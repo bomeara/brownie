@@ -5,7 +5,7 @@
 Collapse zero-length branches
 }
 \description{
-This function is not being used at this point. Sister function of expand.singles -> converts internal nodes with zero-length branches into singletons (in phylo4 format).  Will only work if the zero-len branch is connected to a tip.
+This function is not being used at this point, but works. Sister function of expand.singles -> converts internal nodes with zero-length branches into singletons (in phylo4 format).  Will only work if the zero-len branch is connected to a tip.
 }
 \usage{
 collapse.to.singles(tree, by.name = NULL)
@@ -16,7 +16,7 @@ collapse.to.singles(tree, by.name = NULL)
 Phylo4 object 
 }
   \item{by.name}{
-If this is set then tipLabels are searched for this pattern and those nodes are collapsed.
+If this is set then tip labels are searched for this pattern and those nodes are collapsed. (see \code{tipLabels} function in phylobase).
 }
 }
 \details{

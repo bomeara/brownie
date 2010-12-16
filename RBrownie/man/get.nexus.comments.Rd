@@ -5,7 +5,7 @@
 Get comments from nexus text
 }
 \description{
-This function reads in a nexus file or uses supplied text and then returns the comments.  The comments start with [ and end with ].  This function may not work with multiline comments; don't use it expecting so.
+This function reads in a nexus file or uses supplied text and then returns the comments.  The comments start with [ and end with ].  This function may not work with multiline comments; don't expect it to do so. 
 }
 \usage{
 get.nexus.comments(finput, text = NULL)

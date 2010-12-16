@@ -5,7 +5,7 @@
 Add Discrete character models and reconstructions to brownie object
 }
 \description{
-This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to run a discrete character reconstruction.
+This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects).  This character string instructs the brownie program to run a discrete character reconstruction.
 }
 \usage{
 addDiscrete(obj, 
@@ -36,40 +36,35 @@ A brownie object (or list of brownie objects)
 The brownie core write the output of the analysis to this file (optional)
 }
   \item{model}{
-Allows you to specify whether to use a "USER"-specified model, a model where all rates are "EQUAL", a "REV"ersible model where q_ij=q_ji for all states i and j but are otherwise free to vary, or an "NONREV"ersible model where all rates can vary independently. (see \code{brownie.models.discrete()} for the full list of options)
+Allows you to specify whether to use a USER-specified model, a model where all rates are EQUAL, a REVersible model where \eqn{q_{ij} = q_{ji}} for all states i and j but are otherwise free to vary, or an NONREVersible model where all rates can vary independently. (see \code{brownie.models.discrete()} for the full list of options)
 }
   \item{model.state}{
 Which model state would you like to use?
 }
   \item{ratemat}{
-If model == "USER", then this is a vector containing information about rate parameters.  The model specification, except for the built-in types (equal, rev, nonrev), is grossly similar to PAUP's method for specifying which rates are constrained to be equal, plus allows fixing of certain values. 
+If model == \dQuote{USER}, then this is a vector containing information about rate parameters.  The model specification, except for the built-in types (equal, rev, nonrev), is grossly similar to PAUP's method for specifying which rates are constrained to be equal, plus allows fixing of certain values. 
 
-%% For example, the following rate matrix:
-%% 				\begin{tabular}{ l | c c r }
-%%                 to & 0 & 1 & 2 \\
-%%                 \hline
-%%                  0 & - & a & 0.5 \\
-%%                  1 & b & - & c \\
-%%                  2 & 0.0 & a & - \\
-%%                 \end{tabular} 
-%% 
-%% means that rate q01 (instantaneous rate going from state 0 to state 1), with value a, must also equal rate q21 but is otherwise unconstrained (so they are both optimized, but forced to take the same value), while q20 is forced to a rate value of 0.0. We could have specified any non-negative fixed value. Basically, all rates sharing a letter take the same optimized rate value, while those assigned a number have a fixed rate value. To specify the above rate matrix, the command would be "discrete model=user ratemat=(a 0.5 b c 0.0 a)"
-For example, a rate matrix might look like this "discrete model=user ratemat=(a 0.5 b c 0.0 a)".  
+\tabular{ccr}{ 
+- \tab a \tab 0.5\cr
+b \tab - \tab c\cr
+0.0 \tab a \tab -\cr
+}
+For example, the above rate matrix can be interpretted as follows: the rate \eqn{q_{01}} (instantaneous rate going from state 0 to state 1), with value a, must also equal rate \eqn{q_{21}} but is otherwise unconstrained (so they are both optimized, but forced to take the same value), while \eqn{q_{20}} is forced to a rate value of 0.0. We could have specified any non-negative fixed value. Basically, all rates sharing a letter take the same optimized rate value, while those assigned a number have a fixed rate value. To specify the above rate matrix, the command would be \dQuote{discrete model=user ratemat=(a 0.5 b c 0.0 a)} where the \code{ratetest} argument is set to the character string \dQuote{(a 0.5 b c 0.0 a)}.
 
-See \code{write.brownie.matrix} for help formatting matrices.
+See \code{\link{write.brownie.matrix}} for help converting R matrices into character strings for Brownie.
 }
   \item{freq}{
-The probability of each state at the root can be based on the "EMPIRICAL" distribution at the tips, can be "SET" by the user (using the statevector command), can be "OPTIMIZE"d as part of the model, can be set to "EQUILIBRIUM" frequencies (the frequencies expected with the optimized rate matrix given infinitely-long branches), or can be set to be "UNIFORM" (equal).
+The probability of each state at the root.  This can be based on the \dQuote{EMPIRICAL} distribution at the tips, or can be \dQuote{SET} by the user (using the \code{statevector} argument below), or can be \dQuote{OPTIMIZE}d as part of the model, or can be set to \dQuote{EQUILIBRIUM} frequencies (the frequencies expected with the optimized rate matrix given infinitely-long branches), or can be set to be \dQuote{UNIFORM} (equal).
 }
   \item{statevector}{
-Contains the user-specified probabilities of the ancestral states. Example: "discrete freq=user statevector=(0.4 0.6)" for a binary trait.  
-(see write.brownie.vector for help formatting)
+Contains the user-specified probabilities of the ancestral states. Example: \dQuote{discrete freq=user statevector=(0.4 0.6)} for a binary trait.  
+(see \code{\link{write.brownie.vector}} for help formatting)
 }
   \item{treeloop}{
-Should the analysis loop across the trees in \code{obj}?  To use a specific tree then run the \code{addChoose(tree=<TREENUM>)} before this command.
+Should the analysis loop across the trees in \code{obj}.  To use a specific tree then run the \code{addChoose(tree=<TREENUM>)} before this command.
 }
   \item{charloop}{
-Should the analysis loop across characters in \code{obj}?  To use a specific character then run the \code{addChoose(char=<CHARNUM>)} before this command.
+Should the analysis loop across characters in \code{obj}.  To use a specific character then run the \code{addChoose(char=<CHARNUM>)} before this command.
 }
   \item{allchar}{
 Estimates the model parameters using all the characters simultaneously, not based on a single character.

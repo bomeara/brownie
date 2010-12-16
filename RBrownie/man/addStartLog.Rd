@@ -24,10 +24,10 @@ A brownie object (or list of brownie objects)
 File to log to
 }
   \item{fileappend}{
-Should File be appended to?
+Should File be appended to.
 }
   \item{filereplace}{
-Should File be replaced?
+Should File be replaced.
 }
   \item{usetempfile}{
 Should a tempfile be written to (instead of file).  Not currently used.
@@ -55,7 +55,7 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{addEndLog}}
 }
 \examples{
 data(parrot)

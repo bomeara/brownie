@@ -5,7 +5,7 @@
 Add tipvariance command
 }
 \description{
-This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program use specific tipvariances.
+This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program use specific tip variances.
 }
 \usage{
 addTipvariance(obj, type = brownie.tvtypes()[1])
@@ -17,17 +17,17 @@ A brownie object (or list of brownie objects)
 }
   \item{type}{
 Observations of taxon means have uncertainty. By default, the program assumes that these values are known exactly. If you have measured these variances for each taxon (so that, for each measured character, the data matrix has the mean followed by the variance), choose Given. If you want estimate one tip variance across all the taxa, choose Same. If you want to assume no tip variance (one fewer parameter), choose None.
+
 (see brownie.tvtypes() for more information)
 }
 }
 \details{
 Note that if the tip variance type is set to given, values in the matrix are assumed to consist of a taxon average followed by the corresponding variance, so the matrix might be:
- taxon1   char1_mean  char1_variance  char2_mean  char2_variance  char3_mean  char3_variance...
- 
- taxon2   char1_mean  char1_variance  char2_mean  char2_variance  char3_mean  char3_variance...
- 
- taxon3   char1_mean  char1_variance  char2_mean  char2_variance  char3_mean  char3_variance...
-
+\tabular{llllllll}{
+taxon1 \tab  char1_mean \tab char1_variance \tab char2_mean \tab char2_variance \tab char3_mean \tab char3_variance \tab ... \cr
+taxon2 \tab char1_mean \tab char1_variance \tab char2_mean \tab char2_variance \tab char3_mean \tab char3_variance \tab ... \cr
+taxon3 \tab char1_mean \tab char1_variance \tab char2_mean \tab char2_variance \tab char3_mean \tab char3_variance \tab ... \cr
+}
 This differs somewhat from the NEXUS specification (Maddison et al, 1997), which would use an ITEMS=(AVERAGE VARIANCE) command and a somewhat different matrix.
 }
 \value{

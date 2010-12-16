@@ -5,7 +5,7 @@
 Do taxa form a monophyletic clade
 }
 \description{
-Check whether or not a set of taxa (existing withing taxasets()) together form a monophyletic clade.
+Check whether or not a set of taxa (existing withing \code{taxasets()}) together form a monophyletic clade.
 }
 \usage{
 areTaxaMono(x, taxindex)
@@ -20,7 +20,7 @@ The column index of the taxaset to be checked
 }
 }
 \details{
-Use the command \code{taxasets(x)} to see which taxasets are available for checking.  If the taxindex entered is greater than the number of taxasets then this command simply returns false and a warning.  The \code{taxasets(x)} command can also be assigned to in order to create new taxasets.
+Use the command \code{taxasets(x)} to see which taxasets are available for checking.  If the \code{taxindex} entered is greater than the number of taxasets then this command simply returns false and a warning.  The \code{taxasets(x)} command can also be assigned to in order to create new taxasets.
 }
 \value{
 True if the taxa form a monophyly, false otherwise.

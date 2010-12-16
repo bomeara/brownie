@@ -25,4 +25,4 @@
 \item{\code{signature(x = "phylo4d")}}{ Convert to phylo4d_ext }
 }}
 \keyword{methods}
-\keyword{ ~~ other possible keyword(s)}
+

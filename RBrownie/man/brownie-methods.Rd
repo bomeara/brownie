@@ -7,7 +7,7 @@
 \alias{brownie,phylo4d-method}
 \title{ Methods for generic brownie constructor function }
 \description{
- These functions all create brownie objects out of objects that the brownie class extends (or is related to).
+These functions all create brownie objects out of objects that the brownie class extends (or is related to).
 }
 \section{Methods}{
 \describe{
@@ -20,10 +20,9 @@
 
 \item{\code{signature(x = "phylo4d")}}{ Calls \code{new} function to create a brownie object.  If there is data in the \code{data} slot of the phylo4d object, then brownie attempts to guess the correct datatype. 
 
-There is an argument that can be passed to this function called \code{known.types} where you can specify which datatypes you want to use for each column in the \code{data} slot's data.frame.   
+There is an argument that can be passed to this function called \code{known.types} where you can specify which datatypes you want to use for each column in the \code{data} slot.
 
-See the RBrownie:::.guess.datatype function for how brownie guesses datatypes and the \code{\link{brownie.datatypes}} function to enumerate the valid datatypes.
+See the \code{RBrownie:::.guess.datatype} function for how brownie guesses datatypes and the \code{\link{brownie.datatypes}} function to enumerate the valid datatypes.
 }
 }}
 \keyword{methods}
-\keyword{ ~~ other possible keyword(s)}

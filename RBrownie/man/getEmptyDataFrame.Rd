@@ -5,19 +5,22 @@
 Get empty data.frame 
 }
 \description{
-Get an empty data.frame with the same structure and names of the input data.frame.
+Get an empty data frame with the same structure and column names of the input data frame
 }
 \usage{
-getEmptyDataFrame(x)
+getEmptyDataFrame(x, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-A data.frame
+The data frame whose structure is to be copied
+}
+  \item{...}{
+Arguments passed to data.frame() function
 }
 }
 \details{
-This is mainly an internal function, but can be used to generate subnode dataframes.
+This is mainly an internal function used to generate subnode dataframes.
 }
 \value{
 An empty data.frame

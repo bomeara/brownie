@@ -5,7 +5,7 @@
 Expand singletons
 }
 \description{
-This function expands singleton nodes into bifurcating nodes with one zero-length branch.  This isn't much and was originally used to convert phylo4 objects with singletons into phylo objects ('ape').  
+This function expands singleton nodes into bifurcating nodes with one zero-length branch.  This isn't much and was originally used to convert phylo4 objects with singletons into phylo objects ('ape').  This adds new taxa and assigns them a unique identifiier name. 
 }
 \usage{
 expand.singles(tree)

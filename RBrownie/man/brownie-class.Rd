@@ -33,11 +33,11 @@
 \alias{writeBrownie,list-method}
 
 \title{Class "brownie" }
-\description{ Brownie class }
+\description{ The Brownie class }
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("brownie", ...)} or by calls to brownie()
+Objects can be created by calls of the form \code{new("brownie", ...)} or by calls to \code{brownie()}
 
-The 'brownie' S4 object builds off of the phylo4d_ext class, itself chiefly designed as an intermediary between phylo4d and brownie classes.  The brownie class should contain all the information necessary to run various brownie analyses.  
+The 'brownie' S4 class extends the phylo4d_ext class which is itself an intermediary between phylo4d and brownie classes.  The brownie class should contain all the information necessary to run various brownie analyses.  
 
 For that reason it supports subnodes (through \code{phylo4d_ext} objects) which are subnodes placed between nodes on a phylogenetic tree (and currently written out in SIMMAP v1.0 format).  It supports three different datatypes: taxasets (binary columns in the data slot which indicate membership in a taxaset with a value of 1), discrete data (data which you would want to represent as factors), and continuous data (numeric data).  It supports "commands", which are the actual text strings that are fed into the brownie core instructing it to carry out certain actions.  
 
@@ -48,11 +48,11 @@ RBrownie does not use a proprietary class to house multiple phylogenetic trees (
   \describe{
     \item{\code{commands}:}{ Character string brownie commands }
     \item{\code{datatypes}:}{ Datatype values describing the data slot columns }
-    \item{\code{subnode.id}:}{ Subnodes identifier.  Not really used }
-    \item{\code{subnode.data}:}{ Data.frame which has the same structure as the data slot}
-    \item{\code{subnode.branch}:}{ Which branch a subnode exists on }
-    \item{\code{subnode.pos}:}{Where on the branch the subnode is positioned (relative to the descendant node as a fraction)}
-    \item{\code{weight}:}{ The tree weight }
+    \item{\code{subnode.id}:}{ Inherited from phylo4d_ext }
+    \item{\code{subnode.data}:}{ Inherited from phylo4d_ext }
+    \item{\code{subnode.branch}:}{ Inherited from phylo4d_ext }
+    \item{\code{subnode.pos}:}{ Inherited from phylo4d_ext }
+    \item{\code{weight}:}{ Inherited from phylo4d_ext }
     \item{\code{data}:}{ Inherited from phylo4d }
     \item{\code{metadata}:}{ Inherited from phylo4d }
     \item{\code{edge}:}{ Inherited from phylo4d }
@@ -98,7 +98,7 @@ Brownie object are mainly translated as standard NEXUS files with a few importan
 \note{}
 
 \seealso{
-
+\linkS4class{phylo4d_ext}
 }
 \examples{
 showClass("brownie")

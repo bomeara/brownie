@@ -9,7 +9,7 @@ plot(junkrun$trees[[1]])
 
 # Noncensored ("cont")
 junk = readBrownie("parrot.nex")
-junkrun=runNonCensored(junk,brfile="cont_junk.txt",models=brownie.models.continuous()[1:2],treeloop=T,charloop=T)
+junkrun=runNonCensored(junk,brfile="cont_junk.txt",models=brownie.models.continuous()[1:5],treeloop=T,charloop=T)
 junkrun
 summaryCont(junkrun)
 

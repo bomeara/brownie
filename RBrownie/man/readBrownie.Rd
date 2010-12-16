@@ -5,7 +5,7 @@
 Read in a brownie formatted nexus file
 }
 \description{
-This function reads a brownie-formatted nexus file into a brownie object.  The nexus blocks it reads are: TAXA, TREES, CHARACTERS, CHARACTERS2, ASSUMPTIONS, and BROWNIE. 
+This function reads a brownie-formatted nexus file into a brownie object.  The nexus blocks it reads are: TAXA, TREES, CHARACTERS, CHARACTERS2, ASSUMPTIONS, and BROWNIE.  All other blocks are ignored.
 }
 \usage{
 readBrownie(fname)

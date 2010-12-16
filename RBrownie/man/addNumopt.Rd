@@ -5,7 +5,7 @@
 Add numerical optimization command to brownie object
 }
 \description{
-This function adds a character string to the the commands slot of a brownie object (or list of brownie objects) which instructs the brownie program to set certain variables when performing numerical optimization.
+This function adds a character string to the the commands slot of a brownie object (or list of brownie objects).  This character string instructs the brownie program to set certain variables for future numerical optimization.
 }
 \usage{
 addNumopt(obj, 

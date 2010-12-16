@@ -295,7 +295,7 @@ strip<-function(str,left=TRUE,right=TRUE)
 	if(left)
 		str = sub("^[ \t\n]+","",str)
 	if(right)
-		str = sub("[ \t]+$","",str)
+		str = sub("[ \t\n]+$","",str)
 	return(str)
 }
 
@@ -303,6 +303,14 @@ strip<-function(str,left=TRUE,right=TRUE)
 #
 read.simmap.new <- function(file="",text=NULL)
 {	
+
+	str.has <- function(patt,token,lowercase=T){
+		len = length(grep(sprintf("%s",patt),tolower(token)))
+		if(len == 1)
+			return(TRUE)
+		return(FALSE)
+	}
+	
 	if(is.null(text))
 	{
 		if(file.exists(file)){

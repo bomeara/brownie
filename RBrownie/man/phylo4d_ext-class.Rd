@@ -37,11 +37,10 @@
 \alias{weight<-,phylo4d_ext-method}
 \alias{weight<-,list-method}
 
-\title{Class "phylo4d_ext" ~~~ }
+\title{Class "phylo4d_ext" }
 \description{ This class extends phylo4d in adding support for subnodes (not singletons) and tree weights.  }
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("phylo4d_ext", ...)}.
-	 ~~ describe objects here ~~ 
 }
 \section{Slots}{
   \describe{

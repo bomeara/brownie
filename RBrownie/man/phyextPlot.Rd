@@ -5,7 +5,7 @@
 Plot phylo4d_ext object
 }
 \description{
-This function plots a phylo4d_ext object.  Branches and nodes in different states can be colored.  If subnodes exist it also plots these on the tree, showing them on the exact position they actually occur.   This plotting function is an extension to treePlot in phylobase.  It was created to plot discrete data states on top of a tree.  
+This function plots a phylo4d_ext object.  Branches and nodes in different states can be colored.  If subnodes exist it also plots these on the tree, showing them on the exact position they actually occur.  This plotting function is an extension to treePlot in phylobase.  It was created to plot discrete data states on top of a tree.
 }
 \usage{
 phyextPlot(x, 

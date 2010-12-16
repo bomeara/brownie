@@ -22,7 +22,7 @@ Alternatively, look through this text
 The block name to look for
 }
   \item{rm.comments}{
-Logical. Should comments be removed?  This option is experimental at the moment and does not work for multiline comments.
+Logical. Should comments be removed?  This option is experimental at the moment and does not work for multiline comments. 
 }
   \item{silent}{
 Verbose output?

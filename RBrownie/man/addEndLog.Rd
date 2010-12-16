@@ -5,7 +5,7 @@
 Add log stop command to brownie object
 }
 \description{
-This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to stop logging to a certain file.  (Be careful when using this.  Logging doesn't seem stable in the brownie core).
+This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to stop logging to a certain file.  (Be careful when using this.  Logging from within the Brownie program is not always stable).
 
 }
 \usage{
@@ -40,7 +40,7 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{addStartLog}}
 }
 \examples{
 

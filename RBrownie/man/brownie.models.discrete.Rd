@@ -8,7 +8,7 @@ List valid discrete models
 List valid discrete state models to be used in various brownie analyses
 }
 \usage{
-brownie.models.discrete(with.desc = F)
+brownie.models.discrete(with.desc = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

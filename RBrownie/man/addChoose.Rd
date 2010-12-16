@@ -5,7 +5,7 @@
 Add choose command to a brownie object (or list of brownie objects)
 }
 \description{
-This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to "choose" or select a certain tree, continuous or discrete character for further analysis.
+This function adds a character string to the the \code{commands} slot of a brownie object (or list of brownie objects) which instructs the brownie program to use a certain tree or continuous or discrete character in later analysis in the \code{commands} slot.
 }
 \usage{
 addChoose(obj, char = NULL, tree = NULL, discchar = NULL)
@@ -16,17 +16,17 @@ addChoose(obj, char = NULL, tree = NULL, discchar = NULL)
 A brownie object (or list of brownie objects)  
 }
   \item{char}{
-Choose a certain continuous character for analysis.
+Index (integer) of the continuous character to use.
 }
   \item{tree}{
-Choose a certain tree character for analysis.
+Index (integer) of the tree to use.
 }
   \item{discchar}{
-Choose a certain discrete character for analysis.
+Index (integer) of the discrete character to use.
 }
 }
 \details{
-The 'choose' command instructs the brownie core to use a certain parameter for further analysis.  Only use one of the options.
+The sQuote{choose} command instructs the brownie core to use a certain parameter for further analysis.   The \code{commands} slot is read sequentially by the Brownie program, so any sQuote{choose} commands should be placed above the analyses they are meant to effect.  Also note that this command is \emph{not} additive, meaning that consecutive sQuote{choose} commands using the same argument will not use both arguments, just the later.
 
 From brownie core:
 Selects one tree and/or character to use for subsequent analyses. Continuous characters are chosen by default ('char=' or 'c='), discrete characters must be chosen using 'discretechar=' or 'd='.
@@ -61,6 +61,7 @@ ptmp = clearCommands(parrot)
 ptmp = addChoose(ptmp,char=5)
 ptmp = addChoose(ptmp,tree=2)
 ptmp = addChoose(ptmp,discchar=1)
+#ptmp = addChoose(ptmp,discchar=2) # this would change the discchar from 1 to 2
 commands(ptmp)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

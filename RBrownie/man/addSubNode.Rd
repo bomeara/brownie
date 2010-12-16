@@ -8,12 +8,12 @@ Add subnode to phylo4d_ext object
 Add a subnode to phylo4d_ext object.  
 }
 \usage{
-addSubNode(x, anc, dec, position, dataf)
+addSubNode(x, anc, dec, position, dataf, pos.is.fraction = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-is a phylo4d_ext object 
+a phylo4d_ext object
 }
   \item{anc}{
 Node id of the ancestor on the branch on which the subnode is to be added
@@ -22,14 +22,17 @@ Node id of the ancestor on the branch on which the subnode is to be added
 Node id of the descendant on the branch on which the subnode is to be added
 }
   \item{position}{
-The position on the branch where the subnode is to be placed.  Position is currently a 2 column matrix - this is because it will eventually be used to store confidence intervals.  For now it just the proportion of the branch starting from the ancestor.
+The position on the branch where the subnode is to be placed.  It is stored as a faction of the branches' total length.
 }
   \item{dataf}{
-a data.frame object which mimics the structure of the the data slot.  It contains the subnode data (which is why it should look similar to data).
+a data.frame object which should be structurally similar to the data frame of the phylo4d object (data slot).  It should contain data entries for the subnode.
+}
+  \item{pos.is.fraction}{
+Specify whether \code{position} argument a fraction of the branch length or an absolute number.
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+This is the main function in RBrownie for adding subnodes manually.  It is used internally when reading in SIMMAP-formatted newick trees and can also be used to edit
 }
 \value{
 Returns \code{x} with a new subnode added.
@@ -47,7 +50,8 @@ Returns \code{x} with a new subnode added.
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{phyext}}
+\code{\link{phyext}},
+\code{\link{phyextPlot}}
 }
 \examples{
 

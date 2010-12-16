@@ -45,7 +45,7 @@ J. Conrad Stack
 }
 \examples{
 data(parrot)
-numbcontaining = checkPara(parrot,2,percent=FALSE)
+numbcontaining = checkPara(parrot,2,percent=FALSE)  # check is the 2nd taxaset forms a paraphyly
 numb = length(parrot)
 numbcontaining / numb
 }

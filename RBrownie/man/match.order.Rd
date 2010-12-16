@@ -1,19 +1,22 @@
-\name{brownie.freqs}
-\alias{brownie.freqs}
+\name{match.order}
+\alias{match.order}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-List frequencies
+Matching orders
 }
 \description{
-List valid frequencies used in different brownie analyses
+Internal function for \code{read.simmap.new}: Match the order of one list ot the order of another
 }
 \usage{
-brownie.freqs(with.desc = FALSE)
+match.order(basevec, cmpvec)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{with.desc}{
-%%     ~~Describe \code{with.desc} here~~
+  \item{basevec}{
+The vector whose order that is to be matched to
+}
+  \item{cmpvec}{
+The vector whose order needs to be changed
 }
 }
 \details{
@@ -30,7 +33,7 @@ brownie.freqs(with.desc = FALSE)
 %% ~put references to the literature/web site here ~
 }
 \author{
-J. Conrad Stack
+%%  ~~who you are~~
 }
 \note{
 %%  ~~further notes~~
@@ -42,9 +45,7 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ methods }% __ONLY ONE__ keyword per line
+
+\keyword{ methods }
+

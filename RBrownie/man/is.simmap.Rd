@@ -8,7 +8,7 @@ Check SIMMAP v1.0
 Check if text of file contains a SIMMAP-formatted (v1.0) newick file
 }
 \usage{
-is.simmap(finput = "", text = NULL)
+is.simmap(finput = "", text = NULL, vers=c(1.1,1.5))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -18,9 +18,12 @@ A newick file
   \item{text}{
 Newick file text
 }
+  \item{vers}{
+Which simmap version to use
+}
 }
 \details{
-This function looks for '{' and '}' characters in the text which would indicate that it is a SIMMAP-formatted file
+This function looks for '{' and '}' (or '[' and ']' depending on vers) characters in the text which would indicate that it is a SIMMAP-formatted file.  Currently, versions 1.0 and 1.1 are supported.
 }
 \value{
 Logical

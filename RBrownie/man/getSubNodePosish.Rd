@@ -17,13 +17,13 @@ A phylo4d_ext
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+
 }
 \value{
 A two-column matrix with the positions 
 }
 \references{
-%% ~put references to the literature/web site here ~
+
 }
 \author{
 J. Conrad Stack

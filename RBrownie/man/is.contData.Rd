@@ -10,7 +10,6 @@ Check if the data vector contains continuous data
 \usage{
 is.contData(dat)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{dat}{
 A data vector

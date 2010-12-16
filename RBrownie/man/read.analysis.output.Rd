@@ -5,7 +5,7 @@
 Read brownie output to data.frame
 }
 \description{
-Method to scan a brownie output file and return it as a dataframe Brownie generally output multiple header lines, these need to be removed before the dataframe is returned.  This is chiefly an internal function, but could be used by developers.
+Method to scan a brownie program's output and return it as a data frame. Brownie generally output multiple header lines along with the actual raw numbers, these need to be removed before the data frame is returned.  This is chiefly an internal function.
 }
 \usage{
 read.analysis.output(filename, txt = NULL, rowsep = "\n", colsep = "\t")
@@ -43,10 +43,8 @@ J. Conrad Stack
 %%  ~~further notes~~
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+
 }
 \examples{
 

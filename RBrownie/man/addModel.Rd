@@ -20,9 +20,16 @@ addModel(obj,
 A brownie object (or list of brownie objects)
 }
   \item{type}{
-A model of the following type: BM1 = Brownian motion, one rate parameter. BMS = Brownian motion, with different rate parameters for each state on a tree. BMC = Brownian motion, with one rate parameter for branches with state changes and another for branches without changes.  OUSM = Ornstein-Uhlenbeck with one mean per discrete state (attraction and rate parameters constant across tree).  OUCM = Ornstein-Uhlenbeck with independent means on branches with and without changes in a discrete character (attraction and rate parameters constant across tree).
-
-(see \code{brownie.models.continuous()} for more information)
+A model of the following type:
+	\itemize{
+	\item{BM1 = Brownian motion, one rate parameter.}
+	\item{BMS = Brownian motion, with different rate parameters for each state on a tree.}
+	\item{BMC = Brownian motion, with one rate parameter for branches with state changes and another for branches without changes.}
+	\item{OUSM = Ornstein-Uhlenbeck with one mean per discrete state (attraction and rate parameters constant across tree).}
+	\item{OUCM = Ornstein-Uhlenbeck with independent means on branches with and without changes in a discrete character (attraction and rate parameters constant across tree).}
+	}
+	
+See \code{brownie.models.continuous()} for more information on each option.
 }
   \item{states}{
 State vector allows restrictions, so that character states 0 and 2, for example, may be viewed by the program as identical. Example: state=(0 1 0 2 3 4 5 6 7 8)

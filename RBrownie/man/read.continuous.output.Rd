@@ -5,7 +5,7 @@
 Read brownie output from Noncensored analysis
 }
 \description{
-This function processes output returned from the brownie core before passing it on to read.analysis.output.
+This function processes output returned from the brownie core before passing it on to \code{read.analysis.output}.
 }
 \usage{
 read.continuous.output(filename, txt = NULL, ...)

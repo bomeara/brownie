@@ -1,23 +1,29 @@
-\name{brownie.freqs}
-\alias{brownie.freqs}
+\name{strip}
+\alias{strip}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-List frequencies
+Strip whitespace 
 }
 \description{
-List valid frequencies used in different brownie analyses
+Internal function:  strip whitespace from the ends of a string
 }
 \usage{
-brownie.freqs(with.desc = FALSE)
+strip(str, left = TRUE, right = TRUE)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
-  \item{with.desc}{
-%%     ~~Describe \code{with.desc} here~~
+  \item{str}{
+A string
+}
+  \item{left}{
+Strip white space from left end of string
+}
+  \item{right}{
+Strip white space from right end of string
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+
 }
 \value{
 %%  ~Describe the value returned
@@ -30,7 +36,7 @@ brownie.freqs(with.desc = FALSE)
 %% ~put references to the literature/web site here ~
 }
 \author{
-J. Conrad Stack
+%%  ~~who you are~~
 }
 \note{
 %%  ~~further notes~~
@@ -42,9 +48,8 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-
+strip("\tthisis the function\n\n")
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ methods }% __ONLY ONE__ keyword per line
+
+\keyword{ methods }
+

@@ -5,7 +5,7 @@
 Read brownie output from Censored ratetest analysis
 }
 \description{
-This function processes output returned from the brownie core before passing it on to read.analysis.output.
+This function processes output returned from the brownie core before passing it on to \code{read.analysis.output}.
 }
 \usage{
 read.ratetest.output(filename, txt = NULL, ...)

@@ -5,7 +5,7 @@
 Get right and left tokens
 }
 \description{
-Get character tokens to the left and right of char
+Internal function.  Get character tokens to the left and right of char
 }
 \usage{
 get.left.right(str, char)

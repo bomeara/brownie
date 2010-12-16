@@ -8,7 +8,7 @@ List tipvariance types
 List valid tipvariances to be used in brownie analyses.
 }
 \usage{
-brownie.tvtypes(with.desc = F)
+brownie.tvtypes(with.desc = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

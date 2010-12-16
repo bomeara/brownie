@@ -64,7 +64,7 @@ is.contData <- function(dat)
 
 ## Valid brownie models
 #
-brownie.models.continuous <- function(with.desc=F)
+brownie.models.continuous <- function(with.desc=FALSE)
 {
 	brownie_model_options = c(
 		"BM1",
@@ -89,7 +89,7 @@ brownie.models.continuous <- function(with.desc=F)
 }
 
 
-brownie.models.discrete <- function(with.desc=F)
+brownie.models.discrete <- function(with.desc=FALSE)
 {
 	brownie_model_options = c(
 		"EQUAL",
@@ -113,7 +113,7 @@ brownie.models.discrete <- function(with.desc=F)
 
 
 
-brownie.freqs <- function(with.desc=F)
+brownie.freqs <- function(with.desc=FALSE)
 {
 	brownie_freqs_options = c(
 		"EMPIRICAL",
@@ -138,7 +138,7 @@ brownie.freqs <- function(with.desc=F)
 }
 
 # tipvariance types
-brownie.tvtypes <- function(with.desc=F)
+brownie.tvtypes <- function(with.desc=FALSE)
 {
 	brownie_freqs_options = c(
 		"None",

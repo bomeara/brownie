@@ -5,7 +5,7 @@
 Read node names from newick text
 }
 \description{
-Internal function to help processing SIMMAP text.
+Internal function to help processing SIMMAP newick files.
 }
 \usage{
 get.nodenames(newick.txt)

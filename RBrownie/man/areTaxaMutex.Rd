@@ -23,7 +23,7 @@ An indefinite number of taxaset column indices.  See example below.
 This function is still relatively experimental.
 }
 \value{
-TRUE if the taxaset column indices in ... are mutually exclusive.
+TRUE if the taxaset column indices in \code{...} are mutually exclusive.
 }
 \references{
 %% ~put references to the literature/web site here ~

@@ -7,7 +7,7 @@
 \alias{hasTaxasets,phylo4d-method}
 \title{ Check if there are taxasets}
 \description{
-Check if there are any taxasets
+Check if an object contains any taxa sets.
 }
 \section{Methods}{
 \describe{
