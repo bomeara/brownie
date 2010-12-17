@@ -88,7 +88,7 @@ Class \code{"\linkS4class{phylo4}"}, by class "phylo4d", distance 2.
 }
 \references{ ~put references to the literature/web site here ~ }
 \author{ J. Conrad Stack }
-\note{ ~~further notes~~ }
+\note{ }
 
 \seealso{
 	\code{\linkS4class{phylo4d}}
