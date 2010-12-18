@@ -74,10 +74,13 @@ public:
 	gsl_matrix *currentdiscretecharQmatrix;
 	gsl_vector *currentdiscretecharstatefreq;	
 	int discretechosenmodel;
+	int geneEvolutionSamplingType;
+	int geneEvolutionChosenModel;
 /*	double E_discretegeneral(void *xp);
 	double M_discretegeneral(void *xp, void *yp);
 	void S_discretegeneral(const gsl_rng * r, void *xp, double step_size);*/
 	int discretechosenstatefreqmodel;
+	int geneevolutionchosenstatefreqmodel;
 	int numbercharstates;
 	int localnumbercharstates;
 	bool allchar;
@@ -237,6 +240,7 @@ public:
 	void SimulateCharacters(int n, int chartype, nxsstring outputfilename, bool treeloop);
 	void HandlePagelDiscrete( NexusToken& token);
 	void HandleLoss( NexusToken& token );
+	void HandleGeneEvolution( NexusToken& token);
 	void FindFixedDiscreteModel();
     void NumOpt( NexusToken& token);
 	void DoExhaustiveSearch();
@@ -257,12 +261,14 @@ public:
 	static double GetLikelihoodUnderLindy2_gsl( const gsl_vector * variables, void *obj) ;
 	static double GetDiscreteCharLnL_gsl( const gsl_vector * variables, void *obj) ;
 	double GetDiscreteCharLnL(const gsl_vector * variables);
-
+	static double GetGeneEvolutionLnL_gsl( const gsl_vector * variables, void *obj) ;
+	double GetGeneEvolutionLnL(const gsl_vector * variables);
 	double GetLikelihoodUnderLindy2(const gsl_vector * variables);
 	static double GetLikelihoodUnderLindy1_gsl( const gsl_vector * variables, void *obj) ;
 	double GetLikelihoodUnderLindy1(const gsl_vector * variables);
 	gsl_vector * LindyGeneralOptimization(int ChosenModel);
     gsl_vector* DiscreteGeneralOptimization();	
+    gsl_vector* GeneEvolutionOptimization();	
     gsl_vector* DiscreteGeneralConfidence();	
 	gsl_matrix* ComputeTransitionProb(gsl_matrix *RateMatrix, double brlen);
 	gsl_matrix* ComputeTransitionProbBuiltInFn(gsl_matrix *RateMatrix, double brlen);

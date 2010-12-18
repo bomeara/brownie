@@ -258,6 +258,9 @@ void BROWNIE::FactoryDefaults()
 	bestdiscretelikelihood=GSL_POSINF;
 	optimizationalgorithm=1;
 	discretechosenstatefreqmodel=3;
+	geneevolutionchosenstatefreqmodel=4;
+	geneEvolutionSamplingType=0;
+	geneEvolutionChosenModel=1;
 	allchar=false;
 	globalstates=false;
 	variablecharonly=false;
@@ -7077,6 +7080,261 @@ void BROWNIE::HandleLoss ( NexusToken& token )
     }
 }
 
+void BROWNIE::HandleGeneEvolution ( NexusToken& token) 
+{
+	bool donesomething=false;
+    bool donenothing=true;
+ 	nxsstring tmessage;
+    ofstream tablef;
+    nxsstring tablefname;
+    bool tablef_open=false;
+    bool name_provided=false;	
+	bool appending=true;
+	bool replacing=false;
+    for(;;)
+	{
+        token.GetNextToken();
+		
+        if( token.Equals(";") ) {
+			if (donesomething==false) { 
+								if( appending && replacing ) {
+					errormsg = "Cannot specify APPEND and REPLACE at the same time";
+					throw XNexus( errormsg, token.GetFilePosition(), token.GetFileLine(), token.GetFileColumn() );
+				}		
+				bool exists = FileExists( tablefname.c_str() );
+				bool userok = true;
+				if (appending && name_provided) {
+					tablef_open = true;
+					tablef.open( tablefname.c_str(), ios::out | ios::app );
+					message = "\nAppending to discrete model output file (creating it if need be) ";
+					message += tablefname;
+					PrintMessage();
+				}
+				else if (name_provided) {
+					if( exists && !replacing && !UserSaysOk( "Ok to replace?", "Gene evolution model output file specified already exists" ) )
+						userok = false;
+					if( userok && !tablef_open) {
+						tablef_open = true;
+						tablef.open( tablefname.c_str() );
+					}
+					if( exists && userok ) {
+						message = "\nReplacing gene evolution model output file ";
+						message += tablefname;
+					}
+					else if( userok ) {
+						message = "\nGene evolution model output file ";
+						message += tablefname;
+						message += " opened";
+					}
+					else {
+						errormsg = "Aborting the gene evolution run so as not to overwrite the file.\n";
+						throw XNexus( errormsg, token.GetFilePosition(), token.GetFileLine(), token.GetFileColumn() );
+					}
+					PrintMessage();
+				}
+
+			}
+			
+			
+            break;
+        }
+		else if( token.Abbreviation("Replace") ) {
+            nxsstring yesnoreplace=GetFileName(token);
+            if (yesnoreplace[0] == 'n') {
+                replacing=false;
+            }
+            else {
+                replacing=true;
+				appending=false;
+            }
+        }
+        else if( token.Abbreviation("APpend") ) {
+            nxsstring yesnoappend=GetFileName(token);
+            if (yesnoappend[0] == 'n') {
+                appending=false;
+            }
+            else {
+                appending=true;
+            }
+        }
+		else if( token.Abbreviation("File") ) {
+            tablefname = GetFileName(token);
+            name_provided = true;
+        }		
+		else if( token.Abbreviation("Sampling") ) {
+            nxsstring chosensamplinginput=GetFileName(token);
+            if (token.Abbreviation("Complete")) {
+                geneEvolutionSamplingType=0;
+				message="You have assumed that all species are sampled completely";
+                PrintMessage();
+            }
+            else if (token.Abbreviation("Single")) {
+                geneEvolutionSamplingType=1;
+				message="You have chosen to estimate the same sampling proportion for all species";
+                PrintMessage();
+            }
+            else if (token.Abbreviation("Individual")) {
+                geneEvolutionSamplingType=2;
+				message="You have chosen to estimate the sampling proportion for each species independently";
+                PrintMessage();
+            }
+     	}
+		else if( token.Abbreviation("Model") ) {
+            nxsstring chosenmodelinput=GetFileName(token);
+            if (token.Abbreviation("Equalbirthdeath")) {
+                geneEvolutionChosenModel=1;
+				message="Equal birth death rates for genes";
+                PrintMessage();
+            }
+            else if (token.Abbreviation("Freebirthdeath")) {
+                geneEvolutionChosenModel=2;
+				message="Birth rates and death rates for genes may be unequal";
+                PrintMessage();
+            }
+            else if (token.Abbreviation("Densitydependent")) {
+                geneEvolutionChosenModel=2;
+				message="There is density dependence for gene number";
+                PrintMessage();
+            }
+     	}
+     	
+     			
+
+     	else if( token.Abbreviation("Freq") )  {
+            nxsstring chosenmodelinput=GetFileName(token);
+            if (token.Abbreviation("Uniform")) {
+				geneevolutionchosenstatefreqmodel=1;
+				message="You have chosen equal frequencies for all observed gene families";
+                PrintMessage();
+            }
+            else if(token.Abbreviation("EMpirical")) {
+				geneevolutionchosenstatefreqmodel=2;
+                message="You have chosen to use empirical frequencies";
+                PrintMessage();
+            }
+            else if(token.Abbreviation("EQuilibrium")) {
+				//geneevolutionchosenstatefreqmodel=3;
+                message="You have chosen to use equilibrium state frequencies, but we can't, so nothing has changed";
+                PrintMessage();
+            }
+            else if(token.Abbreviation("Optimized")) {
+				geneevolutionchosenstatefreqmodel=4;
+                message="You have chosen to choose the optimum frequency at the root";
+                PrintMessage();
+            }
+			else if(token.Abbreviation("User")) {
+				discretechosenstatefreqmodel=5;
+                message="You have chosen to use user-set gene tree family sizes at the root";
+                PrintMessage();
+            }
+            else {
+                errormsg = "Unexpected option (";
+                errormsg += chosenmodelinput;
+                errormsg += ") encountered reading Freq command";
+                throw XNexus( errormsg);
+            }
+        }	
+		else if( token.Abbreviation("Statevector") ) { //start at 0 and go up as high as user wants
+			if (debugmode) {
+				cout<<"Now reading statevector"<<endl;
+			}
+            token.GetNextToken();
+            token.GetNextToken(); //eat the equals sign
+            vector<double> temporarystatevector;
+            if (!token.Equals("(")) {
+                errormsg="Expecting next token to be a \'(\' but instead got ";
+                errormsg+=token.GetToken();
+                throw XNexus( errormsg);
+            }
+            int inputcount=0;
+            while (!token.Equals(")")) {
+                nxsstring numbernexus;
+                numbernexus=GetNumberOnly(token);
+				if (debugmode) {
+					cout<<"pushing back with "<<numbernexus<<endl;
+				}
+                if (numbernexus!=")") {
+                    temporarystatevector.push_back(atof( numbernexus.c_str() ));
+                    inputcount++;
+                }
+                else {
+                    break;
+                }
+            }
+			if (debugmode) {
+				cout<<"finished with the pushback step"<<endl;
+			}
+			
+			//int numbercharstates=(discretecharacters->GetObsNumStates(discretechosenchar));
+
+				double sumoffreqs=0;
+				for (int i=0; i<temporarystatevector.size(); i++) {
+					sumoffreqs+=temporarystatevector[i];
+				}
+                userstatefreqvector.clear();
+				message="Entering user frequencies of ( "; 
+                for (int i=0; i<temporarystatevector.size(); i++) {
+                    userstatefreqvector.push_back((temporarystatevector[i])/sumoffreqs);
+					message+=userstatefreqvector[i];
+					message+=" ";
+                }
+				message+=")";
+				PrintMessage();
+				
+            
+        }		
+          else if( token.Abbreviation("?") ) {
+			donesomething=true;
+            message="Usage: GeneEvolution sampling=<string> model=<string> freq=<string> statevector=<string> [file=] [append=] [replace=]\n\n";
+			message+="This is a function to estimate gene loss and gain rates (follows Hahn et al. 2005 model). This implementation allows for the possibility of estimating\n";
+			message+="the proportion of missing sequences for the species, either together or individually.\n";
+            message+="Available options:\n\n";
+            message+="Keyword ------- Option type ----------------------------- Current setting -----";
+			message+="\n Sampling       <string>                                  ";
+			if (geneEvolutionSamplingType==0) {
+				message+="Complete";
+			}
+			else if (geneEvolutionSamplingType==1) {
+				message+="Single";
+			}
+			else if (geneEvolutionSamplingType==2) {
+				message+="Individual";
+			}
+			message+="\n Model          <string>                                  ";
+			if (geneEvolutionChosenModel==1) {
+				message+="EqualBirthDeath";
+			}
+			else if (geneEvolutionChosenModel==2) {
+				message+="FreeBirthDeath";
+			}
+			else if (geneEvolutionChosenModel==3) {
+				message+="DensityDependent";
+			}
+			
+	
+			message+="\n File           <file name>                               *None";
+			message+="\n Append         No|Yes                                    *Yes";
+			message+="\n Replace        No|Yes                                    *No";
+            message+="\n                                                        *Option is nonpersistent\n";
+			message+="\nSampling: Allows you to specify whether to your sampling is COMPLETE for all species, INDIVIDUALly estimated for each species, or if a SINGLE\n";
+			message+="          sampling proportion is estimated for all species.";
+			message+="\nModel: Allows you to specify whether the model has EQUALBIRTHDEATH rates, FREEBIRTHDEATH rates (i.e., they can be unequal), or DENSITYDEPENDENT\n";
+			message+="       rates. Only the first model is currently implemented.\n";
+			message+="File: Saves all output into a tab-delimited file\n";
+			message+="Append: If the output file exists, appends to it rather than overwrites it. Turned on by default.\n";
+			message+="Replace: If set to yes, if the output file already exists it will be quietly replaced.\n";
+			PrintMessage();
+        }
+		
+        else {
+            errormsg = "Unexpected keyword (";
+            errormsg += token.GetToken();
+            errormsg += ") encountered reading GeneEvolution command";
+            throw XNexus( errormsg, token.GetFilePosition(), token.GetFileLine(), token.GetFileColumn() );
+        }
+    }
+}
+
 void BROWNIE::HandlePagelDiscrete ( NexusToken& token)
 {
 	//This does, basically Pagel 1994's discrete model for correlation of two traits, but does it on both binary and multistate traits.
@@ -12629,6 +12887,9 @@ void BROWNIE::Read( NexusToken& token )
 		else if( token.Abbreviation("LOss") ) {
 			HandleLoss( token );
 		}
+		else if( token.Abbreviation("GENEevolution") ) {
+			HandleGeneEvolution( token );
+		}
         else if( token.Abbreviation("TIMeslice") ) {
             HandleTimeSlice( token );
         }
@@ -16889,6 +17150,183 @@ gsl_permutation_free (p);
 return rateparameter;
 }
 
+
+double BROWNIE::GetGeneEvolutionLnL_gsl( const gsl_vector * variables, void *obj) 
+{
+	double temp;
+	temp= ((BROWNIE*)obj)->GetGeneEvolutionLnL(variables);
+	if((gsl_finite (temp))!=1) {
+		temp=BROWNIE_MAXLIKELIHOOD;
+	}
+	return temp;
+}
+
+double BROWNIE::GetGeneEvolutionLnL(const gsl_vector * variables)
+{
+	int multiplierForMaxNumGenes=100;
+	int numberofrates=0;
+	if (geneEvolutionChosenModel==1) {
+		numberofrates=1; //birth==death
+	}
+	else if (geneEvolutionChosenModel==2) {
+		numberofrates=2; //birth and death estimated separately
+	}
+	else if (geneEvolutionChosenModel==3) {
+		numberofrates=0; //density dependence
+	}
+
+	if (debugmode) {
+		cout<<endl<<endl<<"------   Using GetGeneEvolutionLnL -------"<<endl<<endl;
+	}
+	gsl_vector *localvariables=gsl_vector_calloc(variables->size);
+	gsl_vector_memcpy(localvariables,variables);
+	if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+		for (int i=0;i<variables->size;i++) {
+			gsl_vector_set(localvariables,i,exp(gsl_vector_get(localvariables,i)));
+		}
+	}
+	double likelihood=BROWNIE_MAXLIKELIHOOD; //rather than an infinte value, use the maximum possible value, so numerical optimization doesn't fail
+	negbounceparam=-1;
+	if (numberoffreeparameters>0) { //if the input vector has useful variables; this number is only zero in the case of some user models
+		if (gsl_vector_min(localvariables)<0) { //means we have a negative rate or state frequency if <0, so leave the likelihood set at a really bad number
+			negbounceparam=gsl_vector_min_index(localvariables);
+			if(detailedoutput) {
+				cout<<"Had negative input, variables vector is ( ";
+				for (int i=0;i<numberoffreeparameters;i++) {
+					cout<<gsl_vector_get(localvariables,i)<<" ";
+				}
+				cout<<")"<<endl;
+			}
+			if (debugmode) {
+				cout<<"GetGeneEvolutionLnL (first return) is "<<likelihood<<endl;
+			}
+			return likelihood;
+		}
+	}
+		int ntax=taxa->GetNumTaxonLabels();
+		
+		int maxNumObservedGenes=0;
+		for (int taxonnumber=0; taxonnumber<ntax; taxonnumber++) {
+			for (int charnumber=0; charnumber<(continuouscharacters->GetNChar()); charnumber++) {
+                maxNumObservedGenes=gsl_max(maxNumObservedGenes, continuouscharacters->GetValue( taxonnumber, charnumber, true));
+            }
+		}
+		int maxNumPossibleGenes=multiplierForMaxNumGenes * maxNumObservedGenes;
+		gsl_vector *ancestralstatevector=gsl_vector_calloc(maxNumPossibleGenes+1); //because it starts at zero
+		int vectorposition=0;
+		int position=-1; //used in user-set matrix only
+		
+		
+		if (geneevolutionchosenstatefreqmodel!=3) {	
+			for (int i=0; i<maxNumObservedGenes; i++) { //do ancestralstatevector for freqs.
+				if (geneevolutionchosenstatefreqmodel==1) {
+					//Uniform
+					if (i<(maxNumObservedGenes-1) && i>0) {
+						gsl_vector_set(ancestralstatevector,i,1.0/maxNumObservedGenes);
+					}
+					else { //last number must be 1-sum(other states)
+						double frequencysum=0.0;
+						for (int j=0; j<i;j++) {
+							frequencysum+=gsl_vector_get(ancestralstatevector,j);
+						}
+						gsl_vector_set(ancestralstatevector,i,1.0-frequencysum);
+					}
+				}
+				else if (geneevolutionchosenstatefreqmodel==2) {
+					/*if (debugmode) {
+						cout<<"now setting state frequencies based on empirical frequencies for this character"<<endl;
+					}	*/
+					double frequency=0.0;
+					for (int taxonnumber=0;taxonnumber<ntax;taxonnumber++) {
+						for (int charnumber=0; charnumber<(continuouscharacters->GetNChar()); charnumber++) {
+							if ((continuouscharacters->GetValue( taxonnumber, charnumber, true))==(i+1)) {
+								frequency++;
+							}
+						}
+					}
+					gsl_vector_set(ancestralstatevector,i,frequency/(ntax*continuouscharacters->GetNChar())); //what about not counting the things with state 0? Not a valid ancestral state
+				}
+				else if (geneevolutionchosenstatefreqmodel==4) {
+					errormsg="Not implemented yet";
+					throw XNexus( errormsg);
+				}
+				else if (geneevolutionchosenstatefreqmodel==5) {
+									errormsg="Not implemented yet";
+					throw XNexus( errormsg);
+
+					//user
+					/*if (debugmode) {
+						cout<<"now setting state frequencies based on user-specified frequencies for this character"<<endl;
+					}	*/
+
+			/*		if (userstatefreqvector.size()!=localnumbercharstates) {
+						errormsg="The current (possibly default) vector of user-specified state frequencies ";
+						errormsg+="\nwith size ";
+						int freqvectorsize=userstatefreqvector.size();
+						errormsg+=freqvectorsize;
+						errormsg+=" should have size ";
+						errormsg+=localnumbercharstates;
+						errormsg+=" for the selected character";
+						throw XNexus( errormsg);
+					} */
+					//gsl_vector_set(ancestralstatevector,i,userstatefreqvector[i]);
+				}
+			}
+		}
+
+		double frequencysum=0.0;
+		for (int i=0; i<ancestralstatevector->size;i++) {
+			frequencysum+=gsl_vector_get(ancestralstatevector,i);
+		}
+		if ((gsl_fcmp(frequencysum,1.0,BROWNIE_EPSILON)!=0) || gsl_vector_min(ancestralstatevector)<0 || gsl_vector_max(ancestralstatevector)>1) { //a way of constraining the search
+			if(detailedoutput) {
+				cout<<"\n\tHad wrong state frequency input, ancestralstatevector vector is ( ";
+				for (int i=0;i<ancestralstatevector->size;i++) {
+					cout<<gsl_vector_get(ancestralstatevector,i)<<" ";
+				}
+				cout<<") ";
+				if (gsl_fcmp(frequencysum,1.0,BROWNIE_EPSILON)!=0) {
+					cout<<"[SUM ("<<frequencysum<<") NOT 1: Sum-1 = "<<fabs(frequencysum-1.0)<<", gsl_fcmp(frequencysum,1.0,BROWNIE_EPSILON) = "<<gsl_fcmp(frequencysum,1.0,BROWNIE_EPSILON)<<"] ";
+				}
+				if (gsl_vector_min(ancestralstatevector)<0) {
+					cout<<"[MIN ("<<gsl_vector_min(ancestralstatevector)<<") < 0] ";
+				}
+				if (gsl_vector_max(ancestralstatevector)>1 ) {
+					cout<<"[MAX ("<<gsl_vector_max(ancestralstatevector)<<") > 1] ";
+				}
+				cout<<endl;
+			}
+			//likelihood=GSL_POSINF;
+			likelihood=BROWNIE_MAXLIKELIHOOD; //rather than an infinte value, use the maximum possible value, so numerical optimization doesn't fail
+
+			if (debugmode) {
+				cout<<"GetGeneEvolutionLnL output (second return) is "<<likelihood<<endl;
+			}
+			return likelihood;	
+		}
+		if (discretechosenmodel==1 || discretechosenmodel==2 || discretechosenmodel==3 || discretechosenmodel==4) {
+	//rewrite		likelihood=(CalculateDiscreteCharLnL(RateMatrix,ancestralstatevector));
+//			gsl_matrix_swap(currentdiscretecharQmatrix,RateMatrix);
+		}
+		else if (discretechosenmodel==5) {
+//rewrite			likelihood=(CalculateDiscreteCharLnLHetero(RateMatrixHetero, ancestralstatevector));
+			if(debugmode) {
+//				PrintMatrix(RateMatrixHetero);
+			}
+//			gsl_matrix_swap(currentdiscretecharQmatrix,RateMatrixHetero);
+		}
+		gsl_vector_swap(currentdiscretecharstatefreq,ancestralstatevector);
+//		gsl_matrix_free(RateMatrix);
+//		gsl_matrix_free(RateMatrixHetero);
+		gsl_vector_free(ancestralstatevector);
+		gsl_vector_free(localvariables);
+		
+		if (debugmode) {
+			cout<<"GetGeneEvolutionLnL output (third return) is "<<likelihood<<endl;
+		}
+		return likelihood;
+}
+
 double BROWNIE::GetDiscreteCharLnL_gsl( const gsl_vector * variables, void *obj) 
 {
 	double temp;
@@ -17397,6 +17835,312 @@ gsl_vector * BROWNIE::LindyGeneralOptimization(int ChosenModel)
 	gsl_vector_set(finalvector,(2*np),bestlikelihood);
 	return finalvector;
 }
+
+gsl_vector * BROWNIE::GeneEvolutionOptimization()
+{
+	bestdiscretelikelihood=BROWNIE_MAXLIKELIHOOD; //we just use bestdiscretelikelihood to store this
+	bool globalbesthadfixedzerosorones=false;
+	int hitlimitscount=0;
+	int ntax=taxa->GetNumTaxonLabels();
+	numberoffreerates=0;
+	numberoffreefreqs=0;
+	double currentstepsize=stepsize;
+	if (geneEvolutionChosenModel==1) {
+		numberoffreeparameters=1; //birth==death
+	}
+	else if (geneEvolutionChosenModel==2) {
+		numberoffreeparameters=2; //birth and death estimated separately
+	}
+	else if (geneEvolutionChosenModel==3) {
+		numberoffreeparameters=2; //density dependence
+	}
+	
+	if (geneEvolutionSamplingType==0) {
+		numberoffreeparameters=numberoffreeparameters;  //No change. Yes, I could cut out this if statement.
+	}
+	else if (geneEvolutionSamplingType==1) {
+		numberoffreeparameters=numberoffreeparameters+1;  //Have to estimate one sampling freq for all species together
+	}
+	else if (geneEvolutionSamplingType==2) {
+		numberoffreeparameters=numberoffreeparameters+ntax;  //Have to estimate the sampling freq for each species independently
+	}
+	
+	size_t np=numberoffreeparameters;
+	gsl_vector * finalvector=gsl_vector_calloc((2*np)+1);
+	if (np>0) {
+		gsl_vector * results=gsl_vector_calloc(np);
+		double estimates[randomstarts][np];
+		double startingvalues[randomstarts][np];
+		double likelihoods[randomstarts][1];
+		if(detailedoutput==false) {
+			ProgressBar(randomstarts);
+		}
+		for (int startnum=0;startnum<randomstarts;startnum++) {
+			if (optimizationalgorithm==1) { //do nelder-mead simplex
+				const gsl_multimin_fminimizer_type *T = gsl_multimin_fminimizer_nmsimplex;
+				gsl_multimin_fminimizer *s = NULL;
+				gsl_vector *ss, *x;
+				size_t iter = 0, i;
+				int status;
+				double size;
+				bool hitlimits=false;
+				/* Initial vertex size vector */
+				ss = gsl_vector_alloc (np);
+				gsl_vector_set_all (ss, currentstepsize);
+				
+				/* Starting points */
+				x = gsl_vector_calloc (np);
+				if (startnum==0 || (gsl_ran_flat(r,0,1))>0.5 ) { //about 50% of the time, start from these values
+					for (int i=0; i<numberoffreerates; i++) {
+						gsl_vector_set (x,i,GSL_MIN(gsl_ran_exponential (r,0.5),gsl_ran_flat(r,0,1) )); //starting rate, less than 1
+						startingvalues[startnum][i]=gsl_vector_get(x,i);
+					}
+/*					for (int i=numberoffreerates; i<numberoffreerates+numberoffreefreqs; i++) {  
+						gsl_vector_set (x,i,(1.0/localnumbercharstates)); //starting freqs are equal
+						startingvalues[startnum][i]=gsl_vector_get(x,i);			
+					}*/
+				}
+				else { //start again from near current point
+					for (int i=0; i<numberoffreerates; i++) { 
+						gsl_vector_set (x,i,gsl_ran_exponential(r,(estimates[startnum-1][i]))); //use a modified optimal value from the last run
+						startingvalues[startnum][i]=gsl_vector_get(x,i);
+					}
+					for (int i=numberoffreerates; i<numberoffreerates+numberoffreefreqs; i++) {
+						gsl_vector_set (x,i,(estimates[startnum-1][i])); //use optimal value from the last run
+						startingvalues[startnum][i]=gsl_vector_get(x,i);			
+					}			
+				}
+				if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+					for (int i=0; i<x->size; i++) {
+						gsl_vector_set(x,i,log(gsl_vector_get(x,i)));
+					}
+				}
+				BROWNIE *pt;
+				pt=(this);
+				double (*F)(const gsl_vector *, void *);
+				F = &BROWNIE::GetGeneEvolutionLnL_gsl;
+				gsl_multimin_function minex_func;
+				minex_func.f=*F;
+				minex_func.params=pt;
+				minex_func.n = np;
+				s = gsl_multimin_fminimizer_alloc (T, np);
+				gsl_multimin_fminimizer_set (s, &minex_func, x, ss);
+				do
+				{
+					iter++;
+					status = gsl_multimin_fminimizer_iterate(s);
+					if (status!=0) { //0 Means it's a success in c++, but not in C
+						printf ("error: %s\n", gsl_strerror (status));
+						break;
+					}
+					size = gsl_multimin_fminimizer_size (s);
+					status = gsl_multimin_test_size (size, stoppingprecision); //since we want more precision
+					if (status == GSL_SUCCESS)
+					{
+					//printf ("converged to minimum at\n");
+					}
+					
+					if (detailedoutput) {
+						if (iter<100 || (iter%25 ==0)) {
+							printf ("%5d ", iter);
+							for (i = 0; i < np; i++)
+							{
+								if (nonnegvariables) {
+									printf ("%10.9e ", exp(gsl_vector_get (s->x, i)));
+								}
+								
+								else {
+									printf ("%10.9e ", gsl_vector_get (s->x, i));
+								}
+							}
+							printf ("f() = %7.9f size = %.9f\n", s->fval, size);	
+						}
+					}
+				}
+				while (status == GSL_CONTINUE && iter < maxiterations);
+				
+				if (s->fval<bestdiscretelikelihood) {
+					globalbesthadfixedzerosorones=false;
+					gsl_vector_memcpy(results,s->x);
+					if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+						for (int i=0; i<x->size; i++) {
+							gsl_vector_set(results,i,exp(gsl_vector_get(results,i)));
+						}
+					}					
+					bestdiscretelikelihood=s->fval;
+					gsl_matrix_swap(currentdiscretecharQmatrix,optimaldiscretecharQmatrix);
+					gsl_vector_swap(currentdiscretecharstatefreq,optimaldiscretecharstatefreq);
+				}
+				//The following section tries to round the parameter values: it's possible that 0 is a better value than some very small double
+				gsl_vector *roundx=gsl_vector_calloc((s->x)->size);
+				gsl_vector_memcpy(roundx,s->x);
+				for (int i=0;i<roundx->size;i++) {
+					if(nonnegvariables) {
+						gsl_vector_set(roundx,i,exp(gsl_vector_get(roundx,i)));
+					}
+					if (gsl_vector_get(roundx,i)<8.0*BROWNIE_EPSILON) {
+						gsl_vector_set(roundx,i,0.0);
+					}
+					else if (fabs(1.0-gsl_vector_get(roundx,i))<8.0*BROWNIE_EPSILON) {
+						gsl_vector_set(roundx,i,1.0);
+					}
+				}
+				bool roundedwasbetter=false;
+				bool orignonnegvariables=nonnegvariables;
+				nonnegvariables=false; //since roundx is untransformed
+				double roundlikelihood=GetDiscreteCharLnL(roundx);
+				nonnegvariables=orignonnegvariables;
+				if (roundlikelihood<bestdiscretelikelihood) {
+					roundedwasbetter=true;
+					globalbesthadfixedzerosorones=true;
+					bestdiscretelikelihood=roundlikelihood;
+					gsl_matrix_swap(currentdiscretecharQmatrix,optimaldiscretecharQmatrix);
+					gsl_vector_swap(currentdiscretecharstatefreq,optimaldiscretecharstatefreq);
+					gsl_vector_memcpy(results,roundx);
+				}
+				if (detailedoutput) {
+						printf ("fixed zeros %5d ", iter);
+						for (i = 0; i < np; i++)
+						{
+				
+								printf ("%10.9e ", gsl_vector_get (roundx, i));
+
+						}
+						printf ("f() = %7.9f \n", roundlikelihood);	
+				}
+				
+				
+				if (iter==maxiterations) {
+					hitlimits=true;
+					hitlimitscount++;
+				}
+				message="Replicate ";
+				if (detailedoutput) {
+					message+=startnum+1;
+					if (hitlimits) {
+						message+=" **WARNING**";
+					}
+					message+="\n   NM iterations needed = ";
+					int iterationsrequired=iter;
+					message+=iterationsrequired;
+					if (hitlimits) {
+						message+=" **Max iterations hit; see WARNING below**";
+					}
+					message+="\n   -LnL = ";
+					char outputstring[60];
+					sprintf(outputstring,"%60.45f",1.0*(s->fval));
+					if (roundedwasbetter) {
+						sprintf(outputstring,"%60.45f",1.0*roundlikelihood);					
+					}
+					message+=outputstring;
+					message+="\n   Starts:    ";
+					for (int parameternumber=0; parameternumber<np; parameternumber++) {
+						message+=startingvalues[startnum][parameternumber];
+						message+=" ";
+					}				
+					message+="\n   Estimates: ";
+				}
+				for (int parameternumber=0; parameternumber<np; parameternumber++) {
+					if(roundedwasbetter) {
+						estimates[startnum][parameternumber]=gsl_vector_get(roundx,parameternumber);
+					}
+					else {
+						if(nonnegvariables) { //N-M can get negative values for parameters. This is fine usually, but not with rates and frequencies, which must be nonnegative. Solution? NM variable x=log(true variable); true variable Y=exp(NM variable)
+							estimates[startnum][parameternumber]=exp(gsl_vector_get(s->x,parameternumber));
+						}	
+						else {
+							estimates[startnum][parameternumber]=gsl_vector_get(s->x,parameternumber);
+						}
+					}
+					if (detailedoutput) {
+						message+=estimates[startnum][parameternumber];
+						message+=" ";
+					}
+				}		
+			// message+="\n   Rate = ";
+			// message+=gsl_vector_get(s->x,0);
+				if (detailedoutput) {
+					PrintMessage();
+				}
+				gsl_vector_free(x);
+				gsl_vector_free(ss);
+				gsl_vector_free(roundx);
+				gsl_multimin_fminimizer_free (s);
+				if (hitlimits && redobad) {
+					startnum--; //redo this rep (from a new starting point)
+					if (hitlimitscount>giveupfactor*randomstarts) {
+						message="\n----------------------------------------------------------------------------\n";
+						message+= " ABORTING: You have chosen to keep restarting until you get ";
+						message+=randomstarts;
+						message+=" to\n";
+						message+=" complete, but we've already tried ";
+						message+=hitlimitscount;
+						message+=" and only completed\n ";
+						message+=startnum+1;
+						message+=" starts. Maybe this is enough for you?\n You can change optimization settings with the NumOpt command.\n----------------------------------------------------------------------------";
+						PrintMessage();
+						startnum=randomstarts+1; // So we'll stop the run
+					}
+				}
+				else {
+					if (detailedoutput==false) {
+						ProgressBar(0);
+					}			
+				}
+			}
+		}
+		
+		if (hitlimitscount>0) {
+			if (redobad) {
+				message="\n----------------------------------------------------------------------------\n WARNING: For ";
+				message+=randomstarts;
+				message+=" desired completed runs, I had to do ";
+				message+=hitlimitscount;
+				message+=" starts total.\n This could suggest that you should change some NumOpt options\n (\"numopt ?\" for help).\n----------------------------------------------------------------------------";
+			}
+			else {
+				message="\n----------------------------------------------------------------------------\n WARNING: Out of ";
+				message+=randomstarts;
+				message+=" optimization starts, ";
+				message+=hitlimitscount;
+				if (hitlimitscount==1) {
+					message+=" was ";
+				}
+				else {
+					message+=" were ";
+				}
+				message+="stopped by hitting\n  the maximum # of iterations. This means that those replicates\n  may not even have hit the local maximum.\n\n  You can increase the maximum number of iterations or decrease the\n  precision with the NumOpt command. You could also consider\n  increasing the number of random starts using that same command.\n\n  If this happened on a small proportion of replicates, though,\n  or if the precision (below) is good enough, don't worry about it.\n----------------------------------------------------------------------------";
+			}
+			if (detailedoutput) {
+				PrintMessage();
+			}
+			else if ((randomstarts-hitlimitscount)<10 && (hitlimitscount/randomstarts)>.1) {
+				PrintMessage();
+			}
+		}
+		for (int position=0; position<np; position++) {
+			gsl_vector_set(finalvector,position,gsl_vector_get(results,position));
+			double paramestimate[randomstarts];
+			for (int startnumber=0;startnumber<randomstarts;startnumber++) {
+				paramestimate[startnumber]=estimates[startnumber][position];
+			}
+			gsl_vector_set(finalvector,position+np,gsl_stats_sd(paramestimate,1,randomstarts));
+		}
+		gsl_vector_free(results);
+	}
+else {
+		gsl_vector* emptyvector=gsl_vector_calloc(1);
+		bestdiscretelikelihood=GetDiscreteCharLnL(emptyvector);	
+		gsl_matrix_swap(currentdiscretecharQmatrix,optimaldiscretecharQmatrix);
+		gsl_vector_swap(currentdiscretecharstatefreq,optimaldiscretecharstatefreq);
+		gsl_vector_free(emptyvector);
+}
+	gsl_vector_set(finalvector,(2*np),bestdiscretelikelihood);
+	//cout<<"Best rate matrix=\n";
+	//PrintMatrix(optimaldiscretecharQmatrix);
+	return finalvector;
+}
+
 
 gsl_vector * BROWNIE::DiscreteGeneralOptimization()
 {
