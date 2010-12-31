@@ -29,6 +29,17 @@ AC_CHECK_LIB([m],[cos])
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 
+if test "$ac_cv_lib_gsl_gsl_blas_dgemm" == no
+then
+	AC_MSG_ERROR([Could not find required version of GSL (>1.14)])
+	exit 1
+fi
+
+if test "$ac_cv_lib_gslcblas_cblas_dgemm" == no
+then
+	AC_MSG_ERROR([Could not find required version of GSL -> cblas])
+	exit 1
+fi
 
 dnl or use this line to check for version:
 dnl     AX_PATH_GSL(GSL_VERSION,
