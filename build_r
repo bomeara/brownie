@@ -28,7 +28,7 @@ echo "done"
 
 
 echo "Building R package..."
-R CMD build RBrownie/ --binary --no-vignettes
+R CMD build RBrownie/
 echo "done"
 
 
