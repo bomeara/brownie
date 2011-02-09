@@ -8,27 +8,36 @@
 
 # Table of Contents:
 
+## Generic Methods: (and overloads)
+#
+
 ## SIMMAP Methods:
-# get.nodenames
-# is.simmap
-# read.simmap
-# read.nexus.simmap
-# expand.singles
-# collapse.to.singles
-# collapse.singletons
-# write.simmap
+# get.nodenames -- internal; get names of nodes
+# is.simmap	 --  check whether file or text string contains simmap formatted trees
+# read.simmap  --  read simmap text (v1.0-1.1) to phylo4d object (with singletons)
+# read.simmap.new  --  read simmap text (v1.5) to phylo4d_ext
+# read.nexus.simmap  -- reads nexus file which contains simmap (all versions) trees
+# expand.singles  --  experimental; expand singleton nodes into a bifurcation with one 0-length branch terminating at a dummy node
+# collapse.to.singles  --  experimental;  collapse bifurcations which contain a 0-length branch connected to a leaf node into singletons
+# collapse.singletons  --  remove singleton nodes from a tree
+# collapse.subnodes  --  experimental;  collapse subnodes to singletons
+# write.simmap (w/ two subroutines)  -- write a tree (and parts of it's data) to simmap format (vers=c(1.0,1.1,1.5))
+# write.simmap.old  --  wrapper; calls write.simmap with v1.0 or v1.1 parameters
+# write.simmap.new  --  wrapper; calls write.simmap with v1.5 parameters
+# write.nexus.simmap  --  uses write.simmap and other internal functions to write a nexus file using write.simmap to output each tree.
 
 ## Subnode Methods:
-# .edge.index
-# nSubNodes
-# hasSubNodes
-# getSubNodeData
-# getSubNodePosish
-# getSubNodeEdgeInds
-# getSubNodeEdgeInds
-# getEmptyDataFrame
-# addSubNode
-# showSubNodes
+# .edge.index  --  internal;
+# nSubNodes  --  get number of subnodes
+# hasSubNodes  --  does the tree have subnodes?
+# hasData  --  does the tree contain any data? (is the data slot empty?)
+# getSubNodeData  --  returns subnode data.frame
+# getSubNodePosish  -- returns subnode positions
+# getSubNodeEdgeInds  --  returns subnode edge indices
+# getEmptyDataFrame  --  returns empty data frame in the same format as the data frame from the data slot
+# addSubNode  --  add a subnode to a tree
+# showSubNodes  --  print out a representation of the subnodes to stdout
+
 
 ## Generics
 setGeneric("sndata", function(x, ...) { standardGeneric("sndata") })
@@ -43,6 +52,9 @@ setGeneric("hasWeight",function(x,strict=TRUE) { standardGeneric("hasWeight")} )
 
 # subnode
 setGeneric("hasSubNodes", function(x) { standardGeneric("hasSubNodes") })
+setGeneric("hasData", function(x) { standardGeneric("hasData") })
+
+# overloading phylobase methods:
 
 #--------------------------
 # SIMMAP Processing Methods		
@@ -72,22 +84,27 @@ get.nodenames<-function(newick.txt)
 
 
 # Check for evidence that this file contains simmap-formatted trees
+# @param 'vers' is the simmap version that should be checked for
+# @param 'quick' if TRUE, then the text string containing a tree is 
+#		 only checked to see if the formatting looks right.  If FALSE,
+#		 the method attempts to create a tree from the string.
 #
-is.simmap <- function(finput="",text=NULL,vers=c(1.1,1.5))
+is.simmap <- function(finput="",text=NULL,vers=c(1.1,1.5),quick=TRUE)
 {
 	if(!is.null(text)){
 		# TODO: check text for newlines and split on them if they exist.
 		rawtext=text
 	} else {
 		if(!file.exists(finput))
-			stop("Assuming finput is a file and could not find it")
+			stop("Assumed 'finput' was a filename and could not be fond")
 		
 		rawtext = scan(finput,what=character(0),strip.white=T,sep="\n")		
 	}
 
 	## TODO: split individual strings on ';' character
 	
-	# if there is only one string, then just check that
+	# if there is only one string, then just check that,
+	# otherwise assume the file is text from a nexus file
 	if(length(rawtext)==1)
 	{
 		treesblock = rawtext
@@ -107,10 +124,33 @@ is.simmap <- function(finput="",text=NULL,vers=c(1.1,1.5))
 	count = 1
 	for(linenumb in treelines)
 	{
-		# check for simmap style
-		# remove first comment (should others be removed?
-		junk =  gsub("\\[(.*?)\\]","",treesblock[linenumb])
-		potentialsimmap[count] = as.logical(length(grep(":\\{.*?\\}",junk)))
+		# check for simmap styles
+		if(vers == 1.1 || vers == 1.0)
+		{
+			# remove all comments from the string
+			junk = gsub("\\[(.*?)\\]","",treesblock[linenumb])
+			potentialsimmap[count] = grepl(":\\{.*?\\}",junk)
+			if(potentialsimmap[count] && !quick)
+			{
+				tr = try(read.simmap(text=junk,vers=vers),silent=T)
+				if(is(tr,"try-error"))
+					potentialsimmap[count] = FALSE
+			}
+			
+		} else {
+			
+			potentialsimmap[count] = grepl("\\[(.*?)\\]",treesblock[linenumb])
+			if(potentialsimmap[count] && !quick)
+			{
+				junk = gsub("\\[(.*?)\\]","",treesblock[linenumb])
+				
+				# TODO: change this to read.simmap.new when that function is finished:
+				tr = try(read.tree(text=junk),silent=T)
+				if(is(tr,"try-error"))
+					potentialsimmap[count] = FALSE
+			}
+		}
+		
 		count = count + 1
 	}
 	
@@ -127,10 +167,19 @@ is.simmap <- function(finput="",text=NULL,vers=c(1.1,1.5))
 # Assume that branch lengths are present (otherwise, why use SIMMAP?)
 # Assume that the root node can only have one simmap state (or, only use the first)
 #
-read.simmap <- function(file="",text=NULL, vers=1.1, ...)
+# @param as.num - convert the data to numeric (by default, a factor data type is used)
+# 
+read.simmap <- function(file="",text=NULL, vers=1.1, as.num=FALSE, ...)
 {
+	
 	if(is.null(text))
-		stop("Need to have text for now")
+	{
+		#stop("Need to have text for now")
+		if(!file.exists(file))
+			stop("Assumed 'file' was a filename and could not be fond.")
+		
+		text = scan(file,what=character(0),strip.white=T,sep="\n")
+	}
 
 	# clear whitespace	
 	text = gsub("\\s","",text)
@@ -271,6 +320,8 @@ read.simmap <- function(file="",text=NULL, vers=1.1, ...)
 	
 	# create phylo4d object
 	new.labels = c(tr$tip.label,tr$node.label)
+	if(as.num)
+		dataVal = as.numeric(dataVal)
 	tmpdf = data.frame("simmap_state"=dataVal, row.names=new.labels[dataNode])
 	rettree = phylo4d(tr,all.data=tmpdf,missing.data="OK")
 	
@@ -299,11 +350,24 @@ strip<-function(str,left=TRUE,right=TRUE)
 	return(str)
 }
 
-# Read simmap v1.5 files
-#
-read.simmap.new <- function(file="",text=NULL)
-{	
 
+# Read simmap v1.5 files
+# ----------------------
+# Notes:
+# 1. all mutational (mapping) information is contained with a comment block (e.g., [&map={0,0.144863,1,0.453803,0}] ),
+# 2. within this block the mutational information is contained within curly braces, { }, preceded by a map command, &map= { },
+# 3. the mutational information is from the descendant node to the ancestor (i.e., tips to root assignment),
+# 4. the information is STATE, LENGTH, STATE,... excluding the last length, e.g., two changes (0=>1=>0) might look like this, [&map={0,0.144863,1,0.453803,0}], with state 0 having a length of 0.144863, followed by state 1 with a length of 0.453803, with the final state 0 having a length of BRLEN - (0.144863 + 0.453803); this approach helps reduce the size of the file by not including redundant information,
+# 5. if a branch has no changes then it will look like this, [&map={STATE}]LENGTH
+#
+# @param specialpatt indicates which variables should be treated in the SIMMAP way
+#		 any variables found which are not in specialpatt are treated as containing 
+#		 vector data.  By default, all variable are considered to be in the special
+#		 format.
+#
+read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
+{
+	
 	str.has <- function(patt,token,lowercase=T){
 		len = length(grep(sprintf("%s",patt),tolower(token)))
 		if(len == 1)
@@ -320,15 +384,19 @@ read.simmap.new <- function(file="",text=NULL)
 		}
 	}
 
-	# clear whitespace	
+	# clear whitespace
 	txt = gsub("\\s","",text)
 	
 	# add semicolon to end
 	if(substring(txt,nchar(txt))!=";")
 		txt = paste(txt,";",sep="")
 	
-
-		
+	# check to see if it is actually a SIMMAP v1.5 formatted
+	if(!is.simmap(text=txt,vers=1.5))
+		stop("'text' does not seem to contain any simmap-formatted trees")
+	
+	
+	# Extract comments from the tree string (which should contain the mapped data)
 	comments.pos = gregexpr("\\[&.*?\\]",txt)[[1]]
 	comments.len = attr(comments.pos,"match.length")
 	comments = character(length(comments.pos))
@@ -336,14 +404,18 @@ read.simmap.new <- function(file="",text=NULL)
 	{
 		comments[ii] = substr(txt,(comments.pos[ii]+2), ((comments.pos[ii] + comments.len[ii] - 2)))
 	}
+	
 	length(comments)
 	
 	
 	####
 	# Process Trees
+	# 1.) strip SIMMAP comments from the tree string
+	#
 	cleaned = gsub("\\[&.*?\\]","",txt)
 	textstr = cleaned
-	# add root node and internal node names
+	
+	# 2.) add root node and internal node names
 	count = 1
 	while(regexpr("):",textstr)[1] != -1)
 	{
@@ -351,26 +423,34 @@ read.simmap.new <- function(file="",text=NULL)
 		count = count + 1
 	}
 	
-	# Root
-	if(regexpr(");",textstr)[1] != -1)
+	# check if root has a value, if it does not then 
+	# the program needs to know so that it can be set
+	# when processing the comments (check if anc == root).
+	#
+	norootval=FALSE
+	if(regexpr(");",textstr)[1] != -1){
 		textstr = sub( ");", ")Root:0;" , textstr)
-			
+		norootval=TRUE
+	}
+	
+	# 3.) create phylo4d object from tree string where comments have been removed (data is added next)		
 	nodenames = get.nodenames(textstr)
-	require(phylobase)
 	phy = as(read.tree(text=textstr),'phylo4d')
 	#
+	# End Process Trees
 	####
 	
-	# Sanity check:
-	if(length(nodenames)!=length(comments))
-		stop("Node names does not match up with comments (and they should).")
+	# Sanity check: (leave out root, if it did not come with an explicit state)
+	#if(length(comments)!= (length(nodenames) - as.integer(norootval)) )
+	#	stop("Node names does not match up with comments (and they should).")
+	
 	
 	####
-	# Process comments:
+	# Process Comments:
 	#
 	# NOTE: Only one branch mapping is allowed at this point (TODO: fix this)
 	#
-	subnode.names = c("map")
+	subnode.names = c("map","simmap_state",specialpatt)
 	subnode.patt = sprintf("^(%s)$",paste(subnode.names,collapse="|"))
 	subnode.pos = matrix(NA,nrow=0,ncol=2)
 	subnode.branch = matrix(NA,nrow=0,ncol=2)
@@ -381,8 +461,11 @@ read.simmap.new <- function(file="",text=NULL)
 	{
 		## Tokenize command comment:
 		comment.tokens = strsplit(comments[kk],",")[[1]]
+		
+		# check if there is an assignment (shouldn't there always be?)
 		ex.inds = (grepl("=",comment.tokens))
 	
+		# reconstitute tokens if they were broken up in comment.tokens
 		curr = 1
 		using = rep(TRUE,length(ex.inds))
 		count = 1
@@ -396,8 +479,8 @@ read.simmap.new <- function(file="",text=NULL)
 			count = count + 1
 		}
 		comment.tokens = comment.tokens[using]
-		## end tokenize
-	
+		## end Tokenize command comment
+		
 		# strip beginning / ending whitespace from each token
 		# comment.tokens = strip(comment.tokens)
 	
@@ -441,7 +524,8 @@ read.simmap.new <- function(file="",text=NULL)
 				} else {
 					
 					desc = unname(which(labels(phy)==nodenames[kk]))
-					anc = unname(ancestor(phy,desc))
+					# check if desc is the root node (if it is then the ancestor is node 0 per phylobase's standard, I think).
+					anc = ifelse(rootNode(phy) == desc,0,unname(ancestor(phy,desc)))
 					eind = .edge.index(phy,anc,desc)
 					elen = unname(edgeLength(phy)[eind])
 	
@@ -454,7 +538,7 @@ read.simmap.new <- function(file="",text=NULL)
 	
 					
 					# Separate states from lengths and make lengths fractions of BRLEN 
-					# NOTE: fractions start at ANC! not DESC.  This may cause some confusion
+					# NOTE: fractions start at ANC(!) not DESC in the phyext format.  This may cause some confusion
 					#
 					states = rev(metric.value[seq(1,length(metric.value),by=2)])
 					lens = rev(as.numeric(metric.value[seq(2,length(metric.value),by=2)]))
@@ -462,7 +546,7 @@ read.simmap.new <- function(file="",text=NULL)
 					
 					# Assign data from DESC node
 					nnames = append(nnames,metric.basename)
-					vals = append(vals,tail(states,1))
+					vals = append(vals,tail(states,1)) # last one the DESC node state
 					
 					# Cache data from subnodes on this branch:
 					for (subind in seq(length(states)-1))
@@ -471,7 +555,7 @@ read.simmap.new <- function(file="",text=NULL)
 						subnode.pos = rbind(subnode.pos,c(lens[subind],lens[subind]))  # which position on the branch
 						tmpstate=states[subind]
 						names(tmpstate) <- metric.basename
-						subnode.data = append(subnode.data,tmpstate)
+						subnode.data = append(subnode.data,tmpstate)  # TODO: make sure this works well
 					}
 				}
 			}
@@ -504,7 +588,8 @@ read.simmap.new <- function(file="",text=NULL)
 		}
 		
 		phy.data[kk,] = vals[match.order(colnames(phy.data),nnames)]
-	}
+		
+	} # end kk comments loop
 	
 	# Guess as phy.data types:
 	options(warn=-1)  # suppress warnings for this sections
@@ -516,9 +601,14 @@ read.simmap.new <- function(file="",text=NULL)
 			phy.data[,jj] = as.numeric(phy.data[,jj])
 	}
 	options(warn=0)
+	#
+	# End Process Comments
+	#####
 	
+
 	###
-	phyd = addData(phy,all.data=phy.data,match.data=TRUE)
+	# Combine processed tree and processed comments:
+	phyd = addData(phy,all.data=phy.data,match.data=TRUE,rownamesAsLabels=TRUE)
 	
 	if(length(subnode.data)!=0){
 		# add subnode stuff:
@@ -535,7 +625,7 @@ read.simmap.new <- function(file="",text=NULL)
 
 # Read trees from a nexus file.  This function is only really necessary for 
 # nexus files where trees have simmap formatting.  If they don't, then
-# readNexus really should be used.
+# readNexus should be used instead.
 #
 read.nexus.simmap <- function(finput="",text=NULL)
 {
@@ -591,24 +681,44 @@ read.nexus.simmap <- function(finput="",text=NULL)
 	count = 0
 	for(linenumb in treelines)
 	{
-		print(linenumb)
-		# clearly, this will not work for non-simmap, non-newick trees
-		tmpstr = tail(strsplit(treesblock[linenumb],"=")[[1]],1)
+		
+		cat("tree number",linenumb,"\n")
+		# clearly, this will not work for non-simmap, non-newick trees (or simmap v1.5 strings)
+		#tmpstr = tail(strsplit(treesblock[linenumb],"=")[[1]],1)
+		# so, trying this instead:
+		#tmpstr = sub("^tree.+?=(.+)$","\\1",treesblock[linenumb])
+		
+		# This might not be necessary:
+		if(has.weights(text=treesblock[linenumb])){
+			tmpstr = sub("\\[(.*?)\\]","",treesblock[linenumb])
+		} else {
+			tmpstr = treesblock[linenumb]
+		}
+		#tmpstr = sub("^tree.+?=(.+)$","\\1",tmpstr)
+		#tmpstr = sub("^tree(.+?)=\\s{0,}\\[(.*?)\\](.+)$","\\3",tmpstr)
+		#tmpstr = sub("^tree(.+?)=(.*?)(\\(.+)$","\\3",tmpstr)
+		tmpstr = sub("^(TREE|tree)(.+?)=(.*?)(\\(.+)$","\\4",tmpstr)
+
 		
 		# check for simmap style
 		# remove first comment (should others be removed?
-		if(is.simmap(text=treesblock[linenumb]))
-		{
+		if(is.simmap(text=treesblock[linenumb])){
 			trtmp = unname(read.simmap(text=tmpstr))
+		} else if (is.simmap(text=treesblock[linenumb],vers=1.5)) {
+			trtmp = unname(read.simmap.new(text=tmpstr))
+		} else if (is.simmap(text=treesblock[linenumb],vers=1.0)){
+			trtmp = unname(read.simmap(text=tmpstr,vers=1.0))
 		} else {
 			trtmp = read.tree(text=tmpstr)
 		}
+		
+		
 		if(!is(trtmp,'phylo4'))
 			trtmp = as(trtmp,'phylo4')
 		
 		if(!inherits(trtmp,"phylo4")){
 			cat("Trouble parsing line for trees:\n",treesblock[linenumb],"\n")
-			stop()
+			stop("Wha?")
 		}
 		
 		outtrees = append(outtrees,trtmp)
@@ -750,7 +860,8 @@ collapse.to.singles <- function(tree,by.name=NULL)
 }
 
 
-# collapse singleton nodes using ape functions:
+# collapse singleton nodes using ape<->phylo4 conversion functions:
+# TODO: make this less reliant on ape functions
 #
 collapse.singletons <- function(phy)
 {
@@ -765,11 +876,12 @@ collapse.singletons <- function(phy)
 			snodeid = as.integer(names(tab)[which(tab==1)])
 			snodeid = snodeid[snodeid!=0]  # 0 is a dummy node
 			
-			#
-			ancs =  sapply(snodeid,function(i) which(edges(rettree)[,1] == i)) # where it is the ancestor
-			decs =  sapply(snodeid,function(i) which(edges(rettree)[,2] == i)) # where it is the decendant
-			newdata = data.frame(tdata(rettree,"all")[-decs,],row.names=labels(rettree)[-decs])
-			colnames(newdata) <- colnames(tdata(rettree))
+			# not sure why this is used:
+			#ancs =  sapply(snodeid,function(i) which(edges(rettree)[,1] == i)) # where the subnode is the ancestor
+			#decs =  sapply(snodeid,function(i) which(edges(rettree)[,2] == i)) # where the subnode is the descendant
+			#newdata = data.frame(tdata(rettree,"all")[-decs,],row.names=labels(rettree)[-decs])
+			newdata = tdata(rettree)[-snodeid,,drop=F]
+			#colnames(newdata) <- colnames(tdata(rettree))
 			
 			# hack it for now:
 			rettree = as(rettree,"phylo") # convert to ape
@@ -786,6 +898,266 @@ collapse.singletons <- function(phy)
 }
 
 
+# turn subnodes into singletons
+# x - phylobase tree
+# rm.ex.data - "remove 'extra' data":
+#  should data frames unique to tdat be removed (TRUE)
+#  or should extra columns be added to sdat (FALSE)
+#  WARNING: rm.ex.data = TRUE could lead to a loss of data (obviously)
+#
+collapse.subnodes <- function(x,rm.ex.data = TRUE)
+{
+	
+	if(!inherits(x,"phylo4d_ext") || !hasSubNodes(x))
+	{
+		warning("No subnodes to collapse")
+		return(x)
+	}
+	
+	# Step 1: cache data from x and setup variables to hold info for the new tree
+	
+	## a.) Handle data:
+	tdat = tdata(x)
+	sdat = sndata(x)
+	col.diffs = setdiff(colnames(tdat),colnames(sdat))
+	if(length(col.diffs) > 0)
+	{
+		if(rm.ex.data){
+			tdat = tdat[,-which(colnames(tdat) %in% col.diffs)]
+		} else {
+			tmpnames = colnames(sdat)
+			sdat = cbind(sdat,matrix(NA,nrow=nrow(sdat),ncol=length(col.diffs)))
+			colnames(sdat) <- c(tmpnames,col.diffs)
+		}
+	}
+	newdat = tdat
+	
+	# TODO: might need to reorder columns of tdat and sdat to match up....
+	
+	## b.) Subnode positions
+	posmeans = snposition(x)
+	if(!is.matrix(posmeans))
+		posmeans = matrix(posmeans,nrow=1,ncol=2)
+	posmeans = apply(posmeans,1,mean)
+	
+	## c.) Handle edges
+	el = edges(x)
+	newel = el
+	elens = edgeLength(x)
+	newelens = elens
+	snedges.inds = getSubNodeEdgeInds(x)
+	u.sninds = unique(snedges.inds)
+	
+	## d.) Handle node ids and labels
+	nids = nodeId(x) # node ids
+	lastnodeid = max(nids) # base from which to create new node ids
+	nodelabs = nodeLabels(x)
+	
+	# Step 2.) Systematically convert subnodes into new sets of edges (with singletons)
+	for(ii in seq(length(u.sninds)))
+	{
+		# get edge and subnode indices:
+		eid = u.sninds[ii]
+		sninds = which(snedges.inds == eid)
+		curr.anc = el[eid,1]
+		curr.desc = el[eid,2]	
+		elen = elens[eid]
+		newnodeids = lastnodeid + seq(length(sninds))
+		lastnodeid = max(newnodeids)
+		tmp = sprintf("Singleton%07d",newnodeids)
+		names(tmp) <- newnodeids
+	
+		# Create new nodes and edges	
+		# positions FROM anc TO desc:
+		newlens = sort(posmeans[sninds] * elen) # absolute positions along the branch
+		newlens = unname(c(newlens[1],diff(newlens),elen - max(newlens))) # convert to spacing btw subnodes
+		newedges = matrix(NA,ncol=2,nrow=length(newlens))
+		newedges[,1] <- unname(c(curr.anc,newnodeids))
+		newedges[,2] <- unname(c(newnodeids,curr.desc))
+	
+		tmpdat = sdat[sninds,,drop=F]
+		rownames(tmpdat) <- c(tmp)
+		newdat = rbind(newdat,tmpdat)
+		
+		# Append data:	
+		newel = rbind(newel,newedges)
+		newelens = c(newelens,newlens)
+	
+		nodelabs = c(nodelabs,tmp)
+	}
+	
+	# Step 3.) Create new tree with new edgelist,labels, and data
+	
+	# remove old indices:
+	newel = newel[-u.sninds,]
+	newelens = newelens[-u.sninds]
+	
+	# create new tree:
+	newphy = phylo4(newel,newelens,tipLabels(x),nodelabs)
+	# add data:
+	newphy = addData(newphy,all.data=newdat)
+	
+	return(newphy)
+}
+
+
+
+# subroutine of write.simmap:
+newlabels.v1x <- function(x,usestate,splitchar,write.nas=TRUE) 
+{
+	
+	# Note: this version of simmap only handle one state
+	if(is.null(usestate))
+		usestate = colnames(tdata(x))
+			
+	usestate = usestate[1]
+	tdat = tdata(x)[,usestate,drop=F]
+	snodes.present = hasSubNodes(x)
+	sdat = NULL; snedges.inds = NULL
+	
+	if(snodes.present){
+		sdat = sndata(x)[,usestate,drop=F]
+		snedges.inds = apply(snbranch(x),1,function(i) .edge.index(x,i[1],i[2]))
+	}
+		
+	es = edges(x)[,2]
+	elens = edgeLength(x); elens[is.na(elens)] <- 0.0
+	newlenlab=character(length(es))
+	
+	for(ii in seq(length(es)))
+	{
+		nodeid=es[ii]
+		if(!(ii %in% snedges.inds))
+		{
+			if(!is.na(tdat[nodeid,1]) || write.nas){
+				newlenlab[ii] = paste("{",tdat[nodeid,1] ,",", elens[ii],"}",sep="")
+			} else {
+				newlenlab[ii] = as.character(elens[ii])
+			}
+		} else {
+			
+			snind = which(snedges.inds == ii)
+			snlens = snposition(x)[snind,] * elens[ii]
+			snstates = sdat[snind,1]
+			if(!is.matrix(snlens))
+				snlens = matrix(snlens,nrow=1)
+			
+			# reorder
+			snpos = apply(snlens,1,mean)
+			neword = order(snpos,decreasing=T)
+			snpos = snpos[neword]
+			snstates = snstates[neword]
+			
+			newlenlab[ii] = paste("{",tdat[nodeid,1],",",(elens[ii]-max(snpos)),sep="")
+			
+			if(length(snpos)>1)
+				for(jj in seq(length(snpos)-1))
+					newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
+			
+			newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),",",tail(snpos,1),"}",sep="")
+			
+		}
+	}
+	
+	oldlabs = labels(x)[es]
+	names(newlenlab) <- oldlabs
+	oldlabs[which(is.na(oldlabs))] <- ""
+	newlab = paste(oldlabs,":", newlenlab ,sep="")
+	newlab[which(newlenlab=="")] <- ""  # remove any <NA> data
+
+	return(newlab)
+}
+
+# subroutine of write.simmap:
+newlabels.v15 <- function(x,usestate,splitchar)
+{
+	
+	if(is.null(usestate))
+		usestate = colnames(tdata(x))
+	
+	# get tip and subnode data:
+	tdat = tdata(x)[,usestate,drop=F]
+	snodes.present = hasSubNodes(x)
+	sdat = NULL; snedges.inds = NULL
+	
+	if(snodes.present){
+		sdat = sndata(x)[,usestate,drop=F]
+		snedges.inds = apply(snbranch(x),1,function(i) .edge.index(x,i[1],i[2]))
+	}
+	
+	es = edges(x)[,2]
+	elens = edgeLength(x); elens[is.na(elens)] <- 0.0
+	newlenlab=character(length(es)) # new "length" labels for each node
+	
+	# Setup SIMMAP comments to hold data values
+	for(ii in seq(length(es)))
+	{
+		nodeid=es[ii]
+		
+		if(!(ii %in% snedges.inds))
+		{ # if there is no subnode on this branch:
+		
+			topper = "[&"
+			backer = paste("]",elens[ii],sep="")
+			middle = ""
+			for(colind in seq(length(usestate)))
+				if(!is.na(tdat[nodeid,usestate[colind]]))
+					middle = paste(middle,sprintf("%s={%s}%s",usestate[colind],tdat[nodeid,usestate[colind]],ifelse(colind==length(usestate),"",",")),sep="")
+			
+			if(middle==""){
+				newlenlab[ii] = as.character(elens[ii])
+			} else {
+				newlenlab[ii] = paste(topper,middle,backer,sep="")
+			}
+			
+		} else {
+			
+			# retrieve subnode data:
+			snind = which(snedges.inds == ii)
+			snlens = snposition(x)[snind,] * elens[ii]
+			
+			for(colind in seq(length(usestate)))
+			{
+				snstates = sdat[snind,usestate[colind]]
+				if(!is.matrix(snlens))
+					snlens = matrix(snlens,nrow=1)
+				
+				snpos = apply(snlens,1,mean)
+				neword = order(snpos,decreasing=T)
+				
+				snpos = snpos[neword]
+				snstates = snstates[neword]
+				
+				# first, write the DESC state:
+				newlenlab[ii] = paste(sprintf("[&%s={%s",usestate[colind],tdat[nodeid,usestate[colind]]),(elens[ii]-max(snpos)),sep=",")
+				
+				# intermediates, from DESC -> ANC
+				if(length(snpos)>1)
+					for(jj in seq(length(snpos)-1))
+						newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
+				
+				# last subnode
+				newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),ifelse(colind==length(usestate),"",","),sep="")
+			}
+			newlenlab[ii] = paste(newlenlab[ii],"}]",elens[ii],sep="")
+		}
+	}
+	# End setup SIMMAP comments
+	
+	
+	# Substitute SIMMAP comments into tree
+	oldlabs = labels(x)[es]
+	names(newlenlab) <- oldlabs
+	oldlabs[which(is.na(oldlabs))] <- ""
+	#newlab = paste(oldlabs,":{", newlenlab ,"}",sep="")
+	newlab = paste(oldlabs,newlenlab,sep=":")
+	newlab[which(newlenlab=="")] <- ""  # remove any <NA> data
+	
+	# DEBUG: at this point, oldlabs and newlabs look like they have been lined up correctly
+	
+	return(newlab)		
+}
+
 
 # write modified newick file:
 # -This is kind of a hack: it basically writes subnodes and lengths to a new character label and then
@@ -794,56 +1166,34 @@ collapse.singletons <- function(phy)
 #
 # -If any of the SIMMAP datatypes are is.na, then they are left out!  TODO:  Look into changing this in the future
 #
-write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
+write.simmap <- function(x,usestate=NULL,file="",vers=1.1,...)
 {
 	splitchar = ifelse(vers==1.0,";",":")
-	if(hasSubNodes(x))
+	
+	#if(hasSubNodes(x))
+	if(hasData(x))
 	{
-		tdat = tdata(x)[,usestate,drop=F]
-		sdat = sndata(x)[,usestate,drop=F]
-		snedges.inds = apply(snbranch(x),1,function(i) .edge.index(x,i[1],i[2]))
-		es = edges(x)[,2]
-		elens = edgeLength(x)
-		newlenlab=character(length(es))
-		for(ii in seq(length(es)))
-		{
-			nodeid=es[ii]
-			if(!(ii %in% snedges.inds))
-			{
-				if(!is.na(tdat[nodeid,1]))
-					newlenlab[ii] = paste(tdat[nodeid,1] ,",", elens[ii],sep="")
-			} else {
-				snind = which(snedges.inds == ii)
-				snlens = snposition(x)[snind,] * elens[ii]
-				snstates = sdat[snind,1]
-				if(!is.matrix(snlens))
-					snlens = matrix(snlens,nrow=1)
-				snpos = apply(snlens,1,mean)
-				snpos = sort(snpos,T)
-				newlenlab[ii] = paste(tdat[nodeid,1],",",(elens[ii]-max(snpos)),sep="")
-				
-				if(length(snpos)>1)
-					for(jj in seq(length(snpos)-1))
-						newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
-				
-				newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),",",tail(snpos,1),sep="")
-				
-			}
+		newlab=NULL
+		if(vers == 1.5){
+			newlab <- newlabels.v15(x,usestate,",")
+		} else {
+			newlab <- newlabels.v1x(x,usestate,splitchar)
 		}
-		oldlabs = labels(x)[es]
-		names(newlenlab) <- oldlabs
-		oldlabs[which(is.na(oldlabs))] <- ""
-		newlab = paste(oldlabs,":{", newlenlab ,"}",sep="")
-		newlab[which(newlenlab=="")] <- ""  # remove any <NA> data
 		
 		# reorder:
-		newlab = newlab[order(es)]
+		es = edges(x)[,2]
+		altorder = order(es)
+		newlab = newlab[altorder]
 		ntype = nodeType(x)
 		phy = as(x,'phylo')
 		newedges = edges(x)
-		newphy = list(edge=newedges,tip.label=newlab[which(ntype=="tip")],node.label=newlab[which(ntype!="tip")],Nnode=nrow(newedges))
-		class(newphy) <- "phylo"
+		newphy = list(edge=newedges,
+						tip.label=newlab[which(ntype=="tip")],
+						node.label=newlab[which(ntype!="tip")],
+						Nnode=length(which(ntype!="tip"))
+					)
 		
+		class(newphy) <- "phylo"
 		
 		################################################################
 		# borrowed code from APE (write.tree.R):
@@ -906,24 +1256,45 @@ write.simmap <- function(x,usestate="simmap_state",file="",vers=1.1,...)
 		phy = as(x,'phylo')
 		write.tree(phy,file,...)
 	}
-}	
+}
+
+	
+# write simmap version 1.1 strings
+#
+write.simmap.old <- function(x,usestate=NULL,file="",...)
+{
+	write.simmap(x,usestate,file=file,vers=1.1,...)
+}
+
+# write simmap version 1.5 strings
+#
+write.simmap.new <- function(x,usestate=NULL,file="",...)
+{
+	write.simmap(x,usestate,file=file,vers=1.5,...)
+}
+
 
 
 # This is the main write function for phylo4d_ext
 # Mainly ripped from APE write.nexus function
 #
+# @param obj a list or single phylo4d_ext objects
+# @param file the file to write to
+# @param translate should the tree names be moved to a special section
+# @param vers which SIMMAP version should be used
+# @param usestates if NULL, then all data columns are used
 #
-write.nexus.simmap <- function(obj, file = "", translate = TRUE)
+write.nexus.simmap <- function(obj, file = "", translate = TRUE, vers=c(1.1, 1.0, 1.5), usestates=NULL)
 {
 	if(!is.list(obj))
 	{
 		if(!is(obj,"phylo4d_ext"))
-			stop("This function is only made to work with phylo4d_ext objects.")
+			stop("This function is only made to work with phylo4d_ext objects. Use write.nexus() instead.")
 		
 		obj <- list(obj)
 	} else {
 		if(!all(sapply(obj,is,'phylo4d_ext')))
-			stop("This function is only made to work with phylo4d_ext objects or lists of such.")
+			stop("This function is only made to work with phylo4d_ext objects or lists of such. Use write.nexus() instead.")
 	}
 	ntree <- length(obj)
 	
@@ -978,7 +1349,11 @@ write.nexus.simmap <- function(obj, file = "", translate = TRUE)
 	    	tprefix = paste(tprefix," = [&U] ",sep="")
 		}
 		cat(tprefix, file = file, append = TRUE)
-        cat(write.simmap(obj[[i]], file = ""),"\n", sep = "", file = file, append = TRUE)
+		
+		if(is.null(usestates))
+			usestates = colnames(tdata(obj[[i]]))
+		
+        cat(write.simmap(obj[[i]], usestates, "", vers),"\n", sep = "", file = file, append = TRUE)
     }
     cat("END;\n", file = file, append = TRUE)
 }
@@ -1027,6 +1402,11 @@ nSubNodes <- function(x)
 	return (length(x@subnode.id))
 }
 
+setMethod("hasSubNodes", signature(x="list"),
+  function(x) {
+	return(sapply(x,hasSubNodes))
+})
+
 
 setMethod("hasSubNodes", signature(x="phylo4d_ext"),
   function(x) {
@@ -1044,6 +1424,25 @@ setMethod("hasSubNodes", signature(x="phylo"),
 	return(FALSE)
 })
 
+setMethod("hasData", signature(x="phylo"),
+  function(x) {
+	return(FALSE)
+})
+
+setMethod("hasData", signature(x="phylo4"),
+  function(x) {
+	return(FALSE)
+})
+
+setMethod("hasData", signature(x="phylo4d"),
+  function(x) {
+	return(ncol(tdata(x))!=0)
+})
+
+setMethod("hasData", signature(x="list"),
+	function(x) {
+		return(sapply(x,hasData))
+})
 
 
 getSubNodeData <- function(x,colname)
@@ -1175,10 +1574,12 @@ showSubNodes <- function(x)
 			if(!is.matrix(snpos)) 
 				snpos = matrix(snpos,nrow=1)
 			
+			snmeans = apply(snpos,1,mean)
+			
 			for(xx in seq(length(snid)))
 			{
 				nbreaks = max(1, floor(diff(snpos[xx,]) / breaksize) )
-				from = floor(snpos[1] / breaksize)
+				from = floor(snpos[xx,] / breaksize)
 				tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==regchar] = overlapchar
 				tmpstr[seq(from,length.out=nbreaks)][tmpstr[seq(from,length.out=nbreaks)]==brchar] = regchar
 				#tmpstr[seq(from,length.out=nbreaks)] = rep(regchar,nbreaks)

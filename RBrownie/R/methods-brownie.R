@@ -14,6 +14,7 @@ setGeneric("datatypes", function(x) { standardGeneric("datatypes")} )
 setGeneric("datatypes<-", function(x,enforce=TRUE,value) { standardGeneric("datatypes<-")} )
 setGeneric("taxasets", function(x) { standardGeneric("taxasets")} )
 setGeneric("taxasets<-", function(x,taxnames,value) { standardGeneric("taxasets<-")} )
+setGeneric("removeTaxasets", function(x,index) { standardGeneric("removeTaxasets")} )
 setGeneric("hasTaxasets", function(x) { standardGeneric("hasTaxasets")} )
 
 
@@ -399,6 +400,12 @@ setReplaceMethod("taxasets",signature(x="list"),
 	return(x)
 })
 
+
+setMethod("removeTaxasets", signature(x="phylo4d",index="character"), 
+	function(x,index) {
+		
+})
+	
 
 #
 taxaname.to.taxind <- function(x,taxnames)

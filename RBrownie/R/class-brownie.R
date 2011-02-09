@@ -12,7 +12,9 @@
 # @param commands text commands to be placed in a brownie block
 # @param datatypes annotation for the data part of phylo4d
 setClass("brownie",
-		representation("phylo4d_ext",commands="character",datatypes="character")
+		representation(commands="character",datatypes="character"),
+		prototype=prototype(commands="",datatypes=""),
+		contains="phylo4d_ext"
 		)
 
 

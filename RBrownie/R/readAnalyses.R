@@ -59,14 +59,20 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 	{
 		for(jj in seq(length(datasep)))
 		{
+			# warning check:
 			tmpdf = data.frame(matrix(datasep[[jj]],nrow=1),stringsAsFactors=F)
 			if(isone){
-				names(tmpdf) <- datahead[[1]]
+				names(tmpdf) <- head(datahead[[1]],ncol(tmpdf))
 			} else {
-				names(tmpdf) <- datahead[[jj]]
+				names(tmpdf) <- head(datahead[[jj]],ncol(tmpdf))
 			}
-			#dfout[jj,] = datasep[[jj]]
-			dfout = merge(dfout,tmpdf,all=T) 
+			
+			if(length(datahead[[jj]]) != length(datasep[[jj]]))
+				warning("read.analysis.output: Number of columns does not match number of data pieces and thus columns might be incorrectly matched\n")
+			
+			if( !(ncol(tmpdf)==0 || nrow(tmpdf)==0) )
+				dfout = merge(dfout,tmpdf,all=T) 
+			
 		}
 	} else {
 		warning("No information could be retrieved from analyis. Brownie might not have run properly.")
@@ -119,6 +125,7 @@ read.discrete.output <- function(filename,txt=NULL,show.warn=FALSE,...)
 read.continuous.output <- function(filename,txt=NULL,...)
 {
 	# The first line with tabs is the header:
+	ret=NULL
 	tabpattern="\t"
 	output=character(0)
 	if(!is.null(txt))
@@ -132,11 +139,11 @@ read.continuous.output <- function(filename,txt=NULL,...)
 	if(length(tablines)!=0)
 	{
 		output = output[tablines]
+		ret = read.analysis.output(txt=output)
 	} else {
-		stop("Failed to find any output that could be coersed into a table\nOUTPUT:\n",output)
+		warning("Failed to find any output that could be coerced into a table.\n\nOUTPUT:\n'",output,"'")
+		ret=data.frame(NULL)
 	}
-	
-	ret = read.analysis.output(txt=output)
 	
 	return(ret)
 }
@@ -306,7 +313,9 @@ summaryRatetest <- function(ratedf,txt=NULL,short=FALSE)
 }
 
 
-
+# TODO: Make sure this works when treeloop and charloop are not used
+#
+#
 summaryCont <- function(contdf,txt=NULL,short=FALSE)
 {
 	cat("Summary of ratetest results:")
@@ -319,7 +328,10 @@ summaryCont <- function(contdf,txt=NULL,short=FALSE)
 	
 	# validation
 	if(is.null(contdf$Tree) || is.null(contdf$Char) || is.null(contdf$Model) || is.null(contdf$AICc))
-		stop("Could not find Trees or Char columns in the ratedf dataframe.\nAvailable columns are:",colnames(contdf))
+	{
+		missingcols = setdiff(c("Tree","Char","Model","AICc"),colnames(contdf))
+		stop("Missing columns in the contdf data.frame: ",paste(missingcols,collapse=","))
+	}
 	
 	umodels = unique(contdf$Model)		
 	utrees = unique(contdf$Tree)
@@ -343,7 +355,7 @@ summaryCont <- function(contdf,txt=NULL,short=FALSE)
 			aiccs = append(aiccs,aicc)
 			aics = append(aics,aic)
 		}
-
+		
 		aiccsplit = split(aiccs,mods)
 		aiccdiff = matrix(NA,nrow=length(aiccsplit),ncol=length(aiccsplit))
 		rownames(aiccdiff) = sprintf("%s",names(aiccsplit))
