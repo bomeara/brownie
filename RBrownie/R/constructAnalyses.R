@@ -174,7 +174,10 @@ runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
 	outtext = run.analysis(brfile)
 	if(length(outtext$textout)>0)
 	{
-		# NOTE: this will be a problem if outdat == NULL (if the wrong model is used).
+		# rm empty lines:
+		any(outtext$textout=="")
+			outtext$textout <- outtext$textout[-which(outtext$textout=="")]
+		
 		outdat = read.continuous.output(txt=scan.textout(outtext$textout[1]))
 		
 		if(length(outtext$textout)>1){

@@ -88,8 +88,10 @@ get.nodenames<-function(newick.txt)
 # @param 'quick' if TRUE, then the text string containing a tree is 
 #		 only checked to see if the formatting looks right.  If FALSE,
 #		 the method attempts to create a tree from the string.
+# @param 'vers' can take the values (1.0,1.1,1.5); a meaningless result
+#		 will be returned otherewise
 #
-is.simmap <- function(finput="",text=NULL,vers=c(1.1,1.5),quick=TRUE)
+is.simmap <- function(finput="",text=NULL,vers=c(1.1),quick=TRUE)
 {
 	if(!is.null(text)){
 		# TODO: check text for newlines and split on them if they exist.
@@ -627,7 +629,7 @@ read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
 # nexus files where trees have simmap formatting.  If they don't, then
 # readNexus should be used instead.
 #
-read.nexus.simmap <- function(finput="",text=NULL)
+read.nexus.simmap <- function(finput="",text=NULL,vers=NULL)
 {
 	outtrees = NULL
 	if(!is.null(text)){

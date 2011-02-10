@@ -61,14 +61,16 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 		{
 			# warning check:
 			tmpdf = data.frame(matrix(datasep[[jj]],nrow=1),stringsAsFactors=F)
+			
 			if(isone){
 				names(tmpdf) <- head(datahead[[1]],ncol(tmpdf))
 			} else {
 				names(tmpdf) <- head(datahead[[jj]],ncol(tmpdf))
 			}
 			
-			if(length(datahead[[jj]]) != length(datasep[[jj]]))
-				warning("read.analysis.output: Number of columns does not match number of data pieces and thus columns might be incorrectly matched\n")
+			if(length(datahead[[ifelse(isone,1,jj)]]) != length(datasep[[jj]])){
+				warning("Number of columns does not match number of \ndata pieces and thus columns might be \nincorrectly matched: ",jj))
+			}
 			
 			if( !(ncol(tmpdf)==0 || nrow(tmpdf)==0) )
 				dfout = merge(dfout,tmpdf,all=T) 
@@ -228,7 +230,7 @@ scan.treesout <- function(output)
 	for(ii in seq(length(output)))
 	{
 		tmpstr = gsub("'","",output[ii])  # brownie puts little tip marks as internal node names
-		if(is.simmap(text=tmpstr))
+		if(is.simmap(text=tmpstr,vers=1.1))
 		{
 			tmptree = read.simmap(text=tmpstr)
 		} else {
