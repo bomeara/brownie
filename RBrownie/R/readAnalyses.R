@@ -69,7 +69,7 @@ read.analysis.output <- function(filename,txt=NULL,rowsep='\n',colsep='\t')
 			}
 			
 			if(length(datahead[[ifelse(isone,1,jj)]]) != length(datasep[[jj]])){
-				warning("Number of columns does not match number of \ndata pieces and thus columns might be \nincorrectly matched: ",jj))
+				warning("Number of columns does not match number of \ndata pieces and thus columns might be \nincorrectly matched: ",jj)
 			}
 			
 			if( !(ncol(tmpdf)==0 || nrow(tmpdf)==0) )
