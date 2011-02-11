@@ -704,14 +704,14 @@ read.nexus.simmap <- function(finput="",text=NULL,vers=NULL)
 		
 		# check for simmap style
 		# remove first comment (should others be removed?
-		if(is.simmap(text=treesblock[linenumb])){
-			trtmp = unname(read.simmap(text=tmpstr))
-		} else if (is.simmap(text=treesblock[linenumb],vers=1.5)) {
-			trtmp = unname(read.simmap.new(text=tmpstr))
-		} else if (is.simmap(text=treesblock[linenumb],vers=1.0)){
-			trtmp = unname(read.simmap(text=tmpstr,vers=1.0))
+		if(is.simmap(text=tmpstr)){
+			trtmp = phyext(unname(read.simmap(text=tmpstr)))
+		} else if (is.simmap(text=tmpstr,vers=1.5)) {
+			trtmp = phyext(unname(read.simmap.new(text=tmpstr)))
+		} else if (is.simmap(text=tmpstr,vers=1.0)){
+			trtmp = phyext(unname(read.simmap(text=tmpstr,vers=1.0)))
 		} else {
-			trtmp = read.tree(text=tmpstr)
+			trtmp = phyext(read.tree(text=tmpstr))
 		}
 		
 		

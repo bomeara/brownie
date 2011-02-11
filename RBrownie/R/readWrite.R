@@ -40,6 +40,7 @@ readBrownie<-function(fname)
 	} else {
 		
 		# should return a list of phylo4 objects with singleton nodes
+		# NOTE (2/11) - this now returns 'phylo4d_ext' objects
 		phy.part = read.nexus.simmap(fname) 
 		
 		# process data part (the hard way)
@@ -71,7 +72,7 @@ readBrownie<-function(fname)
 					stop("Could not match up tree names against data names")
 				
 				neworder=unname(sapply(tipmods,function(i) which(i == data.names)))
-				data.part.tmp = data.part[neworder,]
+				data.part.tmp = data.part[neworder,,drop=F]
 					
 # 				} else {
 # 					# This will probably never be called until NCL is updated
@@ -79,7 +80,7 @@ readBrownie<-function(fname)
 # 				}
 
 				phy.part[[tind]] = addData(phy.part[[tind]],tip.data=data.part.tmp,match.data=F)
-				phy.part[[tind]] = phyext(phy.part[[tind]])
+				phy.part[[tind]] = phyext(phy.part[[tind]])  # NOTE (2/11): this should be redundant since read.nexus.simmap now returns only 'phylo4d_ext' objects
 			}
 		}
 	}
@@ -286,6 +287,7 @@ readBrownie<-function(fname)
 	mmatrix.data = unname(apply(mmatrix.data,1,paste,collapse="\t"))
 	mmatrix.end = ";\n\nEND;"
 	
+
 	return(c(header,
 			header.title,
 			header.dims,
