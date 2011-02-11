@@ -32,6 +32,11 @@ phyextPlot <- function(x,states,states.col,
 		{
 			tmp = as.character(unique(tdata(junk,'all')[,datapart,drop=F])[,1])
 			tmp = tmp[!is.na(tmp)]
+			if(hasSubNodes(junk) && plot.subnodes)
+			{
+				tmp = c(tmp,as.character(unique(sndata(junk)[,datapart,drop=F])[,1]))
+				tmp = tmp[!is.na(tmp)]
+			}
 			states = c(states.na,tmp)
 			states.col = c(1,seq(from=2,length.out=length(states)-1))
 		}
