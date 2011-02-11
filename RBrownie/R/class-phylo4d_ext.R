@@ -135,6 +135,7 @@ setMethod("phyext", "phylo4d",
 		# 1.)
 		einds = which(apply(edges(x),1,function(i) !(i[1]%in%snodeid) && i[2]%in%snodeid  )) # get all first singletons-on-a-branch
 		alle = edges(x)[einds,]
+		if(!is.matrix(alle))  alle = matrix(alle,nrow=1)
 		elens = edgeLength(x)[einds]
 		#edata = data.frame()
 		#colnames(edata) <- dnames
