@@ -172,10 +172,11 @@ runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
 	writeBrownie(brobj,brfile)
 	
 	outtext = run.analysis(brfile)
+	outdat=NULL
 	if(length(outtext$textout)>0)
 	{
 		# rm empty lines:
-		any(outtext$textout=="")
+		if(any(outtext$textout==""))
 			outtext$textout <- outtext$textout[-which(outtext$textout=="")]
 		
 		outdat = read.continuous.output(txt=scan.textout(outtext$textout[1]))
