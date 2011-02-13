@@ -457,6 +457,7 @@ read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
 	subnode.pos = matrix(NA,nrow=0,ncol=2)
 	subnode.branch = matrix(NA,nrow=0,ncol=2)
 	subnode.data = character(0)
+	subnode.commentid = integer(0)
 	
 	phy.data = NULL
 	for (kk in seq(length(comments)))
@@ -558,6 +559,7 @@ read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
 						tmpstate=states[subind]
 						names(tmpstate) <- metric.basename
 						subnode.data = append(subnode.data,tmpstate)  # TODO: make sure this works well
+						subnode.commentid = append(subnode.commentid,kk)
 					}
 				}
 			}
@@ -615,8 +617,15 @@ read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
 	if(length(subnode.data)!=0){
 		# add subnode stuff:
 		phyd = phyext(phyd)
-		for(ii in seq(length(subnode.data)))
-			phyd = addSubNode(phyd,subnode.branch[ii,1],subnode.branch[ii,2],subnode.pos[ii],subnode.data[ii],pos.is.fraction=TRUE)
+		usubnodes = unique(subnode.commentid)
+#		for(ii in seq(length(subnode.data)))
+#		{
+		for(ii in seq(length(usubnodes)))
+		{
+			thisinds = which(subnode.commentid == usubnodes[ii])
+			tmpdat = subnode.data[thisinds]
+			phyd = addSubNode(phyd,subnode.branch[thisinds[1],1],subnode.branch[thisinds[1],2],subnode.pos[thisinds[1]],tmpdat,pos.is.fraction=TRUE)
+		}
 	}
 	
 	return(phyd)
