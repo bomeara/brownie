@@ -632,7 +632,7 @@ read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
 				thisinds = cominds[which(subnode.subind[cominds] == usubnodes[jj])]
 				tmpdat = subnode.data[thisinds]
 				# sanity check:
-				check = apply(subnode.pos[thisinds,],1,mean)
+				check = apply(subnode.pos[thisinds,,drop=FALSE],1,mean)
 				stopifnot(all(check == check[1]))
 				phyd = addSubNode(phyd,subnode.branch[thisinds[1],1],subnode.branch[thisinds[1],2],subnode.pos[thisinds[1]],tmpdat,pos.is.fraction=TRUE)
 			}
