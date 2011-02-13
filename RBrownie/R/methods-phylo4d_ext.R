@@ -782,6 +782,21 @@ expand.singles <- function(tree)
 	
 	if(hasSingle(tree))
 	{
+		# Need to add labels to trees if any are NA:
+		# TODO: make sure labels are unique
+		if(any( is.na(labels(tree)) ))
+		{
+			count = round(runif(1) * 1e6)
+			for(ii in which(is.na(labels(tree))))
+			{
+				labels(tree)[ii] <- sprintf("Internal%07d",count)  # warning, these labels might not be unique
+				count = round(runif(1) * 1e6)
+			}
+		}
+		
+		# rename 'Singleton' labels
+		labels(tree) = sub("^Singleton(.*)$","Internal\\1",labels(tree))
+
 		tmptable=table(tree@edge[,1])
 		snodes = as.integer(names(tmptable)[which(tmptable==1)])
 		snodes = snodes[snodes!=0] # 0 is the root node (check on this...)
