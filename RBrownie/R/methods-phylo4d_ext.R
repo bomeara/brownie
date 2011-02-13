@@ -1387,8 +1387,9 @@ write.nexus.simmap <- function(obj, file = "", translate = TRUE, vers=c(1.1, 1.0
 		}
 		cat(tprefix, file = file, append = TRUE)
 		
-		if(is.null(usestates))
-			usestates = colnames(tdata(obj[[i]]))
+		# NOTE (2/13) - write.simmap does this step now, and better:
+		#if(is.null(usestates))
+		#	usestates = colnames(tdata(obj[[i]]))
 		
         cat(write.simmap(obj[[i]], usestates, "", vers),"\n", sep = "", file = file, append = TRUE)
     }

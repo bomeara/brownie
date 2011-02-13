@@ -331,7 +331,7 @@ setMethod("writeBrownie", signature(x="list"),
 		
 		# Perpare tree
 		#phy = as(x[[1]],'phylo')
-		write.nexus.simmap(x,file=tmp1)
+		write.nexus.simmap(x,file=tmp1,vers=1.1)
 		
 		# if there is tip data to be written
 		#
