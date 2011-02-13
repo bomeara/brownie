@@ -401,10 +401,35 @@ setReplaceMethod("taxasets",signature(x="list"),
 })
 
 
-setMethod("removeTaxasets", signature(x="phylo4d",index="character"), 
+setMethod("removeTaxasets", signature(x="brownie",index="character"), 
 	function(x,index) {
-		
+		tnames = names(taxasets(br))
+		altnames = sub("^TAXSET_(.*)$","\\1",tnames)
+		if(index %in% tnames)
+		{
+			return(removeTaxasets(x,index = which(index == tnames)[1]))
+		} else {
+			if(index %in% altnames)
+			{
+				return(removeTaxasets(x,index = which(index == altnames)[1]))
+			} else{
+				stop("Could not find taxaset with name ",index)
+			}
+		}
 })
+
+
+setMethod("removeTaxasets", signature(x="brownie",index="numeric"), 
+	function(x,index) {
+	datind = taxind.to.dataind(br,index)
+	if(length(datind) != 1)
+		stop("problem converting taxa index into data index")
+	
+	br@data = br@data[,-datind,drop=F]
+	br@datatypes = br@datatypes[-datind]
+	return(br)
+})
+
 	
 
 #
@@ -423,9 +448,9 @@ taxind.to.dataind <- function(x,taxind)
 {
 	index = integer(0)
 	if(is.character(taxind)){
-		index = which(tdata(x,'tip')==taxind)
+		index = which(colnames(tdata(x,'tip'))==taxind)
 		if(length(index) == 0)
-			index = which(tdata(x,'tip')==taxaset.rename(taxind))
+			index = which(colnames(tdata(x,'tip'))==taxaset.rename(taxind))
 		
 		if(length(index) == 0)
 			stop("Could not find taxaset called: ",taxind,"\n These are available:",taxaset.names(x))
