@@ -774,7 +774,7 @@ read.nexus.simmap <- function(finput="",text=NULL,vers=NULL)
 # this function is mainly for plotting and saving files
 # TODO: convert all explicit calls to @'slot' to their accessor counterpart (e.g. tree@edge.length goes to edgeLength(tree)
 #
-expand.singles <- function(tree)
+expand.singles <- function(tree,keep.data=FALSE)
 {
 	# note: tips should be indexed 1...N, where N is the number of tips
 	if(!is(tree,"phylo4"))
@@ -782,6 +782,8 @@ expand.singles <- function(tree)
 	
 	if(hasSingle(tree))
 	{
+		has.data = hasData(tree) && keep.data		
+
 		# Need to add labels to trees if any are NA:
 		# TODO: make sure labels are unique
 		if(any( is.na(labels(tree)) ))
@@ -823,7 +825,14 @@ expand.singles <- function(tree)
 		nnodes = nTips(tree) + nNodes(tree)
 		names(tree@label) <- as.character(seq(1,nnodes))
 		names(tree@edge.length) <- apply(tree@edge,1,paste,collapse="-")
+		if(has.data)
+		{
+			rownames(tree@data) <- as.integer(rownames(tree@data)) + nnew
+		}
 	}
+	
+	if(!keep.data)
+		tree = as("phylo4",tree)
 	
 	return(tree)
 }
