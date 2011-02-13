@@ -1114,12 +1114,17 @@ newlabels.v15 <- function(x,usestate,splitchar)
 			
 		} else {
 			
+			topper = "[&"
+			backer = paste("]",elens[ii],sep="")
+			middle = ""
+
 			# retrieve subnode data:
 			snind = which(snedges.inds == ii)
 			snlens = snposition(x)[snind,] * elens[ii]
 			
 			for(colind in seq(length(usestate)))
 			{
+				tmp = ""
 				snstates = sdat[snind,usestate[colind]]
 				if(!is.matrix(snlens))
 					snlens = matrix(snlens,nrow=1)
@@ -1131,17 +1136,27 @@ newlabels.v15 <- function(x,usestate,splitchar)
 				snstates = snstates[neword]
 				
 				# first, write the DESC state:
-				newlenlab[ii] = paste(sprintf("[&%s={%s",usestate[colind],tdat[nodeid,usestate[colind]]),(elens[ii]-max(snpos)),sep=",")
+				tmp = paste(sprintf("%s={%s", usestate[colind],tdat[nodeid,usestate[colind]]),(elens[ii]-max(snpos)),sep=",")
+				#newlenlab[ii] = paste(sprintf("[&%s={%s",usestate[colind],tdat[nodeid,usestate[colind]]),(elens[ii]-max(snpos)),sep=",")
 				
 				# intermediates, from DESC -> ANC
 				if(length(snpos)>1)
 					for(jj in seq(length(snpos)-1))
-						newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
+						tmp = paste(tmp,splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
+						#newlenlab[ii] = paste(newlenlab[ii],splitchar,snstates[jj],",",(snpos[jj]-snpos[(jj+1)]),sep="")
 				
 				# last subnode
-				newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),ifelse(colind==length(usestate),"",","),sep="")
+				#newlenlab[ii] = paste(newlenlab[ii],splitchar,tail(snstates,1),ifelse(colind==length(usestate),"",","),sep="")
+				tmp = paste(tmp,splitchar,tail(snstates,1),"}",sep="")
+				middle = paste(middle,tmp,ifelse(colind==length(usestate),"",","),sep="")
 			}
-			newlenlab[ii] = paste(newlenlab[ii],"}]",elens[ii],sep="")
+			
+			if(middle==""){
+				newlenlab[ii] = as.character(elens[ii])
+			} else {
+				newlenlab[ii] = paste(topper,middle,backer,sep="")
+			}
+			
 		}
 	}
 	# End setup SIMMAP comments
@@ -1488,10 +1503,13 @@ addSubNode <- function(x,anc,dec,position,dataf,pos.is.fraction=FALSE)
 {
 	
 	if(!is(x,'phylo4d_ext')){
-		warning("x is not an extended phylo4d object")
-		return(x)
+		warning("Converting x to an extended phylo4d object")
+		x = phyext(x)
 	}
 	
+	if(missing(dataf))
+		stop("dataf needs to contain something")
+
 	eind = .edge.index(x,anc,dec)
 	if(is.na(eind))
 		stop("Failure to find edge from ",anc, " to ",dec,"\n")
@@ -1503,33 +1521,57 @@ addSubNode <- function(x,anc,dec,position,dataf,pos.is.fraction=FALSE)
 	if(position > ifelse(pos.is.fraction,1,elen))
 		stop("Position: ",position,", is greater than allowed value of ",ifelse(pos.is.fraction,1,elen),"\n")
 	
-	# also check for overlapping subnodes
-	
+	# TODO: check for overlapping subnodes
+	# TODO: check to see if every col in data.frame has 
+	#		an associated col in tdata() AND that col is  
+	#		defined for internal and tip nodes
+
 	# construct data frame:
 	newdf = getEmptyDataFrame(x)
 	if(is.data.frame(dataf))
 	{
-		if( all(names(dataf) == names(newdf)) )
+		if( all(names(dataf) == names(newdf)) ){
 			newdf = rbind(newdf, dataf)
+		} else {
+			# only use cols which exist in tdata(x)
+			colinds = which(names(dataf) %in% names(newdf)) 
+			if( length(colinds) == 0 )
+				stop("Could not find any common columns between dataf and tdata(x)")
+			
+			newdf = merge(newdf,dataf[,colinds,drop=F],all=T)
+		}
 		
 	} else {
+		
 
-		if(ncol(newdf) == length(dataf)){
-			newdf = getEmptyDataFrame(x,stringsAsFactors=FALSE)  # ??
-			newdf[1,] <- dataf
-		} else {
-			newdf[1,] <- rep(NA,ncol(newdf))
-			# try to match up names
-			ndf = names(dataf)
-			count = 1
-			
-			for(nm in ndf){
-				nmind = which(names(newdf)==nm)
-				if(!is.null(nmind) && length(nmind) != 0)
-					newdf[1,nmind] = dataf[count]
-				count = count + 1
+		newdf = getEmptyDataFrame(x,stringsAsFactors=FALSE)  # ??
+
+		# special case (if lengths are the same, then assume that they are in order):
+		if( length(dataf) == ncol(newdf) && is.null(names(dataf)) )
+			names(dataf) <- names(newdf)
+
+		newdf[1,] <- rep(NA,ncol(newdf))
+		# try to match up names
+		ndf = names(dataf)
+		count = 1
+		
+		for(nm in ndf){
+			nmind = which(names(newdf)==nm)
+			if(!is.null(nmind) && length(nmind) != 0)
+			{
+				if(is.factor(newdf[,nmind])  && !(dataf[count] %in% levels(newdf[,nmind])) )
+				{
+					# need to add more levels if this column is a factor
+					newlevs = c(levels(newdf[,nmind]),unname(dataf[count]))
+					levels(newdf[,nmind]) <- newlevs
+					levels(tdata(x)[,nmind]) <- newlevs	# TODO: TEST THIS!
+				}
+				newdf[1,nmind] = dataf[count]
 			}
+			count = count + 1
 		}
+
+		
 	}
 	
 	if(!pos.is.fraction) 

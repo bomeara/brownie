@@ -37,6 +37,7 @@ phyextPlot <- function(x,states,states.col,
 				tmp = c(tmp,as.character(unique(sndata(junk)[,datapart,drop=F])[,1]))
 				tmp = tmp[!is.na(tmp)]
 			}
+			tmp = unique(tmp)
 			states = c(states.na,tmp)
 			states.col = c(1,seq(from=2,length.out=length(states)-1))
 		}
