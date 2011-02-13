@@ -210,6 +210,7 @@ setMethod("phyext", "phylo4d",
 		# condition the branches:
 		for(ii in seq(length(ancs)))
 		{
+			# NOTE: This function assumes that labels are unique (might not always be true...)
 			snode.branch = rbind(snode.branch, edges(x)[.edge.index(x, ancs.label[ii], decs.label[ii]),])
 			# Conrad: make subnode position a fraction of the parent branch length:
 			#snode.pos = rbind(snode.pos, rep(snode.length[ii],2))

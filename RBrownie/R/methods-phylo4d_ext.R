@@ -1409,7 +1409,7 @@ write.nexus.simmap <- function(obj, file = "", translate = TRUE, vers=c(1.1, 1.0
 
 # Internal:
 # NOTE: labels are case-sensitive
-#
+# NOTE: this function needs to deal with NAs
 .edge.index <- function(tree,anc,dec)
 {
 	if(!is(tree,'phylo4'))
@@ -1417,14 +1417,27 @@ write.nexus.simmap <- function(obj, file = "", translate = TRUE, vers=c(1.1, 1.0
 	
 	# convert from characters to indices
 	if(is.character(c(anc,dec))){
-		anc = which(labels(tree) == anc)
-		dec = which(labels(tree) == dec)
+		
+		if(is.na(anc)){
+			anc = which(is.na(labels(tree)))
+		} else {
+			anc = which(labels(tree) == anc)
+		}
+		
+		if(is.na(dec)){
+			dec = which(is.na(labels(tree)))
+		} else {
+			dec = which(labels(tree) == dec)
+		}
+		
 	}
 			
-	if(is.na(anc) || is.na(dec) || is.null(anc) || is.null(dec) || length(anc)!=1 || length(dec)!=1)
+	if(is.na(anc) || is.na(dec) || is.null(anc) || is.null(dec))
 		stop("Must specify valid ancestor and decendent: ",anc,"-",dec)
 	
-	eind = which(edges(tree)[,1] == anc & edges(tree)[,2] == dec)
+	#eind = which(edges(tree)[,1] == anc & edges(tree)[,2] == dec)
+	eind = which(edges(tree)[,1] %in% anc & edges(tree)[,2] %in% dec)
+
 	if(length(eind) != 1){
 		warning("No connection between ",anc," and ",dec,"\n")
 		return(NA)
