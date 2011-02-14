@@ -16,8 +16,9 @@ df1=runNonCensored(junk,brfile="cont_junk_all.txt",models=brownie.models.continu
 #df2=runNonCensored(junk,brfile="cont_junk_all_mixed.txt",models=brownie.models.continuous()[sample(1:5)],treeloop=F,charloop=F)
 writeBrownie(junk,file="parrot.nex.tmp")
 junk2 = readBrownie("parrot.nex.tmp")
-df2=runNonCensored(junk2,brfile="cont_junk_all.txt",models=brownie.models.continuous()[1:5],treeloop=F,charloop=F)
+df2=runNonCensored(junk2,brfile="cont_junk_all2.txt",models=brownie.models.continuous()[1:5],treeloop=F,charloop=F)
 
+stopifnot(cmpAnalysis(df1,df2))
 
 #summaryCont(junkrun)
 #junkrun=runNonCensored(junk,brfile="cont_junk_noloop.txt",models=brownie.models.continuous()[1:5],treeloop=F,charloop=F)
@@ -44,6 +45,11 @@ junkrun=runNonCensored(junk,brfile="cont_junk_noloop10.txt",models=brownie.model
 
 junkrun=runNonCensored(junk,brfile="cont_junk_noloop_mixed.txt",models=brownie.models.continuous()[c(5,2,4,3,1)],treeloop=F,charloop=F)
 summaryCont(junkrun) # TODO: fix!
+
+
+junkrun=runNonCensored(junk,brfile="cont_junk_noloop_mixed.txt",models=brownie.models.continuous()[sample(1:5)],treeloop=T,charloop=T)
+summaryCont(junkrun) # TODO: fix!
+
 
 # Censored ("ratetest")
 junk = readBrownie("parrot.nex")

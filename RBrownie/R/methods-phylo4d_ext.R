@@ -316,16 +316,16 @@ read.simmap <- function(file="",text=NULL, vers=1.1, as.num=FALSE, ...)
 			esplice = length(tr$edge.length) # should be the last one
 			dec = nodeid
 			scount = scount + 1
-		}
-		
+		}		
 	}
 	
+
 	# create phylo4d object
 	new.labels = c(tr$tip.label,tr$node.label)
 	if(as.num)
 		dataVal = as.numeric(dataVal)
 	tmpdf = data.frame("simmap_state"=dataVal, row.names=new.labels[dataNode])
-	rettree = phylo4d(tr,all.data=tmpdf,missing.data="OK")
+	rettree = phylo4d(tr,all.data=tmpdf,missing.data="OK",rownamesAsLabels=TRUE)
 	
 	#write.nexus(tr,file="written.tree")
 	return(rettree)
@@ -932,7 +932,7 @@ collapse.singletons <- function(phy)
 			# hack it for now:
 			rettree = as(rettree,"phylo") # convert to ape
 			rettree <- collapse.singles(rettree) # collapse singles
-			rettree = phylo4d(rettree,all.data=newdata) # create new phylo4d object
+			rettree = phylo4d(rettree,all.data=newdata,rownamesAsLabels=TRUE) # create new phylo4d object
 		} else {
 			rettree = as(rettree,"phylo") # convert to ape
 			rettree <- collapse.singles(rettree) # collapse singles
@@ -1690,7 +1690,7 @@ showSubNodes <- function(x)
 			# collapse and print:
 			tmpstr = paste(tmpstr,collapse="")
 			if(length(snid)==1){
-				names(tmpstr) <- sprintf("Subnode at ~%0.2f on branch: %d to %d (brlen=%0.2f)",snpos[1]+diff(snpos[1,])/2,anc,dec,elen)
+				names(tmpstr) <- sprintf("Subnode at ~%0.2f on branch: '%s' to '%s' (brlen=%0.2f)",snpos[1]+diff(snpos[1,])/2,labels(x)[anc],labels(x)[dec],elen)
 			} else {
 				names(tmpstr) <- sprintf("%d Subnodes on branch: %d to %d (bren=%0.2f)",length(snid),anc[1],dec[1],elen)
 			}

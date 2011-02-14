@@ -173,7 +173,7 @@ cmpData <- function(t1,t2)
 
 # compare the output of two data.frames from Brownie analyses:
 #
-cmpanalysis<-function(df1,df2,allow.similar=TRUE,dferror=0.05)
+cmpAnalysis<-function(df1,df2,allow.similar=TRUE,dferror=0.05)
 {
 	retval = TRUE
 	df1names = colnames(df1)
