@@ -3,87 +3,8 @@ rm(list=ls())
 require(RBrownie)
 require(grid)
 
+source("diagnostics.R")
 
-cmptrees <- function(t1,t2)
-{
-	retval = TRUE
-	
-	if(nNodes(t1) != nNodes(t2)) {
-		warning("nNodes don't match")
-		retval = FALSE
-	}
-	
-	if(nTips(t1) != nTips(t2)) {
-		warning("nTips don't match")
-		retval = FALSE
-	}
-	
-	if(nEdges(t1) != nEdges(t2)) {
-		warning("nEdges don't match")
-		retval = FALSE
-	}
-	
-	if(xor(hasSingle(t2),hasSingle(t1))) {
-		warning("hasSingle don't match")
-		retval = FALSE
-	}
-	
-	if(xor(isRooted(t2),isRooted(t1))) {
-		warning("isRooted don't match")
-		retval = FALSE
-	}
-			
-	if(rootNode(t1) != rootNode(t2)) {
-		warning("rootNode don't match")
-		retval = FALSE
-	}
-	
-	# edge lengths:
-	if(any(is.na(edgeLength(t1))))
-		t1@edge.length[is.na(edgeLength(t1))] <- 0.000
-		
-	if(any(is.na(edgeLength(t2))))
-		t2@edge.length[is.na(edgeLength(t2))] <- 0.000
-
-			
-	if(any(sort(round(edgeLength(t1),2)) != sort(round(edgeLength(t2),2)))) {
-		warning("rootNode don't match")
-		retval = FALSE
-	}	
-		
-	retval
-}
-
-
-cmpSubNodes<-function(t1,t2)
-{
-	retval=TRUE
-	
-	if(xor(hasSubNodes(t2),hasSubNodes(t1))) {
-		warning("hasSubNodes don't match")
-		retval = FALSE
-	}
-
-	for(ii in seq(ncol(sndata(t1))))
-	{
-		if(!all(sort(sndata(t1)[,ii]) == sort(sndata(t2)[,ii]))) {
-			warning("sndata don't match",ii)
-			retval = FALSE
-		}
-	}
-	
-	if(!all(round(sort(apply(snposition(t1),1,mean))) == round(sort(apply(snposition(t2),1,mean))))) {
-		warning("snposition don't match")
-		retval = FALSE
-	}
-
-	if(!all(sort(apply(snbranch(t1),1,sum)) == sort(apply(snbranch(t2),1,sum)))) {
-		warning("snbranch don't match")
-		retval = FALSE
-	}
-
-	retval
-}
 
 p1=proc.time()
 
@@ -118,11 +39,11 @@ stopifnot(is(test1.read3,'try-error'))
 # write tests:
 test1.outted1 = capture.output(write.simmap(test1.ext,file=stdout(),vers=1.0))
 test1.reread1 = read.simmap(text=test1.outted1,vers=1.0)
-stopifnot(cmptrees(test1.reread1,test1.tree))
+stopifnot(cmptrees(test1.reread1,test1.tree,extended=F))
 stopifnot(cmpSubNodes(phyext(test1.reread1),test1.ext))
 test1.outted2 = capture.output(write.simmap(test1.ext,file=stdout(),vers=1.1))
 test1.reread2 = read.simmap(text=test1.outted2,vers=1.1)
-stopifnot(cmptrees(test1.reread2,test1.tree))
+stopifnot(cmptrees(test1.reread2,test1.tree,extended=F))
 stopifnot(cmpSubNodes(phyext(test1.reread2),test1.ext))
 test1.outted3 = capture.output(write.simmap(test1.ext,file=stdout(),vers=1.5))
 test1.reread3 = read.simmap.new(text=test1.outted3)

@@ -80,8 +80,18 @@ cmpSubNodes<-function(t1,t2)
 					retval = FALSE
 				}
 			} else {
-				#commonlevs = intersect(levels(sndata(t1)[,ii]),levels(sndata(t2)[,ii]))
-				if(!all(sort(as.character(sndata(t1)[,ii])) == sort(as.character(sndata(t2)[,ii])))) {
+
+				tmp1 = sndata(t1)[,ii]
+				tmp1 = tmp1[which(!is.na(tmp1))]
+				tmp1 = as.character(tmp1)
+				tmp1 = tmp1[which(tmp1!="NA")]
+
+				tmp2 = sndata(t2)[,ii]
+				tmp2 = tmp2[which(!is.na(tmp2))]
+				tmp2 = as.character(tmp2)
+				tmp2 = tmp2[which(tmp2!="NA")]
+
+				if( !all(sort(tmp1) == sort(tmp2)) ){
 					warning("sndata don't match",ii)
 					retval = FALSE
 				}
@@ -99,8 +109,14 @@ cmpSubNodes<-function(t1,t2)
 		#	warning("snbranch don't match")
 		#	retval = FALSE
 		#}
-
-		if(!all(sort(edgeLength(t1)[getSubNodeEdgeInds(t1)])==sort(edgeLength(t2)[getSubNodeEdgeInds(t2)])))
+	
+		# IMPORTANT NOTE: not sure if edges(...) and edgeLength(...) indices should sync up...
+		#				  - (2/13) reorder makes it look like they should ...
+		#				  - 
+		#     
+		tmp1 = round(edgeLength(t1)[getSubNodeEdgeInds(t1)],2)
+		tmp2 = round(edgeLength(t2)[getSubNodeEdgeInds(t2)],2)
+		if(!all(sort(tmp1)==sort(tmp2)))
 		{
 			warning("snbranch don't match")
 			retval = FALSE			
@@ -157,7 +173,7 @@ cmpData <- function(t1,t2)
 
 # compare the output of two data.frames from Brownie analyses:
 #
-cmpAnalysis<-function(df1,df2,allow.similar=TRUE,dferror=0.05)
+cmpanalysis<-function(df1,df2,allow.similar=TRUE,dferror=0.05)
 {
 	retval = TRUE
 	df1names = colnames(df1)
