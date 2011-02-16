@@ -2,19 +2,10 @@
 \Rdversion{1.1}
 \docType{class}
 \alias{phylo4d_ext-class}
-\alias{hasSubNodes}
-\alias{hasSubNodes,phylo4d_ext-method}
-\alias{hasSubNodes,phylo-method}
-\alias{hasSubNodes,phylo4-method}
 \alias{hasWeight}
 \alias{hasWeight,phylo4d_ext-method}
 \alias{hasWeight,list-method}
 \alias{plot,phylo4d_ext,missing-method}
-\alias{rmdata}
-\alias{rmdata,phylo4d_ext,numeric-method}
-\alias{rmdata,phylo4d,numeric-method}
-\alias{rmdata,phylo4d,character-method}
-\alias{rmdata,list,ANY-method}
 \alias{snbranch}
 \alias{snbranch,phylo4d_ext-method}
 \alias{snbranch,list-method}
@@ -73,10 +64,8 @@ Class \code{"\linkS4class{phylo4}"}, by class "phylo4d", distance 2.
 }
 \section{Methods}{
   \describe{
-    \item{hasSubNodes}{\code{signature(x = "phylo4d_ext")}: Check whether or not a phylo4d_ext object or list of these objects contain subnodes.  Basically, checks the length of the subnode.id slot. }
     \item{hasWeight}{\code{signature(x = "phylo4d_ext")}:  Checks whether or not a phylo4d_ext object or list of these objects contain weights. }
     \item{plot}{\code{signature(x = "phylo4d_ext", y = "missing")}: Calls \code{phyextPlot} with no extra arguments }
-    \item{rmdata}{\code{signature(x = "phylo4d_ext", index = "numeric")}: Remove data from a phylo4d_ext object.  If subnode.data exists, then the same data index is removed from this as well. }
     \item{snbranch}{\code{signature(x = "phylo4d_ext")}: Return the subnode.branch matrix }
     \item{sndata}{\code{signature(x = "phylo4d_ext")}: Return the subnode.data data.frame }
     \item{sndata<-}{\code{signature(x = "phylo4d_ext")}:  This adds column to the subnode data.frame.  Pass the datnames option which will be the column name(s) of the new data columns. }

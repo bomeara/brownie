@@ -403,7 +403,7 @@ setReplaceMethod("taxasets",signature(x="list"),
 
 setMethod("removeTaxasets", signature(x="brownie",index="character"), 
 	function(x,index) {
-		tnames = names(taxasets(br))
+		tnames = names(taxasets(x))
 		altnames = sub("^TAXSET_(.*)$","\\1",tnames)
 		if(index %in% tnames)
 		{

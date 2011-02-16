@@ -8,7 +8,7 @@ Read simmap-formatted newick strings (version 1.0)
 This function takes in a text string which contains a simmap-formatted newick string.  '{' and '}' are used in these strings to indicate subnodes and character states.
 }
 \usage{
-read.simmap(file = "", text = NULL, vers = 1.1, ...)
+read.simmap(file = "", text = NULL, vers = 1.1, as.num = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +20,9 @@ The simmap newick string
 }
   \item{vers}{
 Which SIMMAP format to use.  vers=1.0 uses ';' to split up tokens within a simmap block.  vers=1.1 uses ':'.  See examples
+}
+  \item{as.num}{
+Not currently used.
 }
   \item{\dots}{
 Not currently used.

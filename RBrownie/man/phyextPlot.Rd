@@ -12,7 +12,7 @@ phyextPlot(x,
 	states, 
 	states.col, 
 	states.na = "none", 
-	datapart = 1, 
+	usestate = 1, 
 	plot.subnodes = T, 
 	plot.points = T, 
 	line.widths, 
@@ -33,7 +33,7 @@ The colors for each state. The branches are painted these colors
   \item{states.na}{
 If \code{states} is missing, then this is used to represent the NAs in the dataset.  It is mainly for internal use.
 }
-  \item{datapart}{
+  \item{usestate}{
 This is the column index for a discrete data column whose states will be painted onto the tree.  The data column specified should contain data for every node in the tree.  For any missing data the \code{states.na} will be used.
 }
   \item{plot.subnodes}{
@@ -79,7 +79,7 @@ data(parrot)
 
 # default plot
 phyextPlot(parrot[[1]])
-phyextPlot(parrot[[1]],datapart=1) # same plot as the last one
+phyextPlot(parrot[[1]],usestate=1) # same plot as the last one
 
 # the states are 0,1 in tdata(parrot[[1]])[,1]
 # use black and red as the colors.

@@ -798,7 +798,7 @@ expand.singles <- function(tree,keep.data=FALSE)
 		}
 		
 		# rename 'Singleton' labels
-		labels(tree) = sub("^Singleton(.*)$","Internal\\1",labels(tree))
+		#labels(tree) = sub("^Singleton(.*)$","Internal\\1",labels(tree))
 
 		tmptable=table(tree@edge[,1])
 		snodes = as.integer(names(tmptable)[which(tmptable==1)])
@@ -833,7 +833,7 @@ expand.singles <- function(tree,keep.data=FALSE)
 	}
 	
 	if(!keep.data)
-		tree = as("phylo4",tree)
+		tree = as(tree,"phylo4")
 	
 	return(tree)
 }

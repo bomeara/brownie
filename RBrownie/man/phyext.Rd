@@ -7,6 +7,7 @@
 \alias{phyext,phylo-method}
 \alias{phyext,phylo4-method}
 \alias{phyext,phylo4d-method}
+\alias{phyext,phylo4d_ext-method}
 \title{A function which returns a phylo4d_ext object}
 \description{
  This is a shorthand way of creating phylo4d_ext objects
@@ -23,6 +24,8 @@
 \item{\code{signature(x = "phylo4")}}{ Convert to phylo4d_ext }
 
 \item{\code{signature(x = "phylo4d")}}{ Convert to phylo4d_ext }
+
+\item{\code{signature(x = "phylo4d_ext")}}{ Returns the argument without modification }
 }}
 \keyword{methods}
 

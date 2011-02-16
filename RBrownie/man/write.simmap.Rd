@@ -8,7 +8,7 @@ Write phylo4d_ext tree to newick string
 This function write a phylo4d_ext object to a SIMMAP-formatted (version 1.0 or 1.1) text string.  This function is mainly used in conjunction with \code{write.nexus.simmap}.  It is an extension of the \code{write.tree} function in the ape package.
 }
 \usage{
-write.simmap(x, usestate = "simmap_state", file = "", vers = 1.1, ...)
+write.simmap(x, usestate = NULL, file = "", vers = 1.1, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,7 +16,7 @@ write.simmap(x, usestate = "simmap_state", file = "", vers = 1.1, ...)
 A phylo4d_ext object
 }
   \item{usestate}{
-Which data column should be written in the internal simmap blocks
+Which data column should be written in the internal simmap blocks.  If NULL, then either the first data column (vers==1.1 || vers==1.0) or all data columns (vers==1.5) are used.
 }
   \item{file}{
 The file to write to.  If not set, then the tree is printed to the screen
@@ -47,7 +47,9 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{newlabels.v15}},
+\code{\link{newlabels.v1x}},
+\code{\link{write.nexus.simmap}}
 }
 \examples{
 data(parrot)

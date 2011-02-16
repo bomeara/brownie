@@ -5,7 +5,7 @@
 Plot a taxaset 
 }
 \description{
-Plot a taxaset onto the tree.  Basically, this function calls phyextPlot using a column of taxaset binary data as the datapart and excol and taxcol as the state.cols. 
+Plot a taxaset onto the tree.  Basically, this function calls phyextPlot using a column of taxaset binary data as the usestate and excol and taxcol as the state.cols. 
 }
 \usage{
 plot.taxaset(x, taxind, taxcol = "red", taxlwd = 1, excol = "grey", exlwd = 1, blankit = F, ...)

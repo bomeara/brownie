@@ -8,7 +8,7 @@ Write phylo4d_ext object or list to a nexus file
 This function is similar to \code{write.nexus} from the ape package.  If the there are subnodes in the object then these are written as SIMMAP-formatted (v1.0) strings.  
 }
 \usage{
-write.nexus.simmap(obj, file = "", translate = TRUE)
+write.nexus.simmap(obj, file = "", translate = TRUE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,6 +20,9 @@ The file to output to
 }
   \item{translate}{
 Should taxa names be translated (not written in every newick string) or not.
+}
+  \item{\dots}{
+Other arguments which are passed to \code{write.simmap}
 }
 }
 \details{
@@ -43,7 +46,8 @@ J. Conrad Stack
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{read.nexus.simmap}}
+\code{\link{read.nexus.simmap}},
+\code{\link{write.simmap}}
 }
 \examples{
 \dontrun{data(geospiza_ext)}

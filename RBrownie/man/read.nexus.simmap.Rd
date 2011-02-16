@@ -8,7 +8,7 @@ Read a nexus file with SIMMAP-formatted trees (v1.0)
 This function reads the trees from a nexus file where the trees are SIMMAP-formatted (v1.0).  It does not read any data blocks, just the trees.  If the file contains multiple trees, this function returns them as a list.
 }
 \usage{
-read.nexus.simmap(finput = "", text = NULL)
+read.nexus.simmap(finput = "", text = NULL, vers = NULL, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,6 +17,12 @@ A nexus file
 }
   \item{text}{
 Alternatively, read this text.
+}
+  \item{vers}{
+Which version of simmap to try to read.
+}
+  \item{\dots}{
+All other arguments are passed to internal \code{read.simmap} function.
 }
 }
 \details{
