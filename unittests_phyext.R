@@ -138,7 +138,7 @@ if(extended){
 	test5.fname = "CCHF_S_short.trees"
 }
 test5.trees = read.nexus.simmap(test5.fname)
-stopifnot(length(test5.trees) == 3001)
+stopifnot(length(test5.trees) == ifelse(extended,3001,4))
 test5.trees = phyext(test5.trees)
 write.nexus.simmap(test5.trees,file="CCHF_S_OUT.trees",vers=1.5)
 test5.reread = read.nexus.simmap("CCHF_S_OUT.trees")

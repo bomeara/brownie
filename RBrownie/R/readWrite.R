@@ -308,7 +308,7 @@ setMethod("writeBrownie",signature(x="brownie"),
 #		-Better way to convert CR/LF (in Windows)
 #
 setMethod("writeBrownie", signature(x="list"),
-	function(x, file=NULL, rmsimmap=TRUE, usestate=1) {
+	function(x, file=NULL, rmsimmap=TRUE, usestate='simmap_state') {
 		
 		# temporary files for nexus blocks:
 		#

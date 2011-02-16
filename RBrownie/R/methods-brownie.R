@@ -683,10 +683,16 @@ setMethod("rmdata", signature(x="brownie",index="character",subindex="missing"),
 	
 	if( !all(sort(ind) == sort(subind)) )
 	{
-		stop("Problem: datatypes and (@data, @subnode.data) have become out of sync")
+		warning("Problem: datatypes and (@data, @subnode.data) have become out of sync")
 	}
-	
-	return( rmdata(x,index=ind,subindex=subind) )
+
+	if( length(ind) == 0 && length(subind) == 0 )
+	{
+		warning("The data column ",index," was not found in brownie object and request to delete it is being ignored")
+		return(x)
+	} else {
+		return( rmdata(x,index=ind,subindex=subind) )
+	}
 })
 
 

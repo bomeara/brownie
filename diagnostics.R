@@ -127,6 +127,7 @@ cmpSubNodes<-function(t1,t2)
 }
 
 
+
 cmpData <- function(t1,t2)
 {
 	retval = TRUE
@@ -142,7 +143,7 @@ cmpData <- function(t1,t2)
 		
 		for(ii in seq(ncol(tdata(t1))))
 		{
-			if(!is.factor(tdata(t1)[,ii]))
+			if(!(is.factor(tdata(t1)[,ii]) || is.factor(tdata(t2)[,ii])))
 			{
 				if(!all(sort(round(tdata(t1)[,ii],3)) == sort(round(tdata(t2)[,ii],3))) ) {
 					warning("tdata don't match",ii)

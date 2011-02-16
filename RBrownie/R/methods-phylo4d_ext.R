@@ -53,6 +53,7 @@ setGeneric("hasWeight",function(x,strict=TRUE) { standardGeneric("hasWeight")} )
 # subnode
 setGeneric("hasSubNodes", function(x) { standardGeneric("hasSubNodes") })
 setGeneric("hasData", function(x) { standardGeneric("hasData") })
+setGeneric("hasDataColumn",function(x,index) { standardGeneric("hasDataColumn") })
 
 # overloading phylobase methods:
 
@@ -1236,8 +1237,11 @@ write.simmap <- function(x,usestate=NULL,file="",vers=1.1,...)
 {
 	splitchar = ifelse(vers==1.0,";",":")
 	
+	if(is.null(usestate))
+		usestate = colnames(tdata(x))
+	
 	#if(hasSubNodes(x))
-	if(hasData(x))
+	if(hasData(x) && hasDataColumn(x,usestate))
 	{
 		newlab=NULL
 		if(vers == 1.5){
@@ -1523,6 +1527,41 @@ setMethod("hasData", signature(x="list"),
 	function(x) {
 		return(sapply(x,hasData))
 })
+
+setMethod("hasDataColumn", signature("phylo",index="ANY"),
+	function(x,index){
+	return(FALSE)
+})
+
+setMethod("hasDataColumn", signature("phylo4",index="ANY"),
+	function(x,index){
+	return(FALSE)
+})
+
+setMethod("hasDataColumn", signature("phylo4d",index="numeric"),
+	function(x,index){
+	retval = FALSE
+	if( hasData(x) && length(index) != 0 && all(index <= ncol(tdata(x))) )
+	{
+		retval=TRUE
+	}
+	return(retval)
+})
+
+setMethod("hasDataColumn", signature("phylo4d",index="character"),
+	function(x,index){
+
+	uinds = unique(index)
+	ind = which(colnames(tdata(x)) %in% uinds)
+	
+	if(length(ind) != length(uinds))
+	{
+		return(FALSE)
+	} else {
+		return(hasDataColumn(x,ind))
+	}
+})
+
 
 
 getSubNodeData <- function(x,colname)

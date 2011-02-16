@@ -1,6 +1,7 @@
 require(RBrownie)
 
 source("diagnostics.R")
+extended = FALSE
 
 # Discrete tests ("discrete")
 junk = readBrownie("geospiza.nex")
@@ -9,7 +10,7 @@ models=c("nonrev","nonrev","equal","rev","rev","nonrev"),
 freqs=c("unif","equilib","empirical","unif","OPTIMIZE","empirical"),
 reconstruct=T)
 #junkrun
-#plot(junkrun$trees[[1]])
+plot(junkrun$trees[[1]])
 
 # Noncensored ("cont")
 junk = readBrownie("parrot.nex")
@@ -45,14 +46,16 @@ junkrun=runNonCensored(junk,brfile="cont_junk_noloop9.txt",models=brownie.models
 stopifnot(nrow(junkrun)!=0)
 junkrun=runNonCensored(junk,brfile="cont_junk_noloop10.txt",models=brownie.models.continuous()[5],treeloop=T,charloop=T)
 
-junkrun1=runNonCensored(junk,brfile="cont_junk_noloop_mixed.txt",models=brownie.models.continuous()[c(5,2,4,3,1)],treeloop=T,charloop=T)
-#summaryCont(junkrun) # TODO: fix!
+if(extended)
+{
+	junkrun1=runNonCensored(junk,brfile="cont_junk_noloop_mixed.txt",models=brownie.models.continuous()[c(5,2,4,3,1)],treeloop=T,charloop=T)
+	#summaryCont(junkrun) # TODO: fix!
 
+	junkrun2=runNonCensored(junk,brfile="cont_junk_noloop_mixed.txt",models=brownie.models.continuous()[sample(1:5)],treeloop=T,charloop=T)
+	#summaryCont(junkrun2) # TODO: fix!
 
-junkrun2=runNonCensored(junk,brfile="cont_junk_noloop_mixed.txt",models=brownie.models.continuous()[sample(1:5)],treeloop=T,charloop=T)
-#summaryCont(junkrun2) # TODO: fix!
-
-stopifnot(cmpAnalysis(junkrun1,junkrun2))
+	stopifnot(cmpAnalysis(junkrun1,junkrun2))
+}
 
 # Censored ("ratetest")
 junk = readBrownie("parrot.nex")
