@@ -144,7 +144,7 @@ cmpData <- function(t1,t2)
 		{
 			if(!is.factor(tdata(t1)[,ii]))
 			{
-				if(!all(sort(tdata(t1)[,ii]) == sort(tdata(t2)[,ii]))) {
+				if(!all(sort(round(tdata(t1)[,ii],3)) == sort(round(tdata(t2)[,ii],3))) ) {
 					warning("tdata don't match",ii)
 					retval = FALSE
 				}

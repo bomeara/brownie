@@ -1,7 +1,7 @@
 Package: RBrownie
 Type: Package
 Title: Continuous and discrete ancestral character reconstruction and evolutionary rate tests.
-Version: 0.0.9
+Version: 0.1.0
 Date: 2010-09-10
 Author: J. Conrad Stack <stack@psu.edu>, Brian O'Meara, Luke Harmon
 Maintainer: J. Conrad Stack <stack@psu.edu>

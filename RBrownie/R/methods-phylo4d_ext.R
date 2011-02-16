@@ -649,7 +649,7 @@ read.simmap.new <- function(file="",text=NULL, specialpatt=character(0))
 # nexus files where trees have simmap formatting.  If they don't, then
 # readNexus should be used instead.
 #
-read.nexus.simmap <- function(finput="",text=NULL,vers=NULL)
+read.nexus.simmap <- function(finput="",text=NULL,vers=NULL,...)
 {
 	outtrees = NULL
 	if(!is.null(text)){
@@ -727,7 +727,7 @@ read.nexus.simmap <- function(finput="",text=NULL,vers=NULL)
 		if(is.simmap(text=tmpstr)){
 			trtmp = phyext(unname(read.simmap(text=tmpstr)))
 		} else if (is.simmap(text=tmpstr,vers=1.5)) {
-			trtmp = phyext(unname(read.simmap.new(text=tmpstr)))
+			trtmp = phyext(unname(read.simmap.new(text=tmpstr,...)))
 		} else if (is.simmap(text=tmpstr,vers=1.0)){
 			trtmp = phyext(unname(read.simmap(text=tmpstr,vers=1.0)))
 		} else {
