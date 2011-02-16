@@ -1,0 +1,40 @@
+#!/bin/bash
+
+echo -ne "Running cleanup script in RBrownie..."
+cd RBrownie
+./cleanup
+cd ..
+echo "done"
+
+echo -ne "Copying TreeLib..."
+mkdir ./RBrownie/src/brownie_src/TreeLib
+cp -R ./TreeLib/* ./RBrownie/src/brownie_src/TreeLib
+echo "done"
+
+echo -ne "Copying NCL..."
+mkdir ./RBrownie/src/brownie_src/ncl-2.0
+cp -R ./ncl-2.0/* ./RBrownie/src/brownie_src/ncl-2.0
+echo "done"
+
+cp *.cpp ./RBrownie/src/brownie_src
+cp *.h ./RBrownie/src/brownie_src
+cp makefilestatic* ./RBrownie/src/brownie_src
+
+echo "Removing svn directories..."
+rm -rdf `find ./RBrownie/src/brownie_src/TreeLib -path "./*svn"`
+rm -rdf `find ./RBrownie/src/brownie_src/ncl-2.0 -path "./*svn"`
+echo "done"
+
+
+echo -ne "Running autoconfig..."
+cd ./RBrownie/
+autoconf
+cd ..
+echo "done"
+
+
+echo "Building R package..."
+R CMD check RBrownie/ 
+echo "done"
+
+

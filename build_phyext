@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo -ne "Copying files from RBrownie...."
+cp -f ./RBrownie/R/processNexus.R ./phyloext/R/processNexus.R
+cp -f ./RBrownie/R/class-phylo4d_ext.R ./phyloext/R/class-phylo4d_ext.R
+cp -f ./RBrownie/R/methods-phylo4d_ext.R ./phyloext/R/methods-phylo4d_ext.R
+cp -f ./RBrownie/R/setAs-phyext.R ./phyloext/R/setAs-phyext.R
+cp -f ./RBrownie/R/phyextPlots.R ./phyloext/R/phyextPlots.R
+cp -f ./RBrownie/R/ci.R ./phyloext/R/ci.R
+cp -f ./RBrownie/R/zzz.R ./phyloext/R/zzz.R
+echo "done"
+
+echo "Trying to build phyloext package....\n"
+R CMD build phyloext/
+echo "done"
+
