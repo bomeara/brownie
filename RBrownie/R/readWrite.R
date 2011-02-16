@@ -9,9 +9,6 @@
 # readBrownie
 # writeBrownie
 
-setGeneric("writeBrownie", function(x,...) { standardGeneric("writeBrownie")} )
-
-
 readBrownie<-function(fname)
 {
 	
@@ -299,10 +296,11 @@ readBrownie<-function(fname)
 
 }
 
+setGeneric("writeBrownie", function(x,...) { standardGeneric("writeBrownie")} )
 
 setMethod("writeBrownie",signature(x="brownie"),
-	function(x,file=NULL,rmsimmap=TRUE) {
-		return( writeBrownie(list(x),file=file,rmsimmap=rmsimmap) )
+	function(x,...) {
+		return( writeBrownie(list(x),...) )
 })
 
 # write nexus file with trees and characters
@@ -310,7 +308,7 @@ setMethod("writeBrownie",signature(x="brownie"),
 #		-Better way to convert CR/LF (in Windows)
 #
 setMethod("writeBrownie", signature(x="list"),
-	function(x, file=NULL, rmsimmap=TRUE) {
+	function(x, file=NULL, rmsimmap=TRUE, usestate=1) {
 		
 		# temporary files for nexus blocks:
 		#
@@ -331,7 +329,7 @@ setMethod("writeBrownie", signature(x="list"),
 		
 		# Perpare tree
 		#phy = as(x[[1]],'phylo')
-		write.nexus.simmap(x,file=tmp1,vers=1.1)
+		write.nexus.simmap(x,file=tmp1,vers=1.1,usestate=usestate)
 		
 		# if there is tip data to be written
 		#
@@ -339,7 +337,7 @@ setMethod("writeBrownie", signature(x="list"),
 		{
 			if(rmsimmap)
 			{
-				x[[1]] = rmdata(x[[1]],'simmap_state')
+				x[[1]] = rmdata(x[[1]],usestate)
 			}
 			
 			dtypes = datatypes(x[[1]])

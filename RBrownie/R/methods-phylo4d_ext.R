@@ -45,7 +45,7 @@ setGeneric("sndata<-", function(x,datnames=NULL, value) { standardGeneric("sndat
 setGeneric("snid", function(x, ...) { standardGeneric("snid") })
 setGeneric("snposition", function(x, ...) { standardGeneric("snposition") })
 setGeneric("snbranch", function(x, ...) { standardGeneric("snbranch") })
-setGeneric("rmdata", function(x,index) { standardGeneric("rmdata")} )
+setGeneric("rmdata", function(x,index,subindex) { standardGeneric("rmdata")} )
 setGeneric("weight", function(x) { standardGeneric("weight")} )
 setGeneric("weight<-", function(x,value) { standardGeneric("weight<-")} )
 setGeneric("hasWeight",function(x,strict=TRUE) { standardGeneric("hasWeight")} )
@@ -1120,7 +1120,12 @@ newlabels.v15 <- function(x,usestate,splitchar)
 	
 	if(is.null(usestate))
 		usestate = colnames(tdata(x))
-	
+	else {
+		if(is.numeric(usestate))
+		{
+			usestate = colnames(tdata(x))[usestate]
+		}
+	}
 	# get tip and subnode data:
 	tdat = tdata(x)[,usestate,drop=F]
 	snodes.present = hasSubNodes(x)
@@ -1342,10 +1347,10 @@ write.simmap.new <- function(x,usestate=NULL,file="",...)
 # @param obj a list or single phylo4d_ext objects
 # @param file the file to write to
 # @param translate should the tree names be moved to a special section
-# @param vers which SIMMAP version should be used
+# @param vers which SIMMAP version should be used (can be vers=c(1.1, 1.0, 1.5))
 # @param usestates if NULL, then all data columns are used
 #
-write.nexus.simmap <- function(obj, file = "", translate = TRUE, vers=c(1.1, 1.0, 1.5), usestates=NULL)
+write.nexus.simmap <- function(obj, file = "", translate = TRUE, ...)
 {
 	if(!is.list(obj))
 	{
@@ -1415,7 +1420,7 @@ write.nexus.simmap <- function(obj, file = "", translate = TRUE, vers=c(1.1, 1.0
 		#if(is.null(usestates))
 		#	usestates = colnames(tdata(obj[[i]]))
 		
-        cat(write.simmap(obj[[i]], usestates, "", vers),"\n", sep = "", file = file, append = TRUE)
+        cat(write.simmap(obj[[i]], file="",...),"\n", sep = "", file = file, append = TRUE)
     }
     cat("END;\n", file = file, append = TRUE)
 }
@@ -1732,6 +1737,7 @@ setMethod("sndata", signature(x="list"),
 
 
 # this adds data
+# TODO: Change 'adds' behavior to 'replaces'
 setReplaceMethod("sndata", signature(x="phylo4d_ext"),
   function(x,datnames=NULL,value) {
 	
@@ -1766,39 +1772,67 @@ setReplaceMethod("sndata",signature(x="list"),
 })
 
 
-setMethod("rmdata", signature(x="phylo4d_ext",index="numeric"),
-  function(x,index) {
-	  if(length(index)>0 && index <= ncol(tdata(x)))
-		{
-			x@data = x@data[,-index,drop=F]
-			if(hasSubNodes(x))
-				x@subnode.data = x@subnode.data[,-index,drop=F]
-		}
+# begin rmdata:
+# 'rmdata' method removes data columns from the 'data' and 'subnode.data' slots
+#
+
+setMethod("rmdata", signature(x="phylo4d_ext",index="numeric",subindex="numeric"),
+  function(x,index,subindex) {
+	
+	if(length(index)>0 && abs(index) <= ncol(tdata(x)) && index != 0)
+	{
+		x@data = x@data[,-index,drop=F]
+	} else {
+		warning("The data column to be removed could not be found in tdata(x)")
+	}
+
+	if( hasSubNodes(x) && length(subindex) >0 && abs(subindex) <= ncol(sndata(x)) && subindex != 0)
+	{
+		x@subnode.data = x@subnode.data[,-index,drop=F]
+	}
 	
 	return(x)
 })
+	
 
-
-setMethod("rmdata", signature(x="phylo4d",index="numeric"),
+setMethod("rmdata", signature(x="phylo4d_ext",index="numeric",subindex="missing"),
   function(x,index) {
-	  if(length(index)>0 && index <= ncol(tdata(x)))
+	return( rmdata(x,index=index,subindex=index) )
+})
+
+setMethod("rmdata", signature(x="phylo4d_ext",index="character",subindex="missing"),
+  function(x,index) {
+	ind = which(colnames(tdata(x)) %in% index)
+	if(hasSubNodes(x)){
+		subind = which(colnames(sndata(x)) %in% index)
+	} else {
+		subind = numeric(0)
+	}
+	return( rmdata(x,index=ind,subindex=subind) )
+})
+
+
+setMethod("rmdata", signature(x="phylo4d",index="numeric",subindex="missing"),
+  function(x,index) {
+	  if(length(index)>0 && abs(index) <= ncol(tdata(x)) && index != 0)
 		x@data = x@data[,-index,drop=F]
 	
 	return(x)
 })
 
-setMethod("rmdata", signature(x="phylo4d",index="character"),
+setMethod("rmdata", signature(x="phylo4d",index="character",subindex="missing"),
   function(x,index) {
 	inds = which(names(tdata(x)) %in% index)
 	return(rmdata(x,inds))
 })
 
 
-setMethod("rmdata", signature(x="list",index="ANY"),
+setMethod("rmdata", signature(x="list",index="ANY",subindex="missing"),
 	function(x,index) {
 		x = sapply(x,rmdata,index)
 	return(x)
 })
+# end rmdata
 
 
 setMethod("snposition", signature(x="phylo4d_ext"),

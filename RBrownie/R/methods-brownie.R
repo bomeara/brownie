@@ -643,3 +643,50 @@ checkPara <- function(treeslist,taxaset,percent=T)
 	return(retnum) 
 }
 
+
+## Generic Overloads from phylo4d_ext:
+
+# NOTE: These rm functions assume that datatypes is matched up with tdata(x) and sndata(x) perfectly
+setMethod("rmdata", signature(x="brownie",index="numeric",subindex="numeric"),
+  function(x,index,subindex) {
+	
+	if(length(index)>0 && abs(index) <= ncol(tdata(x)) && index != 0)
+	{
+		x@data = x@data[,-index,drop=F]
+		x@datatypes = x@datatypes[-index]
+	} else {
+		stop("The data column to be removed could not be found in tdata(x)")
+	}
+
+	if( hasSubNodes(x) && length(subindex) >0 && abs(subindex) <= ncol(sndata(x)) && subindex != 0)
+	{
+		x@subnode.data = x@subnode.data[,-index,drop=F]
+	}
+	
+	return(x)
+})
+	
+
+setMethod("rmdata", signature(x="brownie",index="numeric",subindex="missing"),
+  function(x,index) {
+	return( rmdata(x,index=index,subindex=index) )
+})
+
+setMethod("rmdata", signature(x="brownie",index="character",subindex="missing"),
+  function(x,index) {
+	ind = which(colnames(tdata(x)) %in% index)
+	if(hasSubNodes(x)){
+		subind = which(colnames(sndata(x)) %in% index)
+	} else {
+		subind = numeric(0)
+	}
+	
+	if( !all(sort(ind) == sort(subind)) )
+	{
+		stop("Problem: datatypes and (@data, @subnode.data) have become out of sync")
+	}
+	
+	return( rmdata(x,index=ind,subindex=subind) )
+})
+
+

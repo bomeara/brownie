@@ -3,18 +3,20 @@
 #----------------------------------------
 
 # 
-# @param datapart specifies which column index for the @data slot should be accessed and plotted.  
+# @param usestate specifies which column index for the @data slot should be accessed and plotted.  
 #		 It can be either an integer (between 1...ncol) or a character string (which is a column 
 #		 name.)
 #
 phyextPlot <- function(x,states,states.col,
 						states.na="none", 
-						datapart=1,
+						usestate=1,
 						plot.subnodes=T,
 						plot.points=T,
 						line.widths,line.types, ... )
 {
 
+	# TODO: sanity check to make sure usestate is a proper data column index
+	
 	# plot base phylogeny using phylobase functions:
 	junk <- x
 		
@@ -30,11 +32,11 @@ phyextPlot <- function(x,states,states.col,
 	{
 		if(missing(states))
 		{
-			tmp = as.character(unique(tdata(junk,'all')[,datapart,drop=F])[,1])
+			tmp = as.character(unique(tdata(junk,'all')[,usestate,drop=F])[,1])
 			tmp = tmp[!is.na(tmp)]
 			if(hasSubNodes(junk) && plot.subnodes)
 			{
-				tmp = c(tmp,as.character(unique(sndata(junk)[,datapart,drop=F])[,1]))
+				tmp = c(tmp,as.character(unique(sndata(junk)[,usestate,drop=F])[,1]))
 				tmp = tmp[!is.na(tmp)]
 			}
 			tmp = unique(tmp)
@@ -59,7 +61,7 @@ phyextPlot <- function(x,states,states.col,
 		seekViewport("tree")
 		
 		eord = edges(gtree)[posi$eorder,] # this is the order used
-		treedata = tdata(junk,"all")[eord[,2],datapart,drop=T]  
+		treedata = tdata(junk,"all")[eord[,2],usestate,drop=T]  
 		datamap = sapply(treedata,function(i) which(states == i),simplify=T)
 		if(is.list(datamap))
 			datamap = unlist(lapply(datamap, function(i) ifelse(length(i)==0,1,i[1])))
@@ -75,7 +77,7 @@ phyextPlot <- function(x,states,states.col,
 		{
 			esub = matrix(edges(junk)[getSubNodeEdgeInds(junk),],ncol=2)
 			posi.inds = apply(esub,1,function(i) which(i[1] == eord[,1] & i[2] == eord[,2]))
-			subdata = getSubNodeData(junk,datapart)
+			subdata = getSubNodeData(junk,usestate)
 			submapping = sapply(subdata[,1],function(i) which(states == i))
 			subposi = getSubNodePosish(junk)
 			
