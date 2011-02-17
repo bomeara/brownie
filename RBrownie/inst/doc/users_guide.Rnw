@@ -394,16 +394,19 @@ rowind = which(test.results$Tree==tree &
 	test.results$Model == modname)
 junkrow = test.results[rowind,]
 colinds = which(colnames(junkrow) %in% state.ratename)
-legends = paste(names(junkrow[colinds]),junkrow[colinds],sep=" = ")
+#legends = paste(names(junkrow[colinds]),junkrow[colinds],sep=" = ")
+legtext = c("State 0, ","State 1, ")
+legends = sprintf("%0.3f",junkrow[colinds])
 plot(x,states=states,states.col=state.cols,line.widths=line.widths,plot.points=T)
 #
-# Add jury-rigged legend
+# Add legend
 fontsize=10
 boxSize = unit(fontsize, "points")
 for(ii in seq(length(states)))
 {
 	yoff = unit( ((ii-1)*fontsize)+ ifelse(ii==1,0,2) ,"points")
-	grid.text(legends[ii],
+#	grid.text(legends[ii],
+	grid.text(bquote(.(legtext[ii])~sigma^2 == .(legends[ii])),
 	x=unit(2, "mm"),
 	y=unit(1, "npc") - unit(2, "mm") - yoff,
 	just=c("left", "top"),

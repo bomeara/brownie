@@ -44,9 +44,11 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
+\dontrun{
 data(parrot)
 junkrun = runCensored(parrot,taxset="intrajoint",reps=1000,charloop=TRUE)
 summaryRatetest(junkrun)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

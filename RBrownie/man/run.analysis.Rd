@@ -43,7 +43,7 @@ J. Conrad Stack
 \code{\link{execute.brownie}}
 }
 \examples{
-data(parrot)
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -42,11 +42,12 @@ J. Conrad Stack
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
+\dontrun{
 data(parrot)
 junkrun=run.asis(parrot)
 cuttxt = scan.textout(junkrun$textout[1]) # post-process the text
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+}
+
 \keyword{ methods }
 

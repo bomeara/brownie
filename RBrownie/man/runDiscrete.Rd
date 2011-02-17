@@ -66,12 +66,14 @@ J. Conrad Stack
 \code{\link{run.analysis}},
 }
 \examples{
+\dontrun{
 data(geospiza_ext)
 junkrun=runDiscrete(geospiza_ext,
 	models=c("nonrev","nonrev"),
 	freqs=c("unif","equilib"),
 	reconstruct=TRUE)
 plot(junkrun$trees[[1]]) # plot one of the reconstructed trees
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

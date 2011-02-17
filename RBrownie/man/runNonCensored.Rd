@@ -72,6 +72,7 @@ J. Conrad Stack
 }
 \examples{
 # Noncensored ("cont")
+\dontrun{
 data(parrot)
 junkrun=runNonCensored(parrot,
 	brfile="cont_junk.txt",
@@ -79,6 +80,7 @@ junkrun=runNonCensored(parrot,
 	treeloop=TRUE,
 	charloop=TRUE)
 summaryCont(junkrun)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

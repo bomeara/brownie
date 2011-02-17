@@ -50,11 +50,12 @@ J.Conrad Stack
 \code{\link{summaryRatetest}}
 }
 \examples{
+\dontrun{
 # run Censored ratetest
 data(parrot)
 brownierun = runCensored(parrot,taxset="intrajoint",reps=1000,charloop=TRUE)
 summaryRatetest(brownierun)
-
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

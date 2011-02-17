@@ -39,8 +39,8 @@ J. Conrad Stack
 }
 \examples{
 data(geospiza_ext)
-rawtext = run.asis(geospiza_ext)
-scan.treesout(rawtext$treesout)
+\dontrun{rawtext = run.asis(geospiza_ext)}
+\dontrun{scan.treesout(rawtext$treesout)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
