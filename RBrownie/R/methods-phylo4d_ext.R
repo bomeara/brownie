@@ -67,7 +67,7 @@ get.nodenames<-function(newick.txt)
 {
 	nnames = character(0)
 	ttmp = newick.txt
-	nname.pat="(\\(|,|\\))([a-zA-Z0-9']{1,})(:|;)"
+	nname.pat="(\\(|,|\\))([a-zA-Z0-9'_\\.]{1,})(:|;)"
 	junk = regexpr(nname.pat,ttmp)
 	count = 0
 	while(junk[1] != -1)
@@ -1645,6 +1645,7 @@ addSubNode <- function(x,anc,dec,position,dataf,pos.is.fraction=FALSE)
 		
 	} else {
 		
+
 
 		newdf = getEmptyDataFrame(x,stringsAsFactors=FALSE)  # ??
 
