@@ -38,7 +38,7 @@ run.analysis <- function(filename)
 # Run a brownie file as it is.  If you just want to see if brownie can
 # execute the file (without crashing), set debugging to TRUE.
 #
-run.asis <- function(brobj,brfile=NULL,logfile=NULL,debugging=F)
+run.asis <- function(brobj,brfile=NULL,logfile=NULL,debugging=F,usestate='simmap_state')
 {
 	if(!debugging && !hasCommands(brobj))
 	{
@@ -54,7 +54,7 @@ run.asis <- function(brobj,brfile=NULL,logfile=NULL,debugging=F)
 		brobj = addEndLog(brobj)
 	}
 	
-	writeBrownie(brobj,brfile)
+	writeBrownie(brobj,brfile,usestate=usestate)
 	
 	outtext = run.analysis(brfile)
 	
@@ -69,7 +69,7 @@ run.asis <- function(brobj,brfile=NULL,logfile=NULL,debugging=F)
 # @file file to dump output to
 # @... options to be passed to addDiscrete...
 #
-runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.discrete()[1],freqs=brownie.freqs()[1],...)
+runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,usestate='simmap_state',models=brownie.models.discrete()[1],freqs=brownie.freqs()[1],...)
 {
 	
 	# sanity checks:
@@ -99,7 +99,7 @@ runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.dis
 	if(is.null(brfile))
 		brfile=tempfile()
 	
-	writeBrownie(brobj,brfile)
+	writeBrownie(brobj,brfile,usestate=usestate)
 	
 	outtext = run.analysis(brfile)
 	
@@ -116,6 +116,7 @@ runDiscrete <- function(brobj,outfile=NULL,brfile=NULL,models=brownie.models.dis
 # Do uncensored rate test ("continuous","opt")
 #
 runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
+							usestate='simmap_state',
 							models=brownie.models.continuous()[1],
 							taxsets=character(0),
 							states=character(0),
@@ -169,7 +170,7 @@ runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
 	if(is.null(brfile))
 		brfile=tempfile()
 	
-	writeBrownie(brobj,brfile)
+	writeBrownie(brobj,brfile,usestate=usestate)
 	
 	outtext = run.analysis(brfile)
 	outdat=NULL
@@ -202,7 +203,7 @@ runNonCensored <- function(brobj,outfile=NULL,brfile=NULL,
 # @param ellipses are parameters to be passed to addCensored
 # 
 #
-runCensored <- function(brobj,brfile=NULL,file=NULL,...)
+runCensored <- function(brobj,brfile=NULL,usestate='simmap_state',file=NULL,...)
 {	
 	
 	# sanity checks
@@ -229,7 +230,7 @@ runCensored <- function(brobj,brfile=NULL,file=NULL,...)
 	if(is.null(brfile))
 		brfile=tempfile()
 	
-	writeBrownie(brobj,brfile)	
+	writeBrownie(brobj,brfile, usestate=usestate)	
 	outtext = run.analysis(brfile)
 	
 	outdat = read.ratetest.output(txt=scan.textout(outtext$textout))
