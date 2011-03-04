@@ -331,7 +331,7 @@ setMethod("hasTaxasets",signature(x="list"),
 setReplaceMethod("taxasets", signature(x="phylo4d"),
   function(x,taxnames,value) {
 		
-	# if it is a vector and not a
+	# if it is a vector and not a data.frame
 	if(is.null(dim(value)))
 	{
 		
@@ -363,8 +363,9 @@ setReplaceMethod("taxasets", signature(x="phylo4d"),
 			colnames(value) <- taxnames
 					
 		cnames = colnames(value)
-		notlabeled = grep("^[^T][^A][^X][^A][^S][^E][^T][^_]",cnames)
-		if(length(notlabeled) > 0){
+		notlabeled = !grepl("^TAXASET_.*$",cnames)
+		#notlabeled = grep("^[^T][^A][^X][^A][^S][^E][^T][^_]",cnames)
+		if(notlabeled){
 			cnames[notlabeled] = paste("TAXSET_",cnames[notlabeled],sep="")
 			colnames(value) <- cnames
 		}
