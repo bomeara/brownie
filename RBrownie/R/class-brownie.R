@@ -13,7 +13,7 @@
 # @param datatypes annotation for the data part of phylo4d
 setClass("brownie",
 		representation(commands="character",datatypes="character"),
-		prototype=prototype(commands="",datatypes=""),
+		prototype=prototype(commands=character(0),datatypes=character(0)),
 		contains="phylo4d_ext"
 		)
 

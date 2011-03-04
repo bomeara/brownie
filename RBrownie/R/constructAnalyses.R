@@ -642,6 +642,7 @@ addStartLog <- function(obj,
 }
 
 ##### End log file recording
+
 #
 addEndLog <- function(obj)
 {

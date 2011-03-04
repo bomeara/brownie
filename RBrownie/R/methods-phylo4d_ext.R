@@ -67,6 +67,11 @@ get.nodenames<-function(newick.txt)
 {
 	nnames = character(0)
 	ttmp = newick.txt
+	
+	if(grepl("^.*;$",ttmp)) {
+		# remove trailing semi-colon, otherwise it will mess up the regular expression matching
+		ttmp = substring(ttmp,first=1,last=(nchar(ttmp)-1))
+	}
 	nname.pat="(\\(|,|\\))([a-zA-Z0-9'_\\.]{1,})(:|;)"
 	junk = regexpr(nname.pat,ttmp)
 	count = 0
