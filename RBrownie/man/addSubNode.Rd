@@ -22,7 +22,7 @@ Node id of the ancestor on the branch on which the subnode is to be added
 Node id of the descendant on the branch on which the subnode is to be added
 }
   \item{position}{
-The position on the branch where the subnode is to be placed.  It is stored as a faction of the branches' total length.
+The position on the branch where the subnode is to be placed.  It is stored as a faction of the branches' total length and is in relation to the ancestral node.  In other words, a smaller value will be closer to the ancestral node.
 }
   \item{dataf}{
 a data.frame object which should be structurally similar to the data frame of the phylo4d object (data slot).  It should contain data entries for the subnode.
@@ -32,7 +32,7 @@ Specify whether \code{position} argument a fraction of the branch length or an a
 }
 }
 \details{
-This is the main function in RBrownie for adding subnodes manually.  It is used internally when reading in SIMMAP-formatted newick trees and can also be used to edit
+This is the main function in RBrownie for adding subnodes manually.  It is used internally when reading in SIMMAP-formatted newick trees and can also be used to edit phylo4d_ext trees.
 }
 \value{
 Returns \code{x} with a new subnode added.

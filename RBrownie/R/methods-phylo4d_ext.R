@@ -1073,6 +1073,9 @@ newlabels.v1x <- function(x,usestate,splitchar,write.nas=TRUE)
 	}
 		
 	es = edges(x)[,2]
+	if(!isRooted(x))
+		es = union(es,edges(x)[,1])  # added 3/8 to accomodate unrooted trees:
+	
 	elens = edgeLength(x); elens[is.na(elens)] <- 0.0
 	newlenlab=character(length(es))
 	
@@ -1081,7 +1084,10 @@ newlabels.v1x <- function(x,usestate,splitchar,write.nas=TRUE)
 		nodeid=es[ii]
 		if(!(ii %in% snedges.inds))
 		{
-			if(!is.na(tdat[nodeid,1]) || write.nas){
+			# added 3/8 to accomodate unrooted trees:
+			if(is.na(elens[ii])){
+				newlenlab[ii] = ""
+			} else if(!is.na(tdat[nodeid,1]) || write.nas){
 				newlenlab[ii] = paste("{",tdat[nodeid,1] ,",", elens[ii],"}",sep="")
 			} else {
 				newlenlab[ii] = as.character(elens[ii])
@@ -1257,9 +1263,12 @@ write.simmap <- function(x,usestate=NULL,file="",vers=1.1,...)
 		
 		# reorder:
 		es = edges(x)[,2]
+		if(!isRooted(x))
+			es = union(es,edges(x)[,1])  # added 3/8 to accomodate unrooted trees:
+	
 		altorder = order(es)
 		newlab = newlab[altorder]
-		ntype = nodeType(x)
+		ntype = nodeType(x)[es[altorder]]
 		phy = as(x,'phylo')
 		newedges = edges(x)
 		newphy = list(edge=newedges,
@@ -1279,7 +1288,10 @@ write.simmap <- function(x,usestate=NULL,file="",vers=1.1,...)
 		brl <- !is.null(newphy$edge.length)
 		nodelab <- !is.null(newphy$node.label)
 		f.d <- paste("%.", digits, "g", sep = "")
+		
+		## Helper functions
 		cp <- function(s) STRING <<- paste(STRING, s, sep = "")
+
 		add.internal <- function(i) {
 		    cp("(")
 		    br <- which(newphy$edge[, 1] == i)
@@ -1296,6 +1308,7 @@ write.simmap <- function(x,usestate=NULL,file="",vers=1.1,...)
 		        cp(sprintf(f.d, newphy$edge.length[which(newphy$edge[, 2] == i)]))
 		    }
 		}
+		
 		add.terminal <- function(i) {
 		    cp(newphy$tip.label[newphy$edge[i, 2]])
 		    if (brl) {
@@ -1303,6 +1316,8 @@ write.simmap <- function(x,usestate=NULL,file="",vers=1.1,...)
 		        cp(sprintf(f.d, newphy$edge.length[i]))
 		    }
 		}
+		## End helper functions
+
 		n <- length(newphy$tip.label)
 		STRING <- if (output.tree.names) paste("ERROR!", "(", sep = "") else "("
 		br <- which(newphy$edge[, 1] == n + 1)

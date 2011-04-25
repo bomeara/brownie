@@ -8,7 +8,7 @@ Execute a brownie object
 This function is the sister function to run.analysis.  Instead of running a file directly it writes \code{brobj} to either \code{brfile} or a temporary file and then executes.  
 }
 \usage{
-run.asis(brobj, brfile = NULL, logfile = NULL, debugging = F)
+run.asis(brobj, brfile = NULL, logfile = NULL, debugging = F, usestate='simmap_state')
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,6 +23,9 @@ Not currently used
 }
   \item{debugging}{
 Not currently used
+}
+  \item{usestate}{
+	This is passed to writeBrownie
 }
 }
 \details{

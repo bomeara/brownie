@@ -10,7 +10,8 @@ This function runs a discrete character evolution analysis on a brownie object u
 \usage{
 runDiscrete(brobj, 
 	outfile = NULL, 
-	brfile = NULL, 
+	brfile = NULL,
+	usestate='simmap_state', 
 	models = brownie.models.discrete()[1], 
 	freqs = brownie.freqs()[1], 
 	...)
@@ -25,6 +26,9 @@ A file to write the results of the test to.  If not specified a temporary file i
 }
   \item{brfile}{
 A file to write brobj to (before running) (optional).
+}
+  \item{usestate}{
+	This is passed to writeBrownie
 }
   \item{models}{
 Add a number of different discrete models. (see \code{brownie.models.discrete} for options)

@@ -275,7 +275,11 @@ readBrownie<-function(fname)
 
 	mmatrix = "MATRIX"
 	#mmatrix.data = unname(cbind(rownames(xdf),apply(xdf,2,as.character)))
-	mmatrix.data = apply(xdf,2,as.character)
+	if(dtype==contData()){
+		mmatrix.data = apply(xdf,1:2,function(i) sprintf("%0.15f",i))
+	} else {
+		mmatrix.data = apply(xdf,2,as.character)
+	}
 	if(any(is.na(mmatrix.data)))
 		mmatrix.data[which(is.na(mmatrix.data),T)] <- missing.char
 	

@@ -8,7 +8,7 @@ Add and Run Censored ratetest command to brownie object
 This function runs a Censored ratetest on a brownie object.  Commands currently in the brownie object are ignored.  
 }
 \usage{
-runCensored(brobj, brfile = NULL, file = NULL, ...)
+runCensored(brobj, brfile = NULL, usestate='simmap_state', file = NULL, ...)
 }
 \arguments{
   \item{brobj}{
@@ -16,6 +16,9 @@ A brownie object (or list of brownie objects)
 }
   \item{brfile}{
 A file to write brobj to (before running) (optional).
+}
+  \item{usestate}{
+	This is passed to writeBrownie
 }
   \item{file}{
 The brownie core write the output of the ratetest to this file (optional)

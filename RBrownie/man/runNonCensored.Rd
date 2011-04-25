@@ -11,6 +11,7 @@ This function runs a NonCensored ratetest on a brownie object using various mode
 runNonCensored(brobj, 
 	outfile = NULL, 
 	brfile = NULL, 
+	usestate='simmap_state',
 	models = brownie.models.continuous()[1], 
 	taxsets = character(0), 
 	states = character(0), 
@@ -27,6 +28,9 @@ A file to write the results of the test to.  If not specified a temporary file i
 }
   \item{brfile}{
 A file to write brobj to (before running) (optional).
+}
+  \item{usestate}{
+	This is passed to writeBrownie
 }
   \item{models}{
 Add a number of different continuous models. (see \code{brownie.models.continuous} for options)
