@@ -1,0 +1,13 @@
+citHeader("To cite RBrownie in a publication use:")
+
+citEntry(entry="Article",
+	title = "RBrownie: An R package for testing hypotheses about rates of  evolutionary change",
+        author = personList(as.person("J.C. Stack"),as.person("L. Harmon"),as.person("B. O'Meara")),
+	journal = "Methods in Ecology and Evolution",
+  	year = "2011",
+	volume = "",
+	pages = "",
+
+        textVersion = "Stack JC, Harmon L, O'Meara B. 2011. RBrownie: An R package for testing hypotheses about rates of evolutionary change. Methods in Ecology and Evolution."
+)
+
