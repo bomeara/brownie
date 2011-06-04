@@ -2,6 +2,7 @@
 #
 # See Computational Molecular Evolution (Yang)
 # 	Section 4 - Maximum Likelihood Methods
+
 require(phylobase)
 
 #
@@ -9,6 +10,7 @@ require(phylobase)
 logspace_add<-function(logx, logy) {
 	if(logx==-Inf) return(logy) else max(logx, logy) + log1p(exp (-abs (logx - logy)));
 }
+
 
 logspace_sum<-function(logx) {
       r<-logx[1]
@@ -19,7 +21,7 @@ logspace_sum<-function(logx) {
 }
 
 
-dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states=NULL,conditionals=T)
+dyn.loop.mle<-function(phytree, cost.mat, states.unique, states.freq, tip.states=NULL, conditionals=T)
 {
 	
 	phytree = as(phytree,'phylo4')
@@ -194,32 +196,32 @@ tipLabels(phytree) <- paste(tipLabels(phytree),tip.states)
 plot(phytree,show.node.label=T)
 
 
-dyn.loop.mle(phytree,cmat,states.unique,states.freq,tip.states)->junk
+dyn.loop.mle(phytree,cmat,states.unique,states.freq,tip.states) -> junk
 
-tree <- reorder(junk,"preorder")
-ntypes = nodeType(phytree)
-all.states = c(tip.states,character(nNodes(phytree)))
-nstates = length(states.unique)
-
-for(jj in seq(nrow(edges(tree))) )
-{
-	anc=tree@edge[jj,1]
-	dec=tree@edge[jj,2]
-	
-	# don't worry about tips
-	if(ntypes[dec]=="tip")
-		next
-	
-	if(anc == 0)
-	{
-		# root
-		llikes = as.numeric(tree@data[dec,seq(nstates)])
-		chars = as.character(tree@data[dec,seq(nstates+1,2*nstates)])
-		all.states[dec] = chars[which.max(llikes)]
-	} else {
-		all.states[dec] = as.character(tree@data[dec,seq(nstates+1,2*nstates)])[which(all.states[anc] == states.unique)]
-	}	
-}
-
-
-
+# tree <- reorder(phytree,"preorder")
+# ntypes = nodeType(phytree)
+# all.states = c(tip.states,character(nNodes(phytree)))
+# nstates = length(states.unique)
+# 
+# for(jj in seq(nrow(edges(tree))) )
+# {
+# 	anc=tree@edge[jj,1]
+# 	dec=tree@edge[jj,2]
+# 	
+# 	# don't worry about tips
+# 	if(ntypes[dec]=="tip")
+# 		next
+# 	
+# 	if(anc == 0)
+# 	{
+# 		# root
+# 		llikes = as.numeric(tree@data[dec,seq(nstates)])
+# 		chars = as.character(tree@data[dec,seq(nstates+1,2*nstates)])
+# 		all.states[dec] = chars[which.max(llikes)]
+# 	} else {
+# 		all.states[dec] = as.character(tree@data[dec,seq(nstates+1,2*nstates)])[which(all.states[anc] == states.unique)]
+# 	}	
+# }
+# 
+# 
+# 
